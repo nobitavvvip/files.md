@@ -66,9 +66,9 @@ func (b *Bot) Reply(u UpdInterface) error {
 		b.delAllKeyboards()
 	}
 
-	cmd, err := b.cmd(u)
+	cmd, err := b.extractCmd(u)
 	if err != nil {
-		return fmt.Errorf("b.Reply: can't get cmd: %w", err)
+		return fmt.Errorf("b.Reply: can't extract cmd: %w", err)
 	}
 	if cmd != nil {
 		handler, ok := b.handlers()[cmd.Name]
@@ -128,7 +128,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 	}
 }
 
-func (b *Bot) cmd(u UpdInterface) (*tg.Cmd, error) {
+func (b *Bot) extractCmd(u UpdInterface) (*tg.Cmd, error) {
 	cmd := u.Cmd()
 	if cmd != nil {
 		return cmd, nil
