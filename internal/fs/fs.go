@@ -467,8 +467,8 @@ func (fs FS) path(dir, filename string) string {
 	return fmt.Sprintf("%s/%s/%s", fs.rootPath, dir, filename)
 }
 
-// Creates a file if it doesn't exist
-// Otherwise, updates its access and modification times
+// Touch updates an existing file's access and modification times.
+// If there's no such file it creates an empty file.
 func (fs FS) Touch(dir, filename string) error {
 	exists, err := fs.Exists(dir, filename)
 	if err != nil {
