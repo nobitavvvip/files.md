@@ -687,7 +687,7 @@ func (b *Bot) showDoc(params []string) error {
 
 	err = b.show(fmt.Sprintf("%s\n%s", fs.Title(filename), content), kb, tg.MarkupHTML)
 	if err != nil {
-		return fmt.Errorf("b.showDoc: %w", err)
+		return fmt.Errorf("show doc: %w", err)
 	}
 
 	return nil
@@ -698,12 +698,12 @@ func (b *Bot) showChecklist(params []string) error {
 
 	checklist, err := b.fs.Unhash("", checklistHash)
 	if err != nil {
-		return fmt.Errorf("b.showChecklist: can't unhash checklist %s: %w", checklistHash, err)
+		return fmt.Errorf("show checklist: %w", err)
 	}
 
 	items, err := b.fs.FilesAndDirs(checklist)
 	if err != nil {
-		return fmt.Errorf("b.showChecklist: can't get items for %s: %w", checklist, err)
+		return fmt.Errorf("show checklist: %w", err)
 	}
 
 	kb := tg.NewKeyboard(nil)
@@ -714,7 +714,7 @@ func (b *Bot) showChecklist(params []string) error {
 
 	err = b.show(fs.Title(checklist), kb, tg.MarkupHTML)
 	if err != nil {
-		return fmt.Errorf("b.showChecklist: %w", err)
+		return fmt.Errorf("show checklist: %w", err)
 	}
 
 	return nil
@@ -748,7 +748,7 @@ func (b *Bot) move(params []string) error {
 
 	oldDir, err := b.fs.Unhash("", oldDirHash)
 	if err != nil {
-		return fmt.Errorf("b.move: can't unhash old dir '%s': %w", oldDirHash, err)
+		return fmt.Errorf("move: %w", err)
 	}
 
 	filename, err := b.fs.Unhash(oldDir, oldFilenameHash)
@@ -834,23 +834,23 @@ func (b *Bot) moveToChecklist(params []string) error {
 
 	filename, err := b.fs.Unhash(fs.DirToday, filenameHash)
 	if err != nil {
-		return fmt.Errorf("b.moveToChecklist: can't unhash filename '%s': %w", filenameHash, err)
+		return fmt.Errorf("move to checkilst: %w", err)
 	}
 
 	checklist, err := b.fs.Unhash("", checklistHash)
 	if err != nil {
-		return fmt.Errorf("b.moveToChecklist: can't unhash checklist '%s' in today: %w", filenameHash, err)
+		return fmt.Errorf("move to checklist: %w", err)
 	}
 
 	isMultiline, err := b.fs.IsMultiline(fs.DirToday, filename)
 	if err != nil {
-		return fmt.Errorf("b.moveToChecklist: %w", err)
+		return fmt.Errorf("move to checklist: %w", err)
 	}
 
 	if isMultiline && shouldSplitChecklist(checklist) {
 		text, err := b.fs.RestoreText(fs.DirToday, filename)
 		if err != nil {
-			return fmt.Errorf("b.moveToChecklist: %w", err)
+			return fmt.Errorf("move to checklist: %w", err)
 		}
 
 		text = strings.TrimSpace(str.NormNewLines(text))
@@ -858,13 +858,13 @@ func (b *Bot) moveToChecklist(params []string) error {
 		for _, line := range lines {
 			err = b.fs.Put(checklist, fs.Filename(line), "")
 			if err != nil {
-				return fmt.Errorf("b.moveToChecklist: %w", err)
+				return fmt.Errorf("move to checklist: %w", err)
 			}
 		}
 	} else {
 		err = b.fs.Rename(fs.DirToday, filename, checklist, filename)
 		if err != nil {
-			return fmt.Errorf("b.moveToChecklist: %w", err)
+			return fmt.Errorf("move to checklist: %w", err)
 		}
 	}
 
@@ -880,7 +880,7 @@ func (b *Bot) moveToNewDoc(params []string) error {
 
 	err := b.fs.Put("", str.Ucfirst(doc), "")
 	if err != nil {
-		return fmt.Errorf("b.moveToDoc: can't create empty doc: %w", err)
+		return fmt.Errorf("move to doc: can't create empty doc: %w", err)
 	}
 
 	return b.moveToDoc([]string{filenameHash, fs.Hash(doc)})
@@ -892,7 +892,7 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 
 	err := b.fs.Put("", str.Ucfirst(doc), "")
 	if err != nil {
-		return fmt.Errorf("b.moveToDoc: can't create empty doc: %w", err)
+		return fmt.Errorf("move to doc: can't create empty doc: %w", err)
 	}
 
 	return b.moveToDoc([]string{filenameHash, fs.Hash(doc)})
@@ -904,29 +904,29 @@ func (b *Bot) complete(params []string) error {
 
 	filename, err := b.fs.Unhash(dir, filenameHash)
 	if err != nil {
-		return fmt.Errorf("b.complete: can't unhash filename %s: %w", filename, err)
+		return fmt.Errorf("complete: can't unhash filename %s: %w", filename, err)
 	}
 
 	if err = b.fs.Touch(dir, filename); err != nil {
-		return fmt.Errorf("b.complete: can't touch %s: %w", filename, err)
+		return fmt.Errorf("complete: can't touch %s: %w", filename, err)
 	}
 
 	// TODO multiline
 	err = b.fs.Rename(dir, filename, fs.DirTrash, filename)
 	if err != nil {
-		return fmt.Errorf("b.complete: can't complete %s: %w", filename, err)
+		return fmt.Errorf("complete: can't complete %s: %w", filename, err)
 	}
 
 	if dir == fs.DirToday && filename == fs.FilePomodoro {
 		err = b.db.AddToSchedule(b.userID, filename, time.Now().Unix()+int64(b.pomodoroDuration().Seconds()), "")
 		if err != nil {
-			return fmt.Errorf("b.complete: can't add pomodoro task to schedule: %w", err)
+			return fmt.Errorf("complete: can't add pomodoro task to schedule: %w", err)
 		}
 	}
 
 	err = b.showList(nil)
 	if err != nil {
-		return fmt.Errorf("b.copmlete: %w", err)
+		return fmt.Errorf("copmlete: %w", err)
 	}
 
 	return nil
@@ -937,7 +937,7 @@ func (b *Bot) pomodoroDuration() time.Duration {
 	if err == nil {
 		return pomodoroDuration
 	}
-	fmt.Printf("b.complete: can't parse pomodoro duration \"%v\" from the userconfig: %v", b.conf.PomodoroDuration, err)
+	fmt.Printf("can't parse pomodoro duration \"%v\" from the userconfig: %v", b.conf.PomodoroDuration, err)
 	return defaultPomodoroDuration
 }
 
@@ -948,22 +948,22 @@ func (b *Bot) schedule(params []string) error {
 
 	scheduleTime, err := strconv.ParseInt(timeStr, 10, 64)
 	if err != nil {
-		return fmt.Errorf("b.schedule: can't parse timestamp: %w", err)
+		return fmt.Errorf("schedule: can't parse timestamp: %w", err)
 	}
 
 	filename, err := b.fs.Unhash(fs.DirToday, filenameHash)
 	if err != nil {
-		return fmt.Errorf("b.schedule: can't unhash filename %s in list: %s", filenameHash, err)
+		return fmt.Errorf("schedule: can't unhash filename %s in list: %s", filenameHash, err)
 	}
 
 	err = b.db.AddToSchedule(b.userID, filename, scheduleTime, cron)
 	if err != nil {
-		return fmt.Errorf("b.schedule: can't save schedule for %s: %w", filename, err)
+		return fmt.Errorf("schedule: can't save schedule for %s: %w", filename, err)
 	}
 
 	err = b.fs.Rename(fs.DirToday, filename, fs.DirLater, filename)
 	if err != nil {
-		return fmt.Errorf("b.schedule: can't rename file %s: %w", filename, err)
+		return fmt.Errorf("schedule: can't rename file %s: %w", filename, err)
 	}
 
 	return b.showList(nil)
