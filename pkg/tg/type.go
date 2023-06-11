@@ -52,6 +52,8 @@ type Keyboard struct {
 	Btns []Row
 }
 
+// NewKeyboard accepts a slice of rows.
+// Each row is either a Btn or []Btn
 func NewKeyboard(rows []Row) *Keyboard {
 	return &Keyboard{rows}
 }
