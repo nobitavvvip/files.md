@@ -113,8 +113,6 @@ func mapConfigButtonNamesToRealNames(configNames []string) []string {
 	return realNames
 }
 
-type strDuration time.Duration
-
 func (c *Config) SetPomodoroDuration(value time.Duration) error {
 	if value <= 0 || value > 24*time.Hour {
 		return fmt.Errorf("config.SetPomodoroDuration: value is invalid: %v", value)
