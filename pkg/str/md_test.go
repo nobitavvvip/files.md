@@ -19,7 +19,7 @@ func TestMultilineTextWithMarkdown(t *testing.T) {
 	}
 
 	markdown := EntitiesToMarkdown(text, messageEntities)
-	expectedMarkdown := "header\n_Some text with two italic paragraphs\n\nAlso italic\n\n_*header2\n*_italic\n_`code\n\n`header3\njust text"
+	expectedMarkdown := "header\n*Some text with two italic paragraphs\n\nAlso italic\n\n***header2\n***italic\n*`code\n\n`header3\njust text"
 	r.Equal(expectedMarkdown, markdown)
 }
 
@@ -32,6 +32,6 @@ func TestSpacedItalic(t *testing.T) {
 	}
 
 	markdown := EntitiesToMarkdown(text, messageEntities)
-	expectedMarkdown := "Header\nLeverage _one Minute Praising _instead"
+	expectedMarkdown := "Header\nLeverage *one Minute Praising *instead"
 	r.Equal(expectedMarkdown, markdown)
 }

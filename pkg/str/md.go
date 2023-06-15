@@ -30,12 +30,13 @@ func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) s
 	for _, e := range messageEntities {
 		var before, after string
 
+		// https://commonmark.org/help/
 		if e.IsBold() {
+			before = "**"
+			after = "**"
+		} else if e.IsItalic() {
 			before = "*"
 			after = "*"
-		} else if e.IsItalic() {
-			before = "_"
-			after = "_"
 		} else if e.Type == "underline" {
 			before = "__"
 			after = "__"
