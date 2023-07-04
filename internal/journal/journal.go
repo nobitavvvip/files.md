@@ -21,7 +21,6 @@ const (
 )
 
 func AddDailyNote(dir, noteFilename string, botFs *fs.FS, journalFilenameFormat, journalHeaderFormat string) error {
-	// TODO: somehow lock the file
 	content, err := botFs.Content(dir, noteFilename)
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't get note content: %w", err)
