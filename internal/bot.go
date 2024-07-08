@@ -332,7 +332,7 @@ func (b *Bot) createOrAdd(dir, filename, content string) error {
 		content = fmt.Sprintf("%s\n%s", strings.TrimSpace(existingContent), content)
 	}
 
-	if err := b.fs.Put(fs.DirToday, filename, content); err != nil {
+	if err := b.fs.Write(fs.DirToday, filename, content); err != nil {
 		return fmt.Errorf("create: %w", err)
 	}
 
@@ -904,7 +904,7 @@ func (b *Bot) moveToDoc(params []string) error {
 	}
 	docContent += fileContent
 
-	err = b.fs.Put("", doc, docContent)
+	err = b.fs.Write("", doc, docContent)
 	if err != nil {
 		return fmt.Errorf("move to doc: can't save file: %w", err)
 	}
@@ -940,7 +940,7 @@ func (b *Bot) moveToChecklist(params []string) error {
 		content = strings.TrimSpace(txt.NormNewLines(content))
 		lines := strings.Split(content, "\n")
 		for _, line := range lines {
-			err = b.fs.Put(checklist, fs.Filename(line), "")
+			err = b.fs.Write(checklist, fs.Filename(line), "")
 			if err != nil {
 				return fmt.Errorf("move to checklist: %w", err)
 			}
@@ -962,7 +962,7 @@ func (b *Bot) moveToNewDoc(params []string) error {
 	filenameHash := params[0]
 	doc := params[1]
 
-	err := b.fs.Put("", txt.Ucfirst(doc), "")
+	err := b.fs.Write("", txt.Ucfirst(doc), "")
 	if err != nil {
 		return fmt.Errorf("move to doc: can't create empty doc: %w", err)
 	}
@@ -974,7 +974,7 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 	filenameHash := params[0]
 	doc := params[1]
 
-	err := b.fs.Put("", txt.Ucfirst(doc), "")
+	err := b.fs.Write("", txt.Ucfirst(doc), "")
 	if err != nil {
 		return fmt.Errorf("move to doc: can't create empty doc: %w", err)
 	}

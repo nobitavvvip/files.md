@@ -22,7 +22,7 @@ func TestRead(t *testing.T) {
 
 	botFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	botFS.Put(fs.DirInsights,  "1970 Habits.md",  monthMD)
+	botFS.Write(fs.DirInsights, "1970 Habits.md", monthMD)
 
 	habits, err := ReadHabits(botFS, 1970)
 	r.NoError(err)
@@ -47,7 +47,7 @@ func TestReadLastMonthHabits(t *testing.T) {
 
 	botFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	botFS.Put(fs.DirInsights,  "1970 Habits.md",  lastMonthMD)
+	botFS.Write(fs.DirInsights, "1970 Habits.md", lastMonthMD)
 
 	habits, err := ReadHabits(botFS, 1970)
 	r.NoError(err)

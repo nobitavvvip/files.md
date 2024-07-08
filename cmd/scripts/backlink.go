@@ -110,7 +110,7 @@ func main() {
 					continue
 				}
 
-				err = fsys.Put(dir, note+".md", fmt.Sprintf("%s\n[[%s]]", strings.TrimSpace(content), link))
+				err = fsys.Write(dir, note+".md", fmt.Sprintf("%s\n[[%s]]", strings.TrimSpace(content), link))
 				if err != nil {
 					fmt.Printf("Can't put to file: %s", err)
 					return

@@ -40,5 +40,5 @@ func AddRecord(botFs *fs.FS, noteFilename string) error {
 
 	md = fmt.Sprintf("%s\n%s %s\n", md, now().Format("`13:01`"), record)
 
-	return botFs.Put(fs.DirJournal, journalFilename, md)
+	return botFs.Write(fs.DirJournal, journalFilename, md)
 }

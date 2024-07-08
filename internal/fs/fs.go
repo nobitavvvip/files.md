@@ -125,7 +125,7 @@ func (fs FS) Read(dir, filename string) (string, error) {
 	return string(content), nil
 }
 
-func (fs FS) Put(dir, filename, content string) error {
+func (fs FS) Write(dir, filename, content string) error {
 	path := fs.Path(dir, filename)
 	if !fs.isSafe(path) {
 		return fmt.Errorf("put: unsafe path '%s': %w", path, errUnsafePath)
@@ -588,7 +588,7 @@ func (fs FS) Touch(dir, filename string) error {
 		}
 		return nil
 	}
-	err = fs.Put(dir, filename, "")
+	err = fs.Write(dir, filename, "")
 	if err != nil {
 		return fmt.Errorf("touch: can't create empty file: %w", err)
 	}

@@ -87,14 +87,14 @@ func TestIsMultiline(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("today", "First task.md", "")
+	err := fs.Write("today", "First task.md", "")
 	r.NoError(err)
 
 	isMultiline, err := fs.IsMultiline("today", "First task.md")
 	r.NoError(err)
 	r.False(isMultiline)
 
-	err = fs.Put("today", "Second task.md", "c")
+	err = fs.Write("today", "Second task.md", "c")
 	r.NoError(err)
 
 	isMultiline, err = fs.IsMultiline("today", "Second task.md")
@@ -106,7 +106,7 @@ func TestGetFilesInDir(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("today", "First task.md", "")
+	err := fs.Write("today", "First task.md", "")
 	r.NoError(err)
 
 	files, err := fs.FilesAndDirs("today")
@@ -119,7 +119,7 @@ func TestRestoreMsgTextFromFilename(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("", "File.md", "")
+	err := fs.Write("", "File.md", "")
 	r.NoError(err)
 
 	msg, err := fs.RestoreContent("", "File.md")
@@ -131,7 +131,7 @@ func TestRestoreMsgTextFromFilenameAndContent(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("", "Title.md", "Content")
+	err := fs.Write("", "Title.md", "Content")
 	r.NoError(err)
 
 	msg, err := fs.RestoreContent("", "Title.md")
@@ -143,7 +143,7 @@ func TestRestoreMsgTextFromLongFilenameAndContent(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("", "Title....md", "Title and Content")
+	err := fs.Write("", "Title....md", "Title and Content")
 	r.NoError(err)
 
 	msg, err := fs.RestoreContent("", "Title....md")
@@ -155,7 +155,7 @@ func TestRestoreMsgTextFromFilenameWithSpaces(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("", " File.md ", "")
+	err := fs.Write("", " File.md ", "")
 	r.NoError(err)
 
 	msg, err := fs.RestoreContent("", " File.md ")
@@ -197,10 +197,10 @@ func TestSortByCtime(t *testing.T) {
 	}
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("today", "b.md", "")
+	err := fs.Write("today", "b.md", "")
 	r.NoError(err)
 
-	err = fs.Put("today", "a.md", "")
+	err = fs.Write("today", "a.md", "")
 	r.NoError(err)
 
 	entries, err := fs.FilesAndDirs("today")
@@ -213,7 +213,7 @@ func TestExcludeEverythingButUserDirs(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("", "a.md", "")
+	err := fs.Write("", "a.md", "")
 	r.NoError(err)
 
 	err = fs.MakeDir("dir")
@@ -231,7 +231,7 @@ func TestOnlyFiles(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("", "a.md", "")
+	err := fs.Write("", "a.md", "")
 	r.NoError(err)
 
 	err = fs.MakeDir("dir")
@@ -249,7 +249,7 @@ func TestOnlyChecklists(t *testing.T) {
 	r := require.New(t)
 
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("today", "a.md", "")
+	err := fs.Write("today", "a.md", "")
 	r.NoError(err)
 
 	err = fs.MakeDir("-list-")
@@ -282,7 +282,7 @@ func TestFS_TouchNew(t *testing.T) {
 func TestFS_TouchExisting(t *testing.T) {
 	r := require.New(t)
 	fs, _ := NewFS("/", afero.NewMemMapFs())
-	err := fs.Put("today", "a.md", "A")
+	err := fs.Write("today", "a.md", "A")
 	r.NoError(err)
 
 	path := fs.Path("today", "a.md")

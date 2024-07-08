@@ -110,7 +110,7 @@ func TestAddTaskToLater(t *testing.T) {
 	r.NoError(err)
 	r.NoError(fsys.CreateUserDirs())
 
-	err = fsys.Put("today", "First task.md", "")
+	err = fsys.Write("today", "First task.md", "")
 	r.NoError(err)
 
 	tgram := fake.NewTG()
@@ -139,7 +139,7 @@ func TestCompleteTask(t *testing.T) {
 	fsys, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 
-	err = fsys.Put("today", "First task.md", "")
+	err = fsys.Write("today", "First task.md", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -167,9 +167,9 @@ func TestToday(t *testing.T) {
 
 	fsys, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = fsys.Put("today", "First task.md", "")
+	err = fsys.Write("today", "First task.md", "")
 	r.NoError(err)
-	err = fsys.Put("today", "Second task", "")
+	err = fsys.Write("today", "Second task", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -215,9 +215,9 @@ func TestLater(t *testing.T) {
 
 	fsys, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = fsys.Put("later", "First task.md", "")
+	err = fsys.Write("later", "First task.md", "")
 	r.NoError(err)
-	err = fsys.Put("later", "Second task", "")
+	err = fsys.Write("later", "Second task", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -264,9 +264,9 @@ func TestTodayWithMultilineTasks(t *testing.T) {
 
 	fsys, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = fsys.Put("today", "First task.md", "content")
+	err = fsys.Write("today", "First task.md", "content")
 	r.NoError(err)
-	err = fsys.Put("today", "Second task", "")
+	err = fsys.Write("today", "Second task", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -295,9 +295,9 @@ func TestDocs(t *testing.T) {
 	r.NoError(err)
 	err = fsys.CreateUserDirs()
 	r.NoError(err)
-	err = fsys.Put("", "Doc1.md", "")
+	err = fsys.Write("", "Doc1.md", "")
 	r.NoError(err)
-	err = fsys.Put("", "Doc2.md", "")
+	err = fsys.Write("", "Doc2.md", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -353,7 +353,7 @@ func TestAddSingleItemToChecklist(t *testing.T) {
 	r.NoError(err)
 	err = fsys.MakeDir("-checklist1-")
 	r.NoError(err)
-	err = fsys.Put("today", "Item.md", "")
+	err = fsys.Write("today", "Item.md", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -382,7 +382,7 @@ func TestAddMultipleItemsToChecklist(t *testing.T) {
 	r.NoError(err)
 	err = fsys.MakeDir("-checklist1-")
 	r.NoError(err)
-	err = fsys.Put("today", "Item.md", "item2\nitem3\n\n")
+	err = fsys.Write("today", "Item.md", "item2\nitem3\n\n")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
@@ -533,7 +533,7 @@ func TestBot_todayLabelIcons(t *testing.T) {
 	r.Contains(label, "🍅")
 
 	// Pomodoro and another task in today
-	r.Nil(b.fs.Put(fs.DirToday, "Item.md", ""))
+	r.Nil(b.fs.Write(fs.DirToday, "Item.md", ""))
 	label, err = b.todayLabel()
 	r.NoError(err)
 	r.NotContains(label, "🌴")
@@ -558,9 +558,9 @@ func makeBot(t *testing.T, conf *userconfig.Config) (*Bot, *fake.TG, *require.As
 	r := require.New(t)
 	fsys, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = fsys.Put("today", "First task.md", "")
+	err = fsys.Write("today", "First task.md", "")
 	r.NoError(err)
-	err = fsys.Put("later", "Second task", "")
+	err = fsys.Write("later", "Second task", "")
 	r.NoError(err)
 
 	redis, err := miniredis.Run()
