@@ -61,6 +61,13 @@ func ReadHabits(botFS *fs.FS, year int) (map[string]Year, error) {
 			continue
 		}
 
+		// Tolerant reader, if we encounter gibberish,
+		// we skip it. See ADRs in README.md for details for details
+		isHabbitLine := strings.ContainsAny(line, fmt.Sprintf("%s%s", habitSkipped, habitCompleted))
+		if !isHabbitLine {
+			continue
+		}
+
 		// At this point we are on habits line, which is
 		// [⚪️🟢... Habit name] i.e. completion status
 		// for every day of the above found month
