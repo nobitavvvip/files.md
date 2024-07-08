@@ -78,7 +78,7 @@ func NewFS(rootPath string, backend afero.Fs) (*FS, error) {
 }
 
 func (fs FS) CreateUserDirs() error {
-	for _, dir := range []string{DirArchive, DirToday, DirLater, DirInbox, DirImg, DirRead, DirWatch, DirShop} {
+	for _, dir := range []string{DirArchive, DirToday, DirLater, DirInbox, DirImg, DirRead, DirWatch, DirShop, DirInsights} {
 		path := fmt.Sprintf("%s/%s", fs.rootPath, dir)
 		path = strings.ReplaceAll(path, "//", "/")
 		exists, err := afero.Exists(fs.backend, path)

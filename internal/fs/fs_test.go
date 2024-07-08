@@ -178,7 +178,7 @@ func TestCreateBaseDirs(t *testing.T) {
 	dirs = OnlyDirs(dirs)
 	dirNames := OnlyFilenames(dirs)
 
-	r.ElementsMatch([]string{"later", "today", "_archive_", "-read-", "-shop-", "-watch-", "img", "inbox"}, dirNames)
+	r.ElementsMatch([]string{"later", "today", "_archive_", "-read-", "-shop-", "-watch-", "img", "inbox", "insights"}, dirNames)
 }
 
 func TestSortByCtime(t *testing.T) {

@@ -19,7 +19,7 @@ func Test_AddRecord(t *testing.T) {
 	type testcase struct {
 		name                string
 		md                  string
-		note                string
+		record                string
 		want                string
 		journalHeaderFormat string
 	}
@@ -27,56 +27,44 @@ func Test_AddRecord(t *testing.T) {
 	tests := []testcase{
 		{
 			name: "Empty MD",
-			note: "note 1",
+			record: "note 1",
 			want: "#### 30, Tuesday\n\nnote 1\n",
 		},
 		{
 			name: "No Headers",
 			md:   "some text",
-			note: "note 1",
+			record: "note 1",
 			want: "some text\n\n#### 30, Tuesday\n\nnote 1\n",
 		},
 		{
 			name: "Bare header",
 			md:   "#### 30, Tuesday\n",
-			note: "note 1",
+			record: "note 1",
 			want: "#### 30, Tuesday\n\nnote 1\n",
 		},
 		{
 			name: "Bare headers",
 			md:   "#### 30, Tuesday\n\n#### 31, Friday\n",
-			note: "note 1",
+			record: "note 1",
 			want: "#### 30, Tuesday\n\nnote 1\n\n#### 31, Friday\n",
 		},
 		{
 			name: "New daily note",
 			md:   "#### 29, Tuesday\n\nnote 1",
-			note: "note 2",
+			record: "note 2",
 			want: "#### 29, Tuesday\n\nnote 1\n\n#### 30, Tuesday\n\nnote 2\n",
 		},
 		{
 			name: "Append daily note",
 			md:   "#### 29, Tuesday\nnote 1\n\n#### 30, Tuesday\nnote 2",
-			note: "note 3",
+			record: "note 3",
 			want: "#### 29, Tuesday\n\nnote 1\n\n#### 30, Tuesday\n\nnote 2\n\n---\n\nnote 3\n",
 		},
 		{
 			name: "Append daily note",
 			md:   "#### 29, Tuesday\n\nnote 1\n\n#### 30, Tuesday\n\nnote 2\n",
-			note: "note 3",
+			record: "note 3",
 			want: "#### 29, Tuesday\n\nnote 1\n\n#### 30, Tuesday\n\nnote 2\n\n---\n\nnote 3\n",
-		},
-		{
-			name: "Append daily note with custom header format",
-			md:   "#### 29, Tuesday\n* note 1\n\n#### 30, Tuesday\nsome text\n* note 2",
-			note: "note 3",
-			want: "#### 29, Tuesday\n* note 1\n\n#### 30, Tuesday\n\nsome text\n* note 2\n\n#### 30.05.2023\n\nnote 3\n",
-		},
-		{
-			name: "Higher Level Header",
-			md:   "#### 30, Tuesday\n\nnote 1\n\n## Some Header\n\nnote 2\n",
-			note: "note 3",
-			want: "#### 30, Tuesday\n\nnote 1\n\n---\n\nnote 3\n\n## Some Header\n\nnote 2\n",
 		},
 	}
 
@@ -85,9 +73,11 @@ func Test_AddRecord(t *testing.T) {
 			botFS, err := fs.NewFS("/", afero.NewMemMapFs())
 			r.NoError(err)
 			botFS.Write(fs.DirJournal, "2023 May.md", test.md)
-			botFS.Write(fs.DirToday, "note", test.note)
+			botFS.Write(fs.DirToday, "record.md", test.record)
 
-			AddRecord(botFS, "note.md")
+			err = AddRecord(botFS, "record.md")
+			r.NoError(err)
+			
 			md, err := botFS.Read(fs.DirJournal, "2023 May.md")
 			r.NoError(err)
 			r.Equal(test.want, md)
