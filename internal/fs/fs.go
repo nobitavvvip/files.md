@@ -350,6 +350,7 @@ func (fs FS) isSafe(path string) (bool, error) {
 		if err != nil {
 			return false, fmt.Errorf("safety can't be checked, fs should support lstat: %w", err)
 		}
+		// On MacOS dangling symlinks have drwxr-xr-x stats (i.e. treated as directory)
 		if stat.Mode()&os.ModeSymlink != 0 {
 			return false, nil
 		}
