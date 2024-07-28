@@ -186,7 +186,7 @@ func TestToday(t *testing.T) {
 	r.Equal("<b>2</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
-		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
 		tg.NewBtn("⏳ Later", tg.NewCmd("later", []string{"later"})),
 	},
 	), tgram.SentKeyboard)
@@ -235,7 +235,7 @@ func TestLater(t *testing.T) {
 	r.Equal("⏳ Your tasks for later:", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("comp", []string{"later", "0824149b387"})),
-		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
 		tg.NewBtn("🏠 Today", tg.NewCmd("today", []string{"today"})),
 	},
 	), tgram.SentKeyboard)
@@ -251,7 +251,7 @@ func TestLater_QuickMenuFilled(t *testing.T) {
 	r.NoError(err)
 	r.Equal("⏳ Your tasks for later:", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
 		tg.NewRow(tg.NewBtn("📄", tg.NewCmd("files", []string{})),
 			tg.NewBtn("☑️", tg.NewCmd("checklists", []string{})),
 			tg.NewBtn("🦥", tg.NewCmd("postpone", []string{})),
@@ -285,7 +285,7 @@ func TestTodayWithMultilineTasks(t *testing.T) {
 	r.Equal("<b>2</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("👀 First task", tg.NewCmd("task", []string{"today", "0824149b387"})),
-		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
 		tg.NewBtn("⏳ Later", tg.NewCmd("later", []string{"later"})),
 	},
 	), tgram.SentKeyboard)
@@ -915,13 +915,12 @@ func TestShowLongMessage(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
-	err = bot.show(strings.Repeat("a", 4096) + "b", nil, tg.MarkupHTML)
+	err = bot.show(strings.Repeat("a", 4096)+"b", nil, tg.MarkupHTML)
 	r.NoError(err)
 
 	r.Len(tgram.SentTexts, 2)
 	r.Equal("b", tgram.LastSentText)
 }
-
 
 // When utf8.RuneCountInString(textChunk) == 4096, tg sends the message (len(textChunk) => 7003)
 // if I have 4095 chars and add 🟢, we have 4096 chars and it is ok
@@ -939,7 +938,7 @@ func TestShowLongMessageWithColoredEmojis(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
-	err = bot.show(strings.Repeat("a", 4095) + "🟢", nil, tg.MarkupHTML)
+	err = bot.show(strings.Repeat("a", 4095)+"🟢", nil, tg.MarkupHTML)
 	r.NoError(err)
 
 	r.Len(tgram.SentTexts, 1)
@@ -958,7 +957,7 @@ func TestShowLongMessageWithColoredEmoji(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
-	err = bot.show(strings.Repeat("a", 4095) + "⚪️", nil, tg.MarkupHTML)
+	err = bot.show(strings.Repeat("a", 4095)+"⚪️", nil, tg.MarkupHTML)
 	r.NoError(err)
 
 	r.Len(tgram.SentTexts, 2)
@@ -977,7 +976,7 @@ func TestShowLongMessageSplitByNewLine(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
-	err = bot.show(strings.Repeat("a", 4094) + "\nabc", nil, tg.MarkupHTML)
+	err = bot.show(strings.Repeat("a", 4094)+"\nabc", nil, tg.MarkupHTML)
 	r.NoError(err)
 
 	r.Len(tgram.SentTexts, 2)

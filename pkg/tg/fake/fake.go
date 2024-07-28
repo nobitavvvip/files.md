@@ -61,7 +61,7 @@ func (m *Upd) IsSentViaBot() bool {
 }
 
 type TG struct {
-	SentTexts []string
+	SentTexts      []string
 	LastSentText   string
 	EditedText     string
 	SentKeyboard   *tg.Keyboard

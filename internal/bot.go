@@ -31,7 +31,7 @@ const (
 	inlineResultsCacheTime = 15 // seconds
 	btnsPerRow             = 3
 	maxMsgLength           = 4096 // UTF-8 characters
-	maxMsgsToSend          = 5
+	maxMsgsToSendAtOnce    = 5
 )
 
 // UpdInterface represents incoming user updates
@@ -402,7 +402,7 @@ func (b *Bot) show(text string, kb *tg.Keyboard, markup string) error {
 
 		// If our msg is too long, we send a few messages.
 		// Keyboard is attached to the last one
-		textChunks = textChunks[max(0, len(textChunks)-maxMsgsToSend):]
+		textChunks = textChunks[max(0, len(textChunks)-maxMsgsToSendAtOnce):]
 		lastText, textChunks := textChunks[len(textChunks)-1], textChunks[:len(textChunks)-1]
 		for _, textChunk := range textChunks {
 			_, _ = b.tg.Send(b.userID, textChunk, nil, markup)

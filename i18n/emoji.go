@@ -25,6 +25,7 @@ func LoadEmojiFile() {
 	}
 }
 
+// TODO add split to spaces etc
 func Emojify(str string) string {
 	emoji := Emoji(str)
 	if len(emoji) == 0 {
@@ -48,7 +49,7 @@ func Emoji(str string) string {
 		}
 	}
 
-	for _, word := range strings.Fields(str) {
+	for _, word := range strings.Fields(strLower) {
 		icon, _ := emojisByKeyword[word]
 		if icon != "" {
 			return icon
