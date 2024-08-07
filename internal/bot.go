@@ -162,7 +162,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 	return map[string]func([]string) error{
 		// Direct user commands
 		constants.CmdShowStart:          b.showStart,
-		constants.CmdShowToday:          b.showTodayTasks,
+		constants.CmdShowToday:          b.ShowTodayTasks,
 		constants.CmdShowLater:          b.showLaterTasks,
 		constants.CmdShowFiles:          b.showFiles,
 		constants.CmdShowChecklists:     b.showChecklists,
@@ -488,7 +488,7 @@ func (b *Bot) quickPanelBtns() []tg.Btn {
 	return quickPanelRow
 }
 
-func (b *Bot) showTodayTasks(params []string) error {
+func (b *Bot) ShowTodayTasks(params []string) error {
 	files, err := b.fs.FilesAndDirs(fs.DirToday)
 	if err != nil {
 		return fmt.Errorf("show list: can't get files in %s dir: %w", fs.DirToday, err)
@@ -929,7 +929,7 @@ func (b *Bot) move(params []string) error {
 		return fmt.Errorf("move: can't move: %w", err)
 	}
 
-	return b.showTodayTasks(nil)
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) moveToNewDir(params []string) error {
@@ -950,7 +950,7 @@ func (b *Bot) moveToFile(params []string) error {
 	existingFilenameHash := params[1]
 
 	if filenameHash == existingFilenameHash {
-		return b.showTodayTasks(nil)
+		return b.ShowTodayTasks(nil)
 	}
 
 	filename, err := b.fs.Unhash(fs.DirRoot, filenameHash)
@@ -991,7 +991,7 @@ func (b *Bot) moveToFile(params []string) error {
 		return fmt.Errorf("move to file: can't save file: %w", err)
 	}
 
-	return b.showTodayTasks(nil)
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) moveToChecklist(params []string) error {
@@ -1037,7 +1037,7 @@ func (b *Bot) moveToChecklist(params []string) error {
 	// We can tolerate this
 	_ = b.fs.Del(fs.DirToday, filename)
 
-	return b.showTodayTasks(nil)
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) moveToNewFile(params []string) error {
@@ -1080,7 +1080,7 @@ func (b *Bot) moveToJournal(params []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't delete note: %w", err)
 	}
-	return b.showTodayTasks(nil)
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) complete(params []string) error {
@@ -1106,7 +1106,7 @@ func (b *Bot) complete(params []string) error {
 		b.conf.AddToSchedule(filename, time.Now().Unix()+int64(b.conf.PomodoroDuration().Seconds()), "")
 	}
 
-	err = b.showTodayTasks(nil)
+	err = b.ShowTodayTasks(nil)
 	if err != nil {
 		return fmt.Errorf("copmlete: %w", err)
 	}
@@ -1136,7 +1136,7 @@ func (b *Bot) schedule(params []string) error {
 		return fmt.Errorf("schedule: can't rename file %s: %w", filename, err)
 	}
 
-	return b.showTodayTasks(nil)
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) delAllKeyboards() {
@@ -1369,7 +1369,7 @@ func (b *Bot) togglePomodoro(params []string) error {
 		if err != nil {
 			return fmt.Errorf("toggle pomodoro: failed to show pomodoro hint message %w", err)
 		}
-		return b.showTodayTasks(nil)
+		return b.ShowTodayTasks(nil)
 	}
 
 	// Create Pomodoro task
@@ -1387,7 +1387,7 @@ func (b *Bot) togglePomodoro(params []string) error {
 		return fmt.Errorf("toggle pomodoro: failed to show pomodoro hint message %w", err)
 	}
 
-	return b.showTodayTasks(nil)
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) showSettings(params []string) error {
@@ -1426,7 +1426,7 @@ func (b *Bot) showConfigureQuickPanel(params []string) error {
 
 	kb.AddRow(tg.NewBtn("-", tg.NewCmd(constants.CmdDoNothing, nil)))
 
-	// Step 2. Now, let's fill buttons that are not disabled...
+	// Step 2. now, let's fill buttons that are not disabled...
 	for _, btn := range userconfig.QuickPanelAvailableBtns {
 		// Check if command is enabled
 		btnUsed := false

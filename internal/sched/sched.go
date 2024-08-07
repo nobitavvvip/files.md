@@ -7,7 +7,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-var Now = func() time.Time {
+var now = func() time.Time {
 	return time.Now()
 }
 
@@ -26,8 +26,7 @@ func BeginningOfTheDay(t time.Time) time.Time {
 }
 
 func Tomorrow() int64 {
-	now := time.Now().AddDate(0, 0, 1)
-	tomorrow := now.AddDate(0, 0, 1)
+	tomorrow := now().AddDate(0, 0, 1)
 
 	return BeginningOfTheDay(tomorrow).Unix()
 }
@@ -41,5 +40,5 @@ func Next(crn string) int64 {
 		panic(fmt.Errorf("invalid cron expression %s: %w", crn, err))
 	}
 
-	return sched.Next(Now().UTC()).Unix()
+	return sched.Next(now().UTC()).Unix()
 }

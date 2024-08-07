@@ -77,7 +77,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				err := worker.MoveDueTasksToToday(config.Config.StoragePath, config.Config.ConfigFilename, fsBackend)
+				err := worker.MoveDueTasksToToday(config.Config.StoragePath, config.Config.ConfigFilename, fsBackend, telegram, redis)
 				if err != nil {
 					fmt.Printf("Worker's error: %s\n", err)
 				}

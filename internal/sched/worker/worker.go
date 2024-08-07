@@ -6,16 +6,25 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slog"
 
+	"zakirullin/stuffbot/internal"
+	"zakirullin/stuffbot/internal/db"
 	"zakirullin/stuffbot/internal/fs"
 	"zakirullin/stuffbot/internal/sched"
 	"zakirullin/stuffbot/internal/userconfig"
 	"zakirullin/stuffbot/pkg/txt"
 )
 
-func MoveDueTasksToToday(storagePath, configFilename string, fsBackend afero.Fs) error {
+func MoveDueTasksToToday(
+	storagePath,
+	configFilename string,
+	fsBackend afero.Fs,
+	telegram internal.TGInterface,
+	redis *miniredis.Miniredis,
+) error {
 	rootFS, err := fs.NewFS(storagePath, fsBackend)
 	if err != nil {
 		return fmt.Errorf("schedule worker: can't create FS: %s", err)
@@ -26,7 +35,7 @@ func MoveDueTasksToToday(storagePath, configFilename string, fsBackend afero.Fs)
 		return fmt.Errorf("schedule worker: %w", err)
 	}
 	// TODO release
-	//userDirs = fs.OnlyUserDirs(userDirs)
+	// userDirs = fs.OnlyUserDirs(userDirs)
 
 	for _, userDir := range userDirs {
 		userID, err := strconv.ParseInt(userDir.Name, 10, 64)
@@ -54,6 +63,10 @@ func MoveDueTasksToToday(storagePath, configFilename string, fsBackend afero.Fs)
 			if err != nil {
 				slog.Error("schedule worker: can't move", "err", err)
 			}
+
+			bot := internal.NewBot(userID, telegram, userFS, db.NewDB(redis), userconf)
+			bot.ShowTodayTasks(nil)
+
 			slog.Debug("Scheduled task moved to today", schedule.Filename, "filename")
 			if len(schedule.Cron) != 0 {
 				runAt := sched.Next(schedule.Cron)
