@@ -21,9 +21,9 @@ $ go get ./..
 $ go run ./cmd
 ```
 
-Bot's artifacts can be seen in `storage` folder
+Bot's artifacts can be seen in `storage/<USER_ID>` folder
 
-## How we work
+## How we contribute
 - No long-lived branches except `main`
 - Feature branches are [short-lived](https://trunkbaseddevelopment.com/short-lived-feature-branches/)
 - **We commit often, so pull `main` every once in a while**
@@ -36,12 +36,6 @@ $ git pull
 $ git checkout -b feature/feature_name
 ```
 
-## Bot's artifacts are plain files, yet we differentiate the following types:
-- Tasks: `/today/pay the bills.md` (`today/*.md`, `later/*.md`, `archive/*.md`)
-- Notes: `/brain/brain is the most complex object.md` (`/.*/*.md` also `/inbox/*`)
-- Documents: `/my big project.md` (`/*.md`)
-- Check list items: `/-shop-/cheese.md` (`-*-/*.md`)
-
 ## Glossary
 - `filename` - a filename with extension, like "note.md" (USE THIS AS ID)
 - `title` - an extension-stripped and capitalized filename, like "Note"
@@ -51,6 +45,12 @@ $ git checkout -b feature/feature_name
 - `ctime` - file's ownership, location, file type and permission settings changed time (parent folder rename won't affect). We need this to track file's location changes, like to understand when it was moved to archive
 
 Any file can be uniquely identified by filename and dir. We only support one level of nesting.
+
+## Bot's artifacts are plain files, yet we differentiate the following types:
+- Tasks: `/today/pay the bills.md` (`today/*.md`, `later/*.md`, `archive/*.md`)
+- Notes: `/brain/brain is the most complex object.md` (`/.*/*.md` also `/inbox/*`)
+- Documents: `/my big project.md` (`/*.md`)
+- Check list items: `/-shop-/cheese.md` (`-*-/*.md`)
 
 ## ADRs (Architecture Decision Records)
 - First message in tg has id=1, so we can use -1 as a special value, even though I don't particularly like it :)
@@ -67,14 +67,9 @@ Any file can be uniquely identified by filename and dir. We only support one lev
 - Package db.go doesn't store userID (we often use it separately...) Do we?
 - We can't ucfist filename in fs.Put - what if that was user-created file (outside the bot), i.e. it comes with lowercase
 
-### Dropbox notes
+### Notes about Dropbox
 - Symlink created on server will be synced on client as is (without resolving)
 - Typical file operations usually resolve symlinks so it is vulnerable, and we should use isSafe every time
-
-## Why schedule is stored at once
-To lessen roundrip to redis (is it tangible at all?)
-- in PHP get/set takes 1,2,9 ms sometimes. Connection included
-- do we need to lock?
 
 ## TODO
 - recreate checklists folder instead of coding source dir in name?
@@ -86,14 +81,14 @@ To lessen roundrip to redis (is it tangible at all?)
 - `Maintainability`: The code is easy for a future programmer to modify correctly.  
 - `Consistency`: The code is consistent across the codebase  
 
-Refer to [the following handbook](https://github.com/zakirullin/cognitive-load) for more comprehensive guiding rules.
+Refer to [the following document](https://github.com/zakirullin/cognitive-load) for more comprehensive guiding rules.
 
 ## Guidelines
 - With portability in mind, everything is stored in **plain text files**
 - We write **tests**
 - We don't use get* prefix for methods
-- We don't use panics, errors are part of business logic
-- No generics and iterators
+- No panics, errors are part of business logic
+- No generics and iterators for client code
 - If we are ignoring an error - we leave a WHY comment
 - We wrap errors all the time, we should add method's context
 - We prefer fakes/real implementations over mocks and stubs
