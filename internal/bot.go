@@ -549,7 +549,7 @@ func (b *Bot) showMoveTo(params []string) error {
 		args = append(args, filenameHash)
 		targetFilename := args[0]
 		unhashedTarget, err := b.fs.Unhash(fs.DirRoot, targetFilename)
-		if err != nil {
+		if err == nil {
 			lastRow = append(lastRow, tg.NewBtn(unhashedTarget, tg.NewCmd(quickCmd, args)))
 		}
 	}
