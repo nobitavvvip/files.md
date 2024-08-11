@@ -9,17 +9,20 @@ import (
 )
 
 type Upd struct {
-	id  int64
-	cmd tg.Cmd
-	msg string
+	userID           int64
+	cmd              tg.Cmd
+	msg              string
+	PhotoID          string
+	PhotoCaption     string
+	ReplyToMessageID int
 }
 
-func NewUpd(id int64, msg string) *Upd {
-	return &Upd{id: id, msg: msg}
+func NewUpd(userID int64, msg string) *Upd {
+	return &Upd{userID: userID, msg: msg, ReplyToMessageID: -1}
 }
 
 func NewUpdCmdFake(id int64, cmd tg.Cmd) *Upd {
-	return &Upd{id: id, cmd: cmd}
+	return &Upd{userID: id, cmd: cmd}
 }
 
 func (m *Upd) MsgText() string {
@@ -27,7 +30,7 @@ func (m *Upd) MsgText() string {
 }
 
 func (m *Upd) UserID() int64 {
-	return m.id
+	return m.userID
 }
 
 func (m *Upd) Cmd() *tg.Cmd {
@@ -71,15 +74,19 @@ func (m *Upd) IsSentViaBot() bool {
 }
 
 func (m *Upd) ReplyToMsgID() int {
-	return -1
+	return m.ReplyToMessageID
 }
 
 func (m *Upd) PhotoOrImageID() (string, bool) {
+	if m.PhotoID != "" {
+		return m.PhotoID, true
+	}
+
 	return "", false
 }
 
 func (m *Upd) Caption() string {
-	return ""
+	return m.PhotoCaption
 }
 
 type TG struct {

@@ -5,6 +5,8 @@ import (
 )
 
 type FakeDB struct {
+	DirByMessageID      string
+	FilenameByMessageID string
 }
 
 func NewFakeDB() *FakeDB {

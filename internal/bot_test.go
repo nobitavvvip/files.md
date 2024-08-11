@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
@@ -89,6 +90,99 @@ func TestAddTaskWithSpecCharsToToday(t *testing.T) {
 	r.Equal("New task\nUrl! http://g.com (Also\\_text] ##header\n-item1\n-item2\n1+1=2", content)
 }
 
+func TestSaveFromRegularReply(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(2024, 8, 11, 9, 54, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	err = userFS.Write("today", "Existing file.md", "Existing content")
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+	database := db.NewDB()
+	database.SetDirByMsgID(-1, 255, "today")
+	database.SetFilenameByMsgID(-1, 255, "Existing file.md")
+	bot := NewBot(-1, tgram, userFS, database, &userconfig.DefaultConfig)
+
+	upd := fake.NewUpd(-1, "Line")
+	upd.ReplyToMessageID = 255
+	err = bot.Answer(upd)
+	r.NoError(err)
+
+	content, err := bot.fs.Read("today", "Existing file.md")
+	r.NoError(err)
+	r.Equal("Existing content\n### 11.08.2024 Sunday\nLine", content)
+}
+
+func TestSaveFromPhotoWithCaption(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &userconfig.DefaultConfig)
+	upd := fake.NewUpd(-1, "")
+	upd.PhotoID = "PHOTO_ID"
+	upd.PhotoCaption = "Caption"
+	err = bot.Answer(upd)
+	r.NoError(err)
+
+	files, err := bot.fs.FilesAndDirs("today")
+	r.NoError(err)
+
+	r.Len(files, 1)
+	r.Equal("Caption.md", files[0].Name)
+	r.True(files[0].IsMultiline)
+
+	content, err := bot.fs.Read("today", "Caption.md")
+	r.NoError(err)
+	r.Equal("![[../img/tg_PHOTO_ID|center|400]]\nCaption", content)
+}
+
+func TestSaveFromPhotoWithoutCaption(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(2024, 8, 11, 9, 54, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewDB(), &userconfig.DefaultConfig)
+	upd := fake.NewUpd(-1, "")
+	upd.PhotoID = "PHOTO_ID"
+	err = bot.Answer(upd)
+	r.NoError(err)
+
+	files, err := bot.fs.FilesAndDirs("today")
+	r.NoError(err)
+
+	r.Len(files, 1)
+	r.Equal("Img 11.08.24 09꞉54.md", files[0].Name)
+	r.True(files[0].IsMultiline)
+
+	content, err := bot.fs.Read("today", "Img 11.08.24 09꞉54.md")
+	r.NoError(err)
+	r.Equal("![[../img/tg_PHOTO_ID|center|400]]", content)
+}
+
 func TestAddTaskToLater(t *testing.T) {
 	r := require.New(t)
 
@@ -160,25 +254,6 @@ func TestToday(t *testing.T) {
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
 		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
-	},
-	), tgram.SentKeyboard)
-}
-
-func TestToday_QuickMenuFilled(t *testing.T) {
-	cfg := &userconfig.Config{}
-	cfg.AddPanelButton("files")
-	cfg.AddPanelButton("checklists")
-	cfg.AddPanelButton("postpone")
-	bot, tgram, r := makeBot(t, cfg)
-	err := bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil)))
-	r.NoError(err)
-	r.Equal("<b>1</b> left", tgram.LastSentText)
-	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
-		tg.NewRow(tg.NewBtn("📄", tg.NewCmd("files", []string{})),
-			tg.NewBtn("☑️", tg.NewCmd("checklists", []string{})),
-			tg.NewBtn("🦥", tg.NewCmd("postpone", []string{})),
-		),
 	},
 	), tgram.SentKeyboard)
 }

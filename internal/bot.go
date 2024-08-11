@@ -180,6 +180,7 @@ func (b *Bot) Answer(u UpdInterface) error {
 		return b.saveFromPhoto(u)
 	}
 
+	// Handle regular text messages
 	return b.saveFromRegularMsg(u)
 }
 
@@ -394,10 +395,6 @@ func (b *Bot) saveFromForward(u UpdInterface) error {
 func (b *Bot) addToRepliedFile(replyToMsgID int, newContent string) error {
 	dir := b.db.DirByMsgID(b.userID, replyToMsgID)
 	filename := b.db.FilenameByMsgID(b.userID, replyToMsgID)
-	if dir == "" || filename == "" {
-		// TODO?
-		return nil
-	}
 	allContent, err := b.fs.Read(dir, filename)
 	if err != nil {
 		return fmt.Errorf("add: can't read: %w", err)
@@ -410,7 +407,7 @@ func (b *Bot) addToRepliedFile(replyToMsgID int, newContent string) error {
 		allContent = fmt.Sprintf("%s\n%s", strings.TrimSpace(allContent), newContent)
 	}
 
-	err = b.fs.Write(dir, filename, newContent)
+	err = b.fs.Write(dir, filename, allContent)
 	if err != nil {
 		return fmt.Errorf("add: can't write: %w", err)
 	}
@@ -479,6 +476,7 @@ func (b *Bot) createOrAdd(dir, filename, content string) error {
 	return nil
 }
 
+// Extract title and content from a message
 func (b *Bot) extractTitleAndContent(msg string) (string, string, error) {
 	if len(msg) == 0 {
 		return "", "", fmt.Errorf("extract title: empty msg")
@@ -486,10 +484,9 @@ func (b *Bot) extractTitleAndContent(msg string) (string, string, error) {
 
 	parts := strings.SplitN(msg, "\n", 2)
 	title := txt.Ucfirst(strings.TrimSpace(parts[0]))
-	content := ""
+	content := strings.TrimSpace(title)
 
 	if len(title) > maxTitleLength {
-		content = strings.TrimSpace(title)
 		title = txt.Substr(title, 0, maxTitleLength) + "..."
 	}
 

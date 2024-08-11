@@ -84,8 +84,9 @@ Any file can be uniquely identified by filename and dir. We only support one lev
 Refer to [the following document](https://github.com/zakirullin/cognitive-load) for more comprehensive guiding rules.
 
 ## Guidelines
-- With portability in mind, everything is stored in **plain text files**
 - We write **tests**
+- eXtreme Programming and TDD are highly encouraged
+- With portability in mind, everything is stored in **plain text files**
 - We don't use get* prefix for methods
 - No panics, errors are part of business logic
 - No generics and iterators for client code
