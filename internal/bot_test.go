@@ -184,7 +184,7 @@ func TestSaveFromRegularReply(t *testing.T) {
 
 	content, err := bot.fs.Read("today", "Existing file.md")
 	r.NoError(err)
-	r.Equal("Existing content\n### 11.08.2024 Sunday\nLine", content)
+	r.Equal("### 11.08.2024 Sunday\nLine\nExisting content", content)
 }
 
 func TestSaveFromPhotoWithCaption(t *testing.T) {
@@ -327,7 +327,7 @@ func TestSaveFromReplyPhotoWithCaption(t *testing.T) {
 
 	content, err := bot.fs.Read("today", "Existing file.md")
 	r.NoError(err)
-	r.Equal("Existing content\n### 11.08.2024 Sunday\n![[../img/tg_PHOTO_ID|center|400]]\nCaption", content)
+	r.Equal("### 11.08.2024 Sunday\n![[../img/tg_PHOTO_ID|center|400]]\nCaption\nExisting content", content)
 }
 
 func TestAddTaskToLater(t *testing.T) {

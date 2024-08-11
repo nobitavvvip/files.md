@@ -61,3 +61,35 @@ func TestLcfirstRu(t *testing.T) {
 
 	r.Equal("аБВ", res)
 }
+
+func TestInsertTextAfterHeaderNoHeader(t *testing.T) {
+	r := require.New(t)
+
+	content := InsertTextAfterHeader("### header 1\nitem1\nitem2", "### header 5", "new item")
+
+	r.Equal("### header 5\nnew item\n### header 1\nitem1\nitem2", content)
+}
+
+func TestInsertTextAfterHeader(t *testing.T) {
+	r := require.New(t)
+
+	content := InsertTextAfterHeader("### header 1\nitem1\nitem2\n### header 2", "### header 1", "new item")
+
+	r.Equal("### header 1\nnew item\nitem1\nitem2\n### header 2", content)
+}
+
+func TestInsertTextAfterHeaderInTheMiddle(t *testing.T) {
+	r := require.New(t)
+
+	content := InsertTextAfterHeader("### header 0\n### header 1\nitem1\nitem2\n### header 2", "### header 1", "new item")
+
+	r.Equal("### header 0\n### header 1\nnew item\nitem1\nitem2\n### header 2", content)
+}
+
+func TestInsertTextAfterHeaderInTheMiddleOnlyHeader(t *testing.T) {
+	r := require.New(t)
+
+	content := InsertTextAfterHeader("### header 0\n### header 1\n### header 2", "### header 1", "new item")
+
+	r.Equal("### header 0\n### header 1\nnew item\n### header 2", content)
+}

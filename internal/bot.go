@@ -212,7 +212,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		constants.CmdShowToChecklist:    b.showToChecklist,
 		constants.CmdMove:               b.move,
 		constants.CmdMoveToNewDir:       b.moveToNewDir,
-		constants.CmdMoveToFile:         b.moveToFile,
+		constants.CmdMoveToFile:         b.moveToExistingFile,
 		constants.CmdMoveToNewFile:      b.moveToNewFile,
 		constants.CmdMoveToChecklist:    b.moveToChecklist,
 		constants.CmdMoveToNewChecklist: b.moveToNewChecklist,
@@ -391,19 +391,14 @@ func (b *Bot) saveFromForward(u UpdInterface) error {
 func (b *Bot) addToRepliedFile(replyToMsgID int, newContent string) error {
 	dir := b.db.DirByMsgID(b.userID, replyToMsgID)
 	filename := b.db.FilenameByMsgID(b.userID, replyToMsgID)
-	allContent, err := b.fs.Read(dir, filename)
+	existingContent, err := b.fs.Read(dir, filename)
 	if err != nil {
 		return fmt.Errorf("add: can't read: %w", err)
 	}
 
 	header := fmt.Sprintf("### %s", now().Format("02.01.2006 Monday"))
-	if !strings.Contains(allContent, header) {
-		allContent = fmt.Sprintf("%s\n%s\n%s", strings.TrimSpace(allContent), header, newContent)
-	} else {
-		allContent = fmt.Sprintf("%s\n%s", strings.TrimSpace(allContent), newContent)
-	}
-
-	err = b.fs.Write(dir, filename, allContent)
+	content := txt.InsertTextAfterHeader(existingContent, header, newContent)
+	err = b.fs.Write(dir, filename, content)
 	if err != nil {
 		return fmt.Errorf("add: can't write: %w", err)
 	}
@@ -1038,7 +1033,8 @@ func (b *Bot) moveToNewDir(params []string) error {
 	return b.move([]string{fs.DirInbox, filenameHash, dir})
 }
 
-func (b *Bot) moveToFile(params []string) error {
+// TODO add header
+func (b *Bot) moveToExistingFile(params []string) error {
 	// TODO Remove input expectations if dir is not list
 	filenameHash := params[0]
 	existingFilenameHash := params[1]
@@ -1143,7 +1139,7 @@ func (b *Bot) moveToNewFile(params []string) error {
 		return fmt.Errorf("move to new file: can't create empty doc: %w", err)
 	}
 
-	return b.moveToFile([]string{filenameHash, fs.Hash(filename)})
+	return b.moveToExistingFile([]string{filenameHash, fs.Hash(filename)})
 }
 
 func (b *Bot) moveToNewChecklist(params []string) error {
@@ -1155,7 +1151,7 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 		return fmt.Errorf("move to new checklist: can't create empty doc: %w", err)
 	}
 
-	return b.moveToFile([]string{filenameHash, fs.Hash(checklist)})
+	return b.moveToExistingFile([]string{filenameHash, fs.Hash(checklist)})
 }
 
 func (b *Bot) moveToJournal(params []string) error {

@@ -53,6 +53,7 @@ func NormNewLines(text string) string {
 }
 
 // Spaces-like characters are trimmed out
+// TODO add tests
 func SplitTextIntoChunks(text string, maxLen int) []string {
 	var chunks []string
 
@@ -81,4 +82,12 @@ func SplitTextIntoChunks(text string, maxLen int) []string {
 	chunks = append(chunks, strings.TrimSpace(text))
 
 	return chunks
+}
+
+func InsertTextAfterHeader(existingContent, header, newContent string) string {
+	if !strings.Contains(existingContent, header) {
+		return fmt.Sprintf("%s\n%s\n%s", header, newContent, existingContent)
+	}
+
+	return strings.Replace(existingContent, header, fmt.Sprintf("%s\n%s", header, newContent), 1)
 }
