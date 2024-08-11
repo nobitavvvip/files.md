@@ -20,7 +20,7 @@ const (
 	CmdShowChecklist      = "checklist"
 	CmdCompleteChecklist  = "cc"
 	CmdShowChooseDay      = "to_day"
-	CmdShowToFile         = "to_file"
+	CmdShowMoveToFile     = "to_file"
 	CmdShowToChecklist    = "to_checklist"
 	CmdMoveToDir          = "mv"
 	CmdMoveToNewDir       = "mv_to_new_dir"

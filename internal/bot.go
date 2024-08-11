@@ -212,7 +212,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		constants.CmdShowChecklist:      b.showChecklist,
 		constants.CmdCompleteChecklist:  b.completeChecklist,
 		constants.CmdShowChooseDay:      b.showChooseDay,
-		constants.CmdShowToFile:         b.showToFile,
+		constants.CmdShowMoveToFile:     b.showMoveToFile,
 		constants.CmdShowToChecklist:    b.showToChecklist,
 		constants.CmdMoveToDir:          b.moveToDir,
 		constants.CmdMoveToNewDir:       b.moveToNewDir,
@@ -531,7 +531,7 @@ func (b *Bot) showMoveTo(params []string) error {
 		tg.NewBtn(i18n.StrForTomorrow, tg.NewCmd(constants.CmdSchedule, []string{filenameHash, txt.I64(sched.Tomorrow()), ""})),
 		tg.NewBtn(i18n.StrForLater, tg.NewCmd(constants.CmdMoveToDir, []string{fs.DirLater, fs.DirToday, filenameHash})),
 		tg.NewBtn(i18n.StrForDay, tg.NewCmd(constants.CmdShowChooseDay, []string{filenameHash})),
-		tg.NewBtn(i18n.StrToFile, tg.NewCmd(constants.CmdShowToFile, []string{filenameHash})),
+		tg.NewBtn(i18n.StrToFile, tg.NewCmd(constants.CmdShowMoveToFile, []string{filenameHash})),
 		tg.NewBtn(i18n.StrToJournal, tg.NewCmd(constants.CmdMoveJournal, []string{fs.DirToday, filenameHash})),
 		tg.NewBtn(i18n.StrToChecklist, tg.NewCmd(constants.CmdShowToChecklist, []string{filenameHash})),
 	}
@@ -1350,7 +1350,7 @@ func (b *Bot) forADayKeyboard(filenameHash string) (*tg.Keyboard, error) {
 	return kb, nil
 }
 
-func (b *Bot) showToFile(params []string) error {
+func (b *Bot) showMoveToFile(params []string) error {
 	filenameHash := params[0]
 
 	filename, err := b.fs.Unhash(fs.DirToday, filenameHash)
@@ -1440,7 +1440,7 @@ func (b *Bot) toFileKeyboardButtons(newFilenameHash string) ([]tg.Btn, error) {
 func (b *Bot) toDirKeyboardButtons(filenameHash string) ([]tg.Btn, error) {
 	newBtn := func(dir string) tg.Btn {
 		emojifiedDir := fmt.Sprintf("%s %s", i18n.Emoji("dir"), dir)
-		return tg.NewBtn(emojifiedDir, tg.NewCmd(constants.CmdMoveToDir, []string{dir, fs.DirRoot, filenameHash}))
+		return tg.NewBtn(emojifiedDir, tg.NewCmd(constants.CmdMoveToDir, []string{fs.ShortHash(dir), fs.DirRoot, filenameHash}))
 	}
 
 	dirs, err := b.fs.FilesAndDirs(fs.DirRoot)
@@ -1451,8 +1451,7 @@ func (b *Bot) toDirKeyboardButtons(filenameHash string) ([]tg.Btn, error) {
 
 	var buttons []tg.Btn
 	for _, dir := range dirs {
-		// We use unhashed dir here because we only have 64 bytes for callback_data
-		buttons = append(buttons, newBtn(dir.Hash))
+		buttons = append(buttons, newBtn(dir.Name))
 	}
 
 	return buttons, nil

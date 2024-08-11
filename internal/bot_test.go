@@ -957,11 +957,11 @@ func TestShowToFileNoDirs(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &userconfig.DefaultConfig)
-	err = bot.showToFile([]string{"345fbd7ab08"})
+	err = bot.showMoveToFile([]string{"345fbd7ab08"})
 	r.NoError(err)
 
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn("📄 Note", tg.NewCmd("mf", []string{"345fbd7ab08", "", "345fbd7ab08"}))),
+		tg.NewRow(tg.NewBtn("📄 Note", tg.NewCmd("mf", []string{"345fb", "", "345fbd7ab08"}))),
 	},
 	), tgram.SentKeyboard)
 }
@@ -979,13 +979,13 @@ func TestShowToFile(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &userconfig.DefaultConfig)
-	err = bot.showToFile([]string{"345fbd7ab08"})
+	err = bot.showMoveToFile([]string{"345fbd7ab08"})
 	r.NoError(err)
 
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn("🗂️ dir", tg.NewCmd("mv", []string{"dir", "", "345fbd7ab08"}))),
+		tg.NewRow(tg.NewBtn("🗂️ dir", tg.NewCmd("mv", []string{"73600", "", "345fbd7ab08"}))),
 		tg.NewBtn("Or choose a file:", tg.NewCmd("nothing", nil)),
-		tg.NewRow(tg.NewBtn("📄 Note", tg.NewCmd("mf", []string{"345fbd7ab08", "", "345fbd7ab08"}))),
+		tg.NewRow(tg.NewBtn("📄 Note", tg.NewCmd("mf", []string{"345fb", "", "345fbd7ab08"}))),
 	},
 	), tgram.SentKeyboard)
 }
