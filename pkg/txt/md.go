@@ -221,8 +221,6 @@ func MarkdownToHtml(md string) string {
 		and(openTerm("**"), and(some(or(italicNoCyclic, or(text, code))), closeTerm("**"))),
 		and(openTerm("__"), and(some(or(italicNoCyclic, or(text, code))), closeTerm("__"))),
 	)
-	//italicOrText := or(italic, text)
-	//bold := or(and(openTerm("**"), and(some(italicOrText), closeTerm("**"))), and(openTerm("__"), and(some(italicOrText), closeTerm("__"))))
 
 	span := or(bold, or(italic, or(code, text)))
 	doc := some(span)
