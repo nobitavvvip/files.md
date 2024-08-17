@@ -25,21 +25,20 @@ func TodayReport(userFS *fs.FS, db DBInterface, userID int64) (string, error) {
 
 	var stats []string
 	for _, file := range files {
-		ico := icon(file)
-		stats = append(stats, fmt.Sprintf("%s <b>%s</b>", ico, fs.Title(file)))
+		stats = append(stats, fmt.Sprintf("%s <b>%s</b>", emoji(file), fs.Title(file)))
 	}
 
-	trashedFiles, err := userFS.FilesAndDirs(fs.DirArchive)
+	archivedFiles, err := userFS.FilesAndDirs(fs.DirArchive)
 	if err != nil {
 		return "", fmt.Errorf("stats.TodayReport: can't get trashed files: %w", err)
 	}
-	doneTotal := len(trashedFiles)
+	doneTotal := len(archivedFiles)
 	stats = append(stats, fmt.Sprintf("📊 %d tasks done in total", doneTotal))
 
 	return strings.Join(stats, "\n"), nil
 }
 
-func icon(filename string) string {
+func emoji(filename string) string {
 	if strings.HasPrefix("-read-", filename) {
 		return "📚"
 	}
@@ -85,12 +84,10 @@ func doneToday(userFS *fs.FS, db DBInterface, userID int64, withScheduled bool) 
 	//	return nil, fmt.Errorf("stats.DoneTasks: %w", err)
 	//}
 
-	var todayFiltered []string
-	//for _, todayFile := range todayFiles {
-	//	if _, scheduled := sch[todayFile.Name]; scheduled == withScheduled {
-	//		todayFiltered = append(todayFiltered, todayFile.Title)
-	//	}
-	//}
+	var done []string
+	for _, todayFile := range todayFiles {
+		done = append(done, todayFile.Title)
+	}
 
-	return todayFiltered, nil
+	return done, nil
 }
