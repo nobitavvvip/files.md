@@ -44,6 +44,10 @@ func Substr(input string, start int, length int) string {
 }
 
 func Emoji(emoji, str string) string {
+	if emoji == "" {
+		return str
+	}
+
 	return fmt.Sprintf("%s %s", emoji, str)
 }
 

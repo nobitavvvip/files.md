@@ -384,6 +384,22 @@ func TestCompleteTask(t *testing.T) {
 func TestToday(t *testing.T) {
 	r := require.New(t)
 
+	savedCtime := fs.Ctime
+	defer func() {
+		fs.Ctime = savedCtime
+	}()
+	fs.Ctime = func(fi os.FileInfo) int64 {
+		return 0
+	}
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	err = userFS.Write("today", "First task.md", "")
@@ -408,6 +424,22 @@ func TestToday(t *testing.T) {
 func TestLater(t *testing.T) {
 	r := require.New(t)
 
+	savedCtime := fs.Ctime
+	defer func() {
+		fs.Ctime = savedCtime
+	}()
+	fs.Ctime = func(fi os.FileInfo) int64 {
+		return 0
+	}
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	err = userFS.Write("later", "First task.md", "")
@@ -431,6 +463,22 @@ func TestLater(t *testing.T) {
 }
 
 func TestTodayQuickMenuFilled(t *testing.T) {
+	savedCtime := fs.Ctime
+	defer func() {
+		fs.Ctime = savedCtime
+	}()
+	fs.Ctime = func(fi os.FileInfo) int64 {
+		return 0
+	}
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	cfg := &userconfig.Config{}
 	cfg.AddQuickCmd("files")
 	cfg.AddQuickCmd("checklists")
@@ -452,6 +500,22 @@ func TestTodayQuickMenuFilled(t *testing.T) {
 
 func TestTodayWithMultilineTasks(t *testing.T) {
 	r := require.New(t)
+
+	savedCtime := fs.Ctime
+	defer func() {
+		fs.Ctime = savedCtime
+	}()
+	fs.Ctime = func(fi os.FileInfo) int64 {
+		return 0
+	}
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
@@ -1213,4 +1277,88 @@ func TestShowSchedule(t *testing.T) {
 	r.NoError(err)
 
 	r.Equal("<b>01 January, Thursday</b>\n- Filename", tgram.SentTexts[0])
+}
+
+func TestAngerEmoji(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	file := fs.NewFile("n", "h", "t", 0, false, false, "")
+	r.Equal("", angerEmoji(file))
+
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 23, 59, 59, 999999999, time.UTC)
+	}
+	r.Equal("", angerEmoji(file))
+
+	now = func() time.Time {
+		return time.Date(1970, 1, 2, 0, 0, 0, 0, time.UTC)
+	}
+	r.Equal("🙄", angerEmoji(file))
+
+	now = func() time.Time {
+		return time.Date(1970, 1, 6, 0, 0, 0, 0, time.UTC)
+	}
+	r.Equal("🤬️", angerEmoji(file))
+
+	now = func() time.Time {
+		return time.Date(1970, 1, 7, 0, 0, 0, 0, time.UTC)
+	}
+	r.Equal("🤬️", angerEmoji(file))
+
+	now = func() time.Time {
+		return time.Date(1970, 1, 2, 0, 0, 0, 0, time.UTC)
+	}
+	file = fs.NewFile("n", "h", "t", 24*60*60, false, false, "")
+	r.Equal("", angerEmoji(file))
+
+	now = func() time.Time {
+		return time.Date(1970, 1, 3, 0, 0, 0, 0, time.UTC)
+	}
+	file = fs.NewFile("n", "h", "t", 24*60*60, false, false, "")
+	r.Equal("🙄", angerEmoji(file))
+}
+
+func TestAngerInTodayTasks(t *testing.T) {
+	r := require.New(t)
+
+	savedCtime := fs.Ctime
+	defer func() {
+		fs.Ctime = savedCtime
+	}()
+	fs.Ctime = func(fi os.FileInfo) int64 {
+		return 0
+	}
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 2, 0, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	err = userFS.Write("today", "Angry task.md", "")
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &userconfig.DefaultConfig)
+	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil)))
+	r.NoError(err)
+
+	r.Equal("<b>1</b> left"+wideSpacer, tgram.LastSentText)
+	r.Equal(tg.NewKeyboard([]tg.Row{
+		tg.NewBtn("🙄 Angry task", tg.NewCmd("c", []string{"today", "9c556351f34"})),
+	},
+	), tgram.SentKeyboard)
 }

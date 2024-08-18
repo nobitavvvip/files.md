@@ -594,7 +594,12 @@ func (b *Bot) ShowTodayTasks(params []string) error {
 			btn = tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), fs.UnsanitizeFilename(file.Title)), cmd)
 		} else {
 			cmd := tg.NewCmd(consts.CmdComplete, []string{fs.DirToday, fs.Hash(file.Name)})
-			btn = tg.NewBtn(i18n.Emojify(fs.UnsanitizeFilename(file.Title)), cmd)
+
+			emoji := angerEmoji(file)
+			if emoji == "" {
+				emoji = i18n.Emoji(file.Title)
+			}
+			btn = tg.NewBtn(txt.Emoji(emoji, fs.UnsanitizeFilename(file.Title)), cmd)
 		}
 
 		kb.AddRow(btn)
@@ -1668,8 +1673,13 @@ func extractPlainText(u UpdInterface) string {
 	return txt.Ucfirst(content)
 }
 
-// func (b *Bot) getAngerEmoji(file fs.File) string {
-// 	anger := string[]{"","🙄", "😕","😢","😭","🤬️"}
-// 	index =
+func angerEmoji(file fs.File) string {
+	anger := []string{"", "🙄", "😕", "😢", "😭", "🤬️"}
 
-// }
+	timeDiff := now().Unix() - file.Ctime
+	timeDiff = max(0, timeDiff)
+	daysDiff := (int)(timeDiff / (24 * 60 * 60))
+	daysDiff = min(len(anger)-1, daysDiff)
+
+	return anger[daysDiff]
+}
