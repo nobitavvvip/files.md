@@ -16,17 +16,8 @@ var now = time.Now
 
 // AddRecord adds a record for the current day.
 // Creates a file if there's no one for the current month
-func AddRecord(userFS *fs.FS, noteFilename string) error {
-	record, err := userFS.Read(fs.DirToday, noteFilename)
-	if err != nil {
-		return fmt.Errorf("failed to move to journal: can't get note content: %w", err)
-	}
-
+func AddRecord(userFS *fs.FS, record string) error {
 	record = strings.TrimSpace(record)
-	if len(record) == 0 {
-		record = fs.Title(noteFilename)
-	}
-
 	journalFilename := todayJournalFilename()
 	exists, err := userFS.Exists(fs.DirJournal, journalFilename)
 	if err != nil {

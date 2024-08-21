@@ -25,12 +25,12 @@ func (c *Config) AddMoveToCmd(cmd string) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return fmt.Errorf("can't add move to cmd: can't read config: %w", err)
 	}
 	conf.MoveToCmds = append(conf.MoveToCmds, cmd)
-	err = c.write(c.path, conf)
+	err = c.write(conf)
 	if err != nil {
 		return fmt.Errorf("can't add move to cmd: can't write config: %w", err)
 	}
@@ -39,7 +39,7 @@ func (c *Config) AddMoveToCmd(cmd string) error {
 }
 
 func (c *Config) MoveToCmds() ([]string, error) {
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return nil, fmt.Errorf("can't get move to cmds: can't read config: %w", err)
 	}
@@ -52,7 +52,7 @@ func (c *Config) DelMoveToCmd(cmd string) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return fmt.Errorf("can't del move to cmd: can't read config: %w", err)
 	}
@@ -65,7 +65,7 @@ func (c *Config) DelMoveToCmd(cmd string) error {
 	}
 	conf.MoveToCmds = newCmds
 
-	err = c.write(c.path, conf)
+	err = c.write(conf)
 	if err != nil {
 		return fmt.Errorf("can't del move to cmd: can't write config: %w", err)
 	}

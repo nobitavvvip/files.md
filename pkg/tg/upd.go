@@ -65,6 +65,11 @@ func (u *Upd) Cmd() *Cmd {
 		if entity.IsCommand() {
 			slashedCommand := getTextByOffset(u.raw.Message.Text, entity.Offset, entity.Length)
 			cmd := NewCmd(strings.TrimPrefix(slashedCommand, "/"), nil)
+
+			text := strings.Replace(u.raw.Message.Text, slashedCommand, "", 1)
+			text = strings.TrimSpace(text)
+			cmd.Params = []string{text}
+
 			return &cmd
 		}
 	}

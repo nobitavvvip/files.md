@@ -21,7 +21,12 @@ const (
 	daysInAdvanceForLater = 7 * 24 * time.Hour
 )
 
-func MoveDueTasksToToday(
+var (
+	now = time.Now
+)
+
+// MoveDueTasks moves due tasks from archive to later or today, or from later to today
+func MoveDueTasks(
 	storagePath,
 	configFilename string,
 	fsBackend afero.Fs,
@@ -52,8 +57,7 @@ func MoveDueTasksToToday(
 			continue
 		}
 
-		userconfPath := userFS.UnsafePath("", configFilename)
-		userconf := userconfig.NewConfig(userID, userconfPath)
+		userconf := userconfig.NewConfig(userFS, userID, configFilename)
 
 		schedules, err := userconf.Schedules()
 		if err != nil {
@@ -61,7 +65,7 @@ func MoveDueTasksToToday(
 			continue
 		}
 		for _, schedule := range schedules {
-			secondsLeft := schedule.ScheduledAt - time.Now().Unix()
+			secondsLeft := schedule.ScheduledAt - now().Unix()
 			shouldScheduleForToday := secondsLeft <= 0
 			shouldScheduleForLater := secondsLeft > 0 && secondsLeft <= int64(daysInAdvanceForLater.Seconds())
 			shouldNotSchedule := !shouldScheduleForToday && !shouldScheduleForLater

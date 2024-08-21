@@ -32,7 +32,7 @@ func TestSaveFromTextMsg(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpd(-1, "New task"))
 	r.NoError(err)
 
@@ -55,7 +55,7 @@ func TestSaveFromLongTextMsg(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpd(-1, strings.Repeat("a", 101)))
 	r.NoError(err)
 
@@ -79,7 +79,7 @@ func TestSaveFromTextMsgWithSanitize(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpd(-1, "New task/"))
 	r.NoError(err)
 
@@ -111,7 +111,7 @@ func TestAddMultilineTaskToToday(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpd(-1, "New task\nContent"))
 	r.NoError(err)
 
@@ -135,7 +135,7 @@ func TestAddTaskWithSpecCharsToToday(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpd(-1, "New task\nUrl! http://g.com (Also_text] ##header\n-item1\n-item2\n1+1=2"))
 	r.NoError(err)
 
@@ -171,7 +171,7 @@ func TestSaveFromRegularReply(t *testing.T) {
 	database := db.NewFakeDB()
 	database.SetDirByMsgID(-1, 255, "today")
 	database.SetFilenameByMsgID(-1, 255, "Existing file.md")
-	bot := NewBot(-1, tgram, userFS, database, userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, database, fakeConfig())
 
 	upd := fake.NewUpd(-1, "Line")
 	upd.ReplyToMessageID = 255
@@ -195,7 +195,7 @@ func TestSaveFromPhotoWithCaption(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	upd := fake.NewUpd(-1, "")
 	upd.PhotoID = "PHOTO_ID"
 	upd.PhotoCaption = "Caption"
@@ -222,7 +222,7 @@ func TestSaveFromPhotoWithLongCaption(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	upd := fake.NewUpd(-1, "")
 	upd.PhotoID = "PHOTO_ID"
 	upd.PhotoCaption = strings.Repeat("a", 101)
@@ -242,7 +242,7 @@ func TestSaveFromPhotoWithSanitizedCaption(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	upd := fake.NewUpd(-1, "")
 	upd.PhotoID = "PHOTO_ID"
 	upd.PhotoCaption = "Caption/"
@@ -277,7 +277,7 @@ func TestSaveFromPhotoWithoutCaption(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	upd := fake.NewUpd(-1, "")
 	upd.PhotoID = "PHOTO_ID"
 	err = bot.Answer(upd)
@@ -316,7 +316,7 @@ func TestSaveFromReplyPhotoWithCaption(t *testing.T) {
 	database := db.NewFakeDB()
 	database.SetDirByMsgID(-1, 255, "today")
 	database.SetFilenameByMsgID(-1, 255, "Existing file.md")
-	bot := NewBot(-1, tgram, userFS, database, userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, database, fakeConfig())
 
 	upd := fake.NewUpd(-1, "")
 	upd.PhotoID = "PHOTO_ID"
@@ -342,7 +342,7 @@ func TestAddTaskToLater(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("mv", []string{"later", "today", "0824149b387"})))
 	r.NoError(err)
 
@@ -367,7 +367,7 @@ func TestCompleteTask(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("c", []string{"today", "0824149b387"})))
 	r.NoError(err)
 
@@ -409,7 +409,7 @@ func TestToday(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil)))
 	r.NoError(err)
 
@@ -449,7 +449,7 @@ func TestLater(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("later", nil)))
 	r.NoError(err)
 
@@ -479,7 +479,7 @@ func TestTodayQuickMenuFilled(t *testing.T) {
 		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	}
 
-	cfg := &userconfig.Config{}
+	cfg := fakeConfig()
 	cfg.AddQuickCmd("files")
 	cfg.AddQuickCmd("checklists")
 	cfg.AddQuickCmd("postpone")
@@ -527,7 +527,7 @@ func TestTodayWithMultilineTasks(t *testing.T) {
 	tgram := fake.NewTG()
 
 	upd := fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil))
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(upd)
 	r.NoError(err)
 
@@ -551,7 +551,7 @@ func TestFiles(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("files", nil)))
 	r.NoError(err)
 
@@ -577,7 +577,7 @@ func TestChecklists(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("checklists", nil)))
 	r.NoError(err)
 
@@ -601,7 +601,7 @@ func TestAddSingleItemToChecklist(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("mv_to_chk", []string{"7b72407ca70", "-checklist1-"})))
 	r.NoError(err)
 
@@ -626,7 +626,7 @@ func TestAddMultipleItemsToChecklist(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("mv_to_chk", []string{"7b72407ca70", "-checklist1-"})))
 	r.NoError(err)
 
@@ -647,7 +647,7 @@ func TestShowChecklist(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("checklist", []string{"8d2335b5ff3"})))
 	r.NoError(err)
 
@@ -670,7 +670,7 @@ func TestCompleteItemInChecklist(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("check_comp", []string{"8d2335b5ff3", "7b72407ca70"})))
 	r.NoError(err)
 
@@ -696,8 +696,7 @@ func TestBotTodayLabelIcons(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	tgram := fake.NewTG()
-	config := userconfig.DefaultConfig
-	b := NewBot(-1, tgram, userFS, db.NewFakeDB(), &config)
+	b := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 
 	// Pomodoro is the only task in today
 	r.Nil(b.togglePomodoro(nil))
@@ -725,7 +724,7 @@ func TestBotTodayLabelIcons(t *testing.T) {
 	r.NotContains(label, "🍅")
 }
 
-func makeBot(t *testing.T, conf *userconfig.Config) (*Bot, *fake.TG, *require.Assertions) {
+func makeBot(t *testing.T, conf ConfigInterface) (*Bot, *fake.TG, *require.Assertions) {
 	r := require.New(t)
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
@@ -741,7 +740,7 @@ func makeBot(t *testing.T, conf *userconfig.Config) (*Bot, *fake.TG, *require.As
 }
 
 func TestSettingsMainPanel(t *testing.T) {
-	bot, tgram, r := makeBot(t, userconfig.NewFakeConfig())
+	bot, tgram, r := makeBot(t, fakeConfig())
 	err := bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("settings", nil)))
 	r.NoError(err)
 	r.Equal("Settings:", tgram.LastSentText)
@@ -798,7 +797,7 @@ func TestConfigureQP_Empty_Default(t *testing.T) {
 	}, t)
 }
 
-func TestConfigureQP_Empty_AddDoc(t *testing.T) {
+func TestConfigureQP_Empty_AddFiles(t *testing.T) {
 	RunQuickPanelTc(PrefTableTestCase{
 		[]string{""},
 		fake.NewUpdCmdFake(-1, tg.NewCmd("add_quick", []string{"files"})),
@@ -938,22 +937,6 @@ func TestConfigureQP_Postpone_DelPostpone(t *testing.T) {
 	}, t)
 }
 
-func TestConfigureQP_Empty_DelPostpone(t *testing.T) {
-	RunQuickPanelTc_Error(PrefTableTestCase{
-		[]string{""},
-		fake.NewUpdCmdFake(-1, tg.NewCmd("del_quick", []string{"postpone"})),
-		[]tg.Row{},
-	}, "button doesn't exist in user's prefs: postpone", t)
-}
-
-func TestConfigureQP_Empty_DelUnknown(t *testing.T) {
-	RunQuickPanelTc_Error(PrefTableTestCase{
-		[]string{""},
-		fake.NewUpdCmdFake(-1, tg.NewCmd("del_quick", []string{"wrong"})),
-		[]tg.Row{},
-	}, "button doesn't exist in user's prefs: wrong", t)
-}
-
 func TestConfigureQP_Empty_AddUnknown(t *testing.T) {
 	RunQuickPanelTc_Error(PrefTableTestCase{
 		[]string{""},
@@ -962,50 +945,34 @@ func TestConfigureQP_Empty_AddUnknown(t *testing.T) {
 	}, "unknown command: wrong", t)
 }
 
-func TestConfigureQP_Empty_AddEmpty(t *testing.T) {
-	RunQuickPanelTc_Error(PrefTableTestCase{
-		[]string{""},
-		fake.NewUpdCmdFake(-1, tg.NewCmd("add_quick", []string{})),
-		[]tg.Row{},
-	}, "no params suplied to addToPanel", t)
-}
-
-func TestConfigureQP_Empty_DelEmpty(t *testing.T) {
-	RunQuickPanelTc_Error(PrefTableTestCase{
-		[]string{""},
-		fake.NewUpdCmdFake(-1, tg.NewCmd("del_quick", []string{})),
-		[]tg.Row{},
-	}, "no params suplied to delFromPanel", t)
-}
-
 func RunQuickPanelTc(tc PrefTableTestCase, t *testing.T) {
-	cnf := &userconfig.Config{}
-	for _, opt := range tc.initial_opts {
-		cnf.AddQuickCmd(opt)
+	cnf := fakeConfig()
+	for _, cmd := range tc.existingCmds {
+		cnf.AddQuickCmd(cmd)
 	}
 
 	bot, tgram, r := makeBot(t, cnf)
 
-	err := bot.Answer(tc.cmd_to_execute)
+	err := bot.Answer(tc.updToAnswer)
 	r.NoError(err)
 	r.Equal("Configure quick buttons (➕ = add to quick buttons, ➖ = to remove from quick buttons):", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard(tc.buttons), tgram.SentKeyboard)
 }
 
 func RunQuickPanelTc_Error(tc PrefTableTestCase, expectedErr string, t *testing.T) {
-	cnf := &userconfig.Config{}
-	for _, opt := range tc.initial_opts {
-		cnf.AddQuickCmd(opt)
+	cnf := fakeConfig()
+	for _, cmd := range tc.existingCmds {
+		cnf.AddQuickCmd(cmd)
 	}
 	bot, _, r := makeBot(t, cnf)
-	actualErr := bot.Answer(tc.cmd_to_execute)
+	actualErr := bot.Answer(tc.updToAnswer)
 	r.EqualError(actualErr, expectedErr)
 }
 
 type PrefTableTestCase struct {
-	initial_opts   []string
-	cmd_to_execute *fake.Upd
-	buttons        []tg.Row
+	existingCmds []string
+	updToAnswer  *fake.Upd
+	buttons      []tg.Row
 }
 
 func TestShowToFileNoDirs(t *testing.T) {
@@ -1018,7 +985,7 @@ func TestShowToFileNoDirs(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.showMoveToFile([]string{"345fbd7ab08"})
 	r.NoError(err)
 
@@ -1040,7 +1007,7 @@ func TestShowMoveToFile(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.showMoveToFile([]string{"345fbd7ab08"})
 	r.NoError(err)
 
@@ -1060,7 +1027,7 @@ func TestShow(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.show("text", nil, tg.MarkupHTML)
 	r.NoError(err)
 
@@ -1075,7 +1042,7 @@ func TestShowLongMessage(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.show(strings.Repeat("a", 4096)+"b", nil, tg.MarkupHTML)
 	r.NoError(err)
 
@@ -1094,7 +1061,7 @@ func TestShowLongMessageWithColoredEmojis(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.show(strings.Repeat("a", 4095)+"🟢", nil, tg.MarkupHTML)
 	r.NoError(err)
 
@@ -1109,7 +1076,7 @@ func TestShowLongMessageWithColoredEmoji(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.show(strings.Repeat("a", 4095)+"⚪️", nil, tg.MarkupHTML)
 	r.NoError(err)
 
@@ -1124,7 +1091,7 @@ func TestShowLongMessageSplitByNewLine(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.show(strings.Repeat("a", 4094)+"\nabc", nil, tg.MarkupHTML)
 	r.NoError(err)
 
@@ -1141,7 +1108,7 @@ func TestShowMultilineFile(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("task", []string{fs.DirToday, "501ef2410e2"})))
 	r.NoError(err)
 
@@ -1169,7 +1136,7 @@ func TestMoveToExistingFile(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	upd := fake.NewUpdCmdFake(-1, tg.NewCmd("mf", []string{"1c8f819d075", "", "501ef2410e2"}))
 	err = bot.Answer(upd)
 	r.NoError(err)
@@ -1200,7 +1167,7 @@ func TestMoveToExistingFileExistingRecord(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	upd := fake.NewUpdCmdFake(-1, tg.NewCmd("mf", []string{"1c8f819d075", "", "501ef2410e2"}))
 	err = bot.Answer(upd)
 	r.NoError(err)
@@ -1219,7 +1186,7 @@ func TestShowMoveTo(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpd(-1, "New task\nContent"))
 	r.NoError(err)
 
@@ -1247,7 +1214,7 @@ func TestShowScheduleEmpty(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("schedule", nil)))
 	r.NoError(err)
 
@@ -1270,9 +1237,9 @@ func TestShowSchedule(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	conf := userconfig.DefaultConfig
+	conf := fakeConfig()
 	conf.AddToSchedule("filename.md", 0, "")
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &conf)
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), conf)
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("schedule", nil)))
 	r.NoError(err)
 
@@ -1352,7 +1319,7 @@ func TestAngerInTodayTasks(t *testing.T) {
 
 	tgram := fake.NewTG()
 
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil)))
 	r.NoError(err)
 
@@ -1374,7 +1341,7 @@ func TestMoveToChecklistSplittable(t *testing.T) {
 	r.NoError(err)
 
 	tgram := fake.NewTG()
-	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), userconfig.NewFakeConfig())
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	err = bot.moveToChecklist([]string{"Item1.md", "-checklist-"})
 	r.NoError(err)
 
@@ -1383,4 +1350,58 @@ func TestMoveToChecklistSplittable(t *testing.T) {
 
 	items := fs.OnlyFilenames(files)
 	r.ElementsMatch([]string{"Item1.md", "Item2.md"}, items)
+}
+
+func fakeConfig() ConfigInterface {
+	userFS, _ := fs.NewFS("/-1", afero.NewMemMapFs())
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	cfg.CreateDefaultIfNotExists()
+
+	return cfg
+}
+
+func TestExtractCmd(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, fake.NewTG(), userFS, db.NewFakeDB(), fakeConfig())
+	upd := fake.NewUpd(-1, "/t task for tomorrow")
+	cmd, err := bot.extractCmd(upd)
+	r.NoError(err)
+
+	r.NotNil(cmd)
+	r.Equal("t", cmd.Name)
+	r.Equal([]string{"task for tomorrow"}, cmd.Params)
+}
+
+func TestExtractCmdSkips(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, fake.NewTG(), userFS, db.NewFakeDB(), fakeConfig())
+	upd := fake.NewUpd(-1, "/today task for tomorrow")
+	cmd, err := bot.extractCmd(upd)
+	r.NoError(err)
+
+	r.Nil(cmd)
+}
+
+func TestExtractCmdAtTheEnd(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, fake.NewTG(), userFS, db.NewFakeDB(), fakeConfig())
+	upd := fake.NewUpd(-1, "task for tomorrow /t")
+	cmd, err := bot.extractCmd(upd)
+	r.NoError(err)
+
+	r.NotNil(cmd)
+	r.Equal("t", cmd.Name)
+	r.Equal([]string{"task for tomorrow"}, cmd.Params)
 }

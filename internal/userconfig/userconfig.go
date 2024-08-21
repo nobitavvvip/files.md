@@ -1,12 +1,11 @@
 // Package userconfig stores user's configuration in file.
 // It stores such settings for users as: language, home, quick buttons, schedule and so on.
+// We read every userconfig value from the config file on every access to prevent data race.
 package userconfig
 
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
 	"slices"
 	"sort"
 	"sync"
@@ -15,10 +14,6 @@ import (
 	"zakirullin/stuffbot/internal/consts"
 	"zakirullin/stuffbot/internal/fs"
 )
-
-var DefaultConfig = Config{ // TODO apply default config if some fields are missing
-
-}
 
 var defaultConfig = config{
 	Language: "en",
@@ -42,8 +37,9 @@ var (
 )
 
 type Config struct {
-	userID int64
-	path   string
+	userFS   *fs.FS
+	userID   int64
+	filename string
 }
 
 type Schedule struct {
@@ -62,12 +58,12 @@ type config struct {
 	QuickCmds                 []string   `json:"quickCommands"`
 }
 
-func NewConfig(userID int64, path string) *Config {
-	return &Config{userID: userID, path: path}
+func NewConfig(userFS *fs.FS, userID int64, filename string) *Config {
+	return &Config{userFS: userFS, userID: userID, filename: filename}
 }
 
 func (c *Config) CreateDefaultIfNotExists() error {
-	exists, err := fs.Exists(c.path)
+	exists, err := c.userFS.Exists(fs.DirRoot, c.filename)
 	if err != nil {
 		return fmt.Errorf("can't check whether config exists: %w", err)
 	}
@@ -75,12 +71,7 @@ func (c *Config) CreateDefaultIfNotExists() error {
 		return nil
 	}
 
-	bytes, err := json.MarshalIndent(defaultConfig, "", "    ")
-	if err != nil {
-		return fmt.Errorf("can't marshal default config: %w", err)
-	}
-
-	err = fs.WriteFile(c.path, bytes)
+	err = c.write(defaultConfig)
 	if err != nil {
 		return fmt.Errorf("can't write default config file: %w", err)
 	}
@@ -97,12 +88,12 @@ func (c *Config) SetPomodoroDuration(duration time.Duration) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return fmt.Errorf("set pomodoro duration: can't read config: %w", err)
 	}
 	conf.PomodoroDurationInMinutes = int64(duration.Minutes())
-	err = c.write(c.path, conf)
+	err = c.write(conf)
 	if err != nil {
 		return fmt.Errorf("set pomodoro duration: can't write config: %w", err)
 	}
@@ -111,13 +102,13 @@ func (c *Config) SetPomodoroDuration(duration time.Duration) error {
 }
 
 func (c *Config) PomodoroDuration() time.Duration {
-	conf, _ := c.read(c.path)
+	conf, _ := c.read(c.filename)
 
 	return time.Duration(conf.PomodoroDurationInMinutes * int64(time.Minute))
 }
 
 func (c *Config) Schedules() ([]Schedule, error) {
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return nil, fmt.Errorf("can't get schedules: can't read config: %w", err)
 	}
@@ -136,12 +127,12 @@ func (c *Config) AddToSchedule(filename string, scheduleAt int64, cron string) e
 	lock.Lock()
 	defer lock.Unlock()
 
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return fmt.Errorf("can't add to schedule: can't read config: %w", err)
 	}
 	conf.Schedules = append(conf.Schedules, Schedule{filename, scheduleAt, cron, ""})
-	err = c.write(c.path, conf)
+	err = c.write(conf)
 	if err != nil {
 		return fmt.Errorf("can't add to schedule: can't write config: %w", err)
 	}
@@ -154,7 +145,7 @@ func (c *Config) DelFromSchedule(filename string, scheduledAt int64) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	conf, err := c.read(c.path)
+	conf, err := c.read(c.filename)
 	if err != nil {
 		return fmt.Errorf("can't del from schedule: can't read config: %w", err)
 	}
@@ -168,7 +159,7 @@ func (c *Config) DelFromSchedule(filename string, scheduledAt int64) error {
 	}
 	conf.Schedules = newSchedules
 
-	err = c.write(c.path, conf)
+	err = c.write(conf)
 	if err != nil {
 		return fmt.Errorf("can't del from schedule: can't write config: %w", err)
 	}
@@ -186,7 +177,7 @@ func (c *Config) ShouldSplitChecklist(checklist string) bool {
 }
 
 func (c *Config) read(path string) (config, error) {
-	exists, err := fs.Exists(path)
+	exists, err := c.userFS.Exists(fs.DirRoot, path)
 	if err != nil {
 		return defaultConfig, fmt.Errorf("config load: %w", err)
 	}
@@ -195,19 +186,13 @@ func (c *Config) read(path string) (config, error) {
 		return defaultConfig, nil
 	}
 
-	configFile, err := os.Open(path)
-	if err != nil {
-		return defaultConfig, fmt.Errorf("config load: %w", err)
-	}
-	defer configFile.Close()
-
-	bytes, err := io.ReadAll(configFile)
+	content, err := c.userFS.Read(fs.DirRoot, c.filename)
 	if err != nil {
 		return defaultConfig, fmt.Errorf("config load: %w", err)
 	}
 
 	conf := config{}
-	err = json.Unmarshal(bytes, &conf)
+	err = json.Unmarshal([]byte(content), &conf)
 	if err != nil {
 		return defaultConfig, fmt.Errorf("config load: can't unmarshal: %w", err)
 	}
@@ -215,13 +200,13 @@ func (c *Config) read(path string) (config, error) {
 	return conf, nil
 }
 
-func (c *Config) write(path string, conf config) error {
+func (c *Config) write(conf config) error {
 	bytes, err := json.MarshalIndent(conf, "", "    ")
 	if err != nil {
 		return fmt.Errorf("config save: can't marshal config: %w", err)
 	}
 
-	err = fs.WriteFile(path, bytes)
+	err = c.userFS.Write(fs.DirRoot, c.filename, string(bytes))
 	if err != nil {
 		return fmt.Errorf("config save: can't write config file: %w", err)
 	}

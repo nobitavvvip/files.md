@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -25,7 +24,6 @@ import (
 )
 
 var (
-	DefaultBackend  = afero.NewOsFs()
 	errUnsafePath   = errors.New("unsafe path, possible security issue")
 	errCannotUnhash = errors.New("cannot unhash, maybe the file is missing")
 )
@@ -696,30 +694,4 @@ func SortByCtimeDesc(entries []File) []File {
 	})
 
 	return entries
-}
-
-func Exists(path string) (bool, error) {
-	return afero.Exists(DefaultBackend, path)
-}
-
-func ReadAll(path string) ([]byte, error) {
-	configFile, err := DefaultBackend.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("fs can't readAll: %w", err)
-	}
-	defer configFile.Close()
-
-	bytes, err := io.ReadAll(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("fs can't readAll: %w", err)
-
-	}
-
-	return bytes, nil
-}
-
-// TODO fix permissions?
-// TODO defaultBackend?
-func WriteFile(filename string, data []byte) error {
-	return afero.WriteFile(DefaultBackend, filename, data, 0o644)
 }

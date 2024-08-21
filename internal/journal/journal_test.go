@@ -77,9 +77,8 @@ func TestAddRecord(t *testing.T) {
 			userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 			r.NoError(err)
 			userFS.Write(fs.DirJournal, "2023.05 May.md", test.md)
-			userFS.Write(fs.DirToday, "record.md", test.record)
 
-			err = AddRecord(userFS, "record.md")
+			err = AddRecord(userFS, test.record)
 			r.NoError(err)
 
 			md, err := userFS.Read(fs.DirJournal, "2023.05 May.md")

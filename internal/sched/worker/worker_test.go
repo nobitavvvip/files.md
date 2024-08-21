@@ -1,5 +1,24 @@
 package worker
 
+import (
+	"os"
+	"testing"
+	"time"
+
+	"github.com/spf13/afero"
+	"github.com/stretchr/testify/require"
+
+	"zakirullin/stuffbot/internal/fs"
+	"zakirullin/stuffbot/internal/userconfig"
+	"zakirullin/stuffbot/pkg/tg/fake"
+)
+
+func init() {
+	fs.Ctime = func(fi os.FileInfo) int64 {
+		return 0
+	}
+}
+
 //func TestBot_togglePomodoro(t *testing.T) {
 //	r := require.New(t)
 //	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
@@ -112,3 +131,131 @@ package worker
 //	// pomodoro is not returned back to today
 //	r.True(!pomodoroIn(fs.DirToday) && pomodoroIn(fs.DirArchive))
 //}
+
+func TestMoveDueTasksFromArchive(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 2, 0, 0, 0, 0, time.UTC)
+	}
+
+	fsBackend := afero.NewMemMapFs()
+	userFS, err := fs.NewFS("/-1", fsBackend)
+	r.NoError(err)
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+	userFS.Write("archive", "due task.md", "")
+
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	cfg.CreateDefaultIfNotExists()
+	cfg.AddToSchedule("due task.md", 0, "")
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+	err = MoveDueTasks("/", "config.json", fsBackend, tgram)
+	r.NoError(err)
+
+	exists, err := userFS.Exists("today", "due task.md")
+	r.NoError(err)
+	r.True(exists)
+}
+
+func TestMoveDueTasksFromLater(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 2, 0, 0, 0, 0, time.UTC)
+	}
+
+	fsBackend := afero.NewMemMapFs()
+	userFS, err := fs.NewFS("/-1", fsBackend)
+	r.NoError(err)
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+	userFS.Write("later", "due task.md", "")
+
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	cfg.CreateDefaultIfNotExists()
+	cfg.AddToSchedule("due task.md", 0, "")
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+	err = MoveDueTasks("/", "config.json", fsBackend, tgram)
+	r.NoError(err)
+
+	exists, err := userFS.Exists("today", "due task.md")
+	r.NoError(err)
+	r.True(exists)
+}
+
+func TestMoveDueTasksMovesToLater(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	fsBackend := afero.NewMemMapFs()
+	userFS, err := fs.NewFS("/-1", fsBackend)
+	r.NoError(err)
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+	userFS.Write("archive", "due task.md", "")
+
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	cfg.CreateDefaultIfNotExists()
+	cfg.AddToSchedule("due task.md", 7*24*int64(time.Hour.Seconds()), "")
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+	err = MoveDueTasks("/", "config.json", fsBackend, tgram)
+	r.NoError(err)
+
+	exists, err := userFS.Exists("later", "due task.md")
+	r.NoError(err)
+	r.True(exists)
+}
+
+func TestMoveDueTasksDoesntMove(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	fsBackend := afero.NewMemMapFs()
+	userFS, err := fs.NewFS("/-1", fsBackend)
+	r.NoError(err)
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+	userFS.Write("archive", "due task.md", "")
+
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	cfg.CreateDefaultIfNotExists()
+	cfg.AddToSchedule("due task.md", 7*24*int64(time.Hour.Seconds())+1, "")
+	r.NoError(err)
+
+	tgram := fake.NewTG()
+	err = MoveDueTasks("/", "config.json", fsBackend, tgram)
+	r.NoError(err)
+
+	exists, err := userFS.Exists("archive", "due task.md")
+	r.NoError(err)
+	r.True(exists)
+}

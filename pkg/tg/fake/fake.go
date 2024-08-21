@@ -11,14 +11,14 @@ import (
 type Upd struct {
 	userID           int64
 	cmd              tg.Cmd
-	msg              string
+	Msg              string
 	PhotoID          string
 	PhotoCaption     string
 	ReplyToMessageID int
 }
 
 func NewUpd(userID int64, msg string) *Upd {
-	return &Upd{userID: userID, msg: msg, ReplyToMessageID: -1}
+	return &Upd{userID: userID, Msg: msg, ReplyToMessageID: -1}
 }
 
 func NewUpdCmdFake(id int64, cmd tg.Cmd) *Upd {
@@ -26,7 +26,7 @@ func NewUpdCmdFake(id int64, cmd tg.Cmd) *Upd {
 }
 
 func (m *Upd) MsgText() string {
-	return m.msg
+	return m.Msg
 }
 
 func (m *Upd) UserID() int64 {

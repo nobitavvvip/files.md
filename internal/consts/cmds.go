@@ -50,6 +50,9 @@ const (
 	CmdShowWatchChecklist     = "watch"
 	CmdShowShopChecklist      = "shop"
 	CmdShowSchedule           = "schedule"
+	CmdAddToJournalShortcut   = "j"
+	CmdAddToTomorrowShortcut  = "t"
+	CmdAddToLaterShortcut     = "l"
 
 	CmdInlineQuerySearchEveryWhere = "search"
 	CmdInlineQuerySearchInDir      = "search_dir"

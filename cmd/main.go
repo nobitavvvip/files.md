@@ -70,7 +70,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				err := worker.MoveDueTasksToToday(config.Config.StoragePath, config.Config.ConfigFilename, fsBackend, telegram)
+				err := worker.MoveDueTasks(config.Config.StoragePath, config.Config.ConfigFilename, fsBackend, telegram)
 				if err != nil {
 					fmt.Printf("Worker's error: %s\n", err)
 				}
@@ -90,7 +90,7 @@ func main() {
 
 	// Service
 	tgConfig := tgbotapi.NewUpdate(0)
-	tgConfig.Timeout = 60
+	tgConfig.Timeout = 60 // TODO before release, check if it's enough
 	updates := api.GetUpdatesChan(tgConfig)
 
 	for upd := range updates {
@@ -124,8 +124,8 @@ func main() {
 				return
 			}
 
-			userconfPath := userFS.UnsafePath("", config.Config.ConfigFilename)
-			userconf := userconfig.NewConfig(userID, userconfPath)
+			confFilename := config.Config.ConfigFilename
+			userconf := userconfig.NewConfig(userFS, userID, confFilename)
 			err = userconf.CreateDefaultIfNotExists()
 			if err != nil {
 				slog.Error("Bot error: can't create default user config", "err", err)

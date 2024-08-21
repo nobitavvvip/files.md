@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -254,6 +255,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdAddToMoveToBtns:        b.addToMoveToBtns,
 		consts.CmdDelFromMoveToBtns:      b.delFromMoveToBtns,
 		consts.CmdShowSchedule:           b.showSchedule,
+		consts.CmdAddToJournalShortcut:   b.addToJournalFromShortcut,
 		// Used for button-like separators
 		consts.CmdDoNothing: func(s []string) error { return nil },
 	}
@@ -282,6 +284,21 @@ func (b *Bot) extractCmd(u UpdInterface) (*tg.Cmd, error) {
 		return cmd, nil
 	}
 
+	for _, shortcutCmd := range b.AllowedShortcutCmds() {
+		// Compile the regular expression to match `/t` as a whole word with spaces around it
+		re := regexp.MustCompile(fmt.Sprintf(`\s*/%s\s*\b`, shortcutCmd))
+
+		loc := re.FindStringIndex(u.MsgText())
+		if loc == nil {
+			continue
+		}
+
+		text := u.MsgText()[:loc[0]] + u.MsgText()[loc[1]:]
+		shortCmd := tg.NewCmd(shortcutCmd, []string{strings.TrimSpace(text)})
+
+		return &shortCmd, nil
+	}
+
 	return nil, nil
 }
 
@@ -296,8 +313,19 @@ func (b *Bot) allowedTextCmds() []string {
 		consts.CmdShowChecklists,
 		consts.CmdShowStats,
 		consts.CmdShowSchedule,
+		consts.CmdAddToJournalShortcut,
+		consts.CmdAddToLaterShortcut,
+		consts.CmdAddToTomorrowShortcut,
 		//"help" TODO,
 		//"err" TODO,
+	}
+}
+
+func (b *Bot) AllowedShortcutCmds() []string {
+	return []string{
+		consts.CmdAddToJournalShortcut,
+		consts.CmdAddToLaterShortcut,
+		consts.CmdAddToTomorrowShortcut,
 	}
 }
 
@@ -1265,6 +1293,18 @@ func (b *Bot) moveToJournal(params []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't delete note: %w", err)
 	}
+	return b.ShowTodayTasks(nil)
+}
+
+func (b *Bot) addToJournalFromShortcut(params []string) error {
+	content := params[0]
+
+	// TODO change to pass text
+	err := journal.AddRecord(b.fs, content)
+	if err != nil {
+		return fmt.Errorf("failed to move to journal: can't add note: %w", err)
+	}
+
 	return b.ShowTodayTasks(nil)
 }
 
