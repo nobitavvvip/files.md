@@ -1127,7 +1127,9 @@ func (b *Bot) send(msg string) error {
 }
 
 func (b *Bot) showStart(_ []string) error {
-	return b.send("Welcome!")
+	_ = b.send("Welcome!")
+
+	return b.ShowTodayTasks(nil)
 }
 
 func (b *Bot) moveToDir(params []string) error {
