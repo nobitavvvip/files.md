@@ -112,11 +112,11 @@
     <tr>
         {{ if eq (index $.moods $.currentDay) 0}}
             <td></td>
-            <td class="emoji today" data-habit="Mood" data-day="{{$.currentDay}}" data-status="1">🤕</td>
-            <td class="emoji today" data-habit="Mood" data-day="{{$.currentDay}}" data-status="2">😔</td>
-            <td class="emoji today" data-habit="Mood" data-day="{{$.currentDay}}" data-status="3">😐</td>
-            <td class="emoji today" data-habit="Mood" data-day="{{$.currentDay}}" data-status="4">🙂</td>
-            <td class="emoji today" data-habit="Mood" data-day="{{$.currentDay}}" data-status="5">😊</td>
+            <td class="emoji" data-habit="Mood" data-day="{{$.currentDay}}" data-status="1">🤕</td>
+            <td class="emoji" data-habit="Mood" data-day="{{$.currentDay}}" data-status="2">😔</td>
+            <td class="emoji" data-habit="Mood" data-day="{{$.currentDay}}" data-status="3">😐</td>
+            <td class="emoji" data-habit="Mood" data-day="{{$.currentDay}}" data-status="4">🙂</td>
+            <td class="emoji" data-habit="Mood" data-day="{{$.currentDay}}" data-status="5">😊</td>
             <td></td>
         {{ else }}
             {{ range .moods }}
