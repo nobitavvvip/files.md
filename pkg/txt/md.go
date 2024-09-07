@@ -136,15 +136,15 @@ func zeroOrMore(parser Parser) Parser {
 	}
 }
 
-// markdown incrementally yields when it encounters a *, **, _, __ or `
-func markdown() Parser {
+// nonMarkdown incrementally yields when it encounters a *, **, _, __
+func nonMarkdown() Parser {
 	return func(input string) []token {
-		for i := 0; i < len(input); i++ {
-			if input[i] == '*' || input[i] == '_' || input[i] == '`' {
+		for i, ch := range input {
+			if ch == '*' || ch == '_' {
 				return []token{{input[:i], input[i:]}}
 			}
 		}
-		if len(input) > 0 && (input[len(input)-1] == '*' || input[len(input)-1] != '_' || input[len(input)-1] != '`') {
+		if len(input) > 0 {
 			return []token{{input, ""}}
 		}
 		return nil
@@ -190,11 +190,16 @@ func MDtoHTML(md string) string {
 	reInlineCode := regexp.MustCompile("`(.*?)`")
 	mdWithCode = reInlineCode.ReplaceAllString(mdWithCode, "<code>$1</code>")
 
+	// Convert ### Header to <b>Header</b>
+	// TODO add tests here
+	reHeader := regexp.MustCompile(`^#+\s*(.+)`)
+	mdWithCode = reHeader.ReplaceAllString(mdWithCode, "<b>$1</b>")
+
 	return mdWithCode
 }
 
 func mdParser() Parser {
-	text := markdown()
+	text := nonMarkdown()
 	onlyBold := or(
 		and(openTerm("**"), and(text, closeTerm("**"))),
 		and(openTerm("__"), and(text, closeTerm("__"))),
