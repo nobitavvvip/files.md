@@ -1,12 +1,18 @@
 <img src="https://github.com/zakirullin/files.md/raw/main/docs/go.svg" alt="Files.md Bot logo" title="Files.md Bot" align="right" height="60" />
 
 # Files.md
-A telegram bot for your personal stuff. Everything is stored in plain text files.  
+An application for your personal stuff. Everything is stored locally in plain text files.  
+Can be used as a Telegram bot or as a desktop or mobile app.
 
 [Tasks management bot showcase in Dorofeev's club](https://club.mnogosdelal.ru/post/180/)  
 [Notes taking via bot](https://vas3k.club/post/18815/)
 
-## Spin it up 🚀
+## Spin the app up 🚀
+```bash
+$ make gui
+```
+
+## Spin the Telegram bot up 🤖
 1) Install [Go](https://go.dev/doc/install)
 2) Register new telegram bot via [@BotFather](https://t.me/BotFather)
 3) Copy your bot token to `.env` file (see `.env.example`)
@@ -58,7 +64,7 @@ We differentiate the following types of files (with `/` denoting your root folde
 - Pomodoro: `/today/Took a break.md`
 - Archive: `/archive/*`
 
-### Performance
+## Performance
 The app is  blazing fast :) If you're afraid of using files or mutexes unnecessarily for performance reasons, take a look at this:
 Mutex lock/unlock = `25 ns`
 Read 4K randomly from SSD = `150,000 ns`
