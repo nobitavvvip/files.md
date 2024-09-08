@@ -87,45 +87,29 @@ func MDtoHTML(md string) string {
 // Parser Combinators. Watch an amazing video here: https://youtu.be/dDtZLm7HIJs
 func markdown() Parser {
 	text := notMarkdown()
-	onlyBold := or(
-		and(openTerm("**"), and(text, closeTerm("**"))),
-		and(openTerm("__"), and(text, closeTerm("__"))),
-	)
-	italicNoCyclic := or(
-		and(openTerm("*"), and(oneOrMore(or(
-			onlyBold,
-			text)),
-			closeTerm("*"))),
-		and(openTerm("_"), and(oneOrMore(or(
-			onlyBold,
-			text)),
-			closeTerm("_"))),
-	)
-	onlyItalic := or(
-		and(openTerm("*"), and(text, closeTerm("*"))),
-		and(openTerm("_"), and(text, closeTerm("_"))),
-	)
-	boldNoCyclic := or(
-		and(openTerm("**"), and(oneOrMore(or(
-			onlyItalic,
-			text)),
-			closeTerm("**"))),
-		and(openTerm("__"), and(oneOrMore(or(
-			onlyItalic,
-			text)),
-			closeTerm("__"))),
-	)
-	italic := or(
-		and(openTerm("*"), and(oneOrMore(or(boldNoCyclic, text)), closeTerm("*"))),
-		and(openTerm("_"), and(oneOrMore(or(boldNoCyclic, text)), closeTerm("_"))),
-	)
+
 	bold := or(
-		and(openTerm("**"), and(oneOrMore(or(italicNoCyclic, text)), closeTerm("**"))),
-		and(openTerm("__"), and(oneOrMore(or(italicNoCyclic, text)), closeTerm("__"))),
+		and(openTerm("**"), and(oneOrMore(or(text, italicWithoutBold())), closeTerm("**"))),
+		and(openTerm("__"), and(oneOrMore(or(text, italicWithoutBold())), closeTerm("__"))),
 	)
+
+	italic := or(
+		and(openTerm("*"), and(oneOrMore(or(text, bold)), closeTerm("*"))),
+		and(openTerm("_"), and(oneOrMore(or(text, bold)), closeTerm("_"))),
+	)
+
 	span := or(bold, or(italic, text))
 
 	return oneOrMore(span)
+}
+
+func italicWithoutBold() Parser {
+	text := notMarkdown()
+
+	return or(
+		and(openTerm("*"), and(text, closeTerm("*"))),
+		and(openTerm("_"), and(text, closeTerm("_"))),
+	)
 }
 
 func openTerm(t string) Parser {
