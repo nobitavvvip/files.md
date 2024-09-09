@@ -37,6 +37,7 @@ func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) s
 
 	for _, e := range messageEntities {
 		var before, after string
+		eatNewlines := false // This flag will tell us whether to preserve newlines or not
 
 		if e.IsBold() {
 			before = "**"
@@ -57,6 +58,7 @@ func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) s
 		} else if e.IsPre() {
 			before = "```" + e.Language
 			after = "```"
+			eatNewlines = true // For preformatted code, we will eat the newlines
 			stopEscape(&e)
 		} else if e.IsTextLink() {
 			before = "["
@@ -71,7 +73,7 @@ func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) s
 		isOpen := false
 		spacesToEat := 0
 		for offset, c := range input[e.Offset : e.Offset+e.Length] {
-			if c == RUNE_NEWLINE && isOpen {
+			if c == RUNE_NEWLINE && !eatNewlines && isOpen {
 				insertions[(e.Offset+offset)-spacesToEat] += after
 				isOpen = false
 				spacesToEat = 0

@@ -122,3 +122,15 @@ func TestSkinEmoji(t *testing.T) {
 	md := EntitiesToMarkdown(text, messageEntities)
 	r.Equal("🤘🏾**b**", md)
 }
+
+func TestPre(t *testing.T) {
+	r := require.New(t)
+
+	text := "line1\nline2"
+	messageEntities := []tgbotapi.MessageEntity{
+		{Type: "pre", Offset: 0, Length: 11},
+	}
+
+	md := EntitiesToMarkdown(text, messageEntities)
+	r.Equal("```line1\nline2```", md)
+}
