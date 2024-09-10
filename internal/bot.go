@@ -511,6 +511,7 @@ func (b *Bot) answerFileRequest(msg string) error {
 
 	b.delAllKeyboards()
 
+	// TODO add tests
 	c := b.db.InputExpectation(b.userID)
 	if c != nil {
 		b.db.DelInputExpectation(b.userID)
@@ -525,14 +526,19 @@ func (b *Bot) answerFileRequest(msg string) error {
 		}
 		content = strings.TrimSpace(content)
 		if len(content) == 0 {
-			content = fs.Title(filename)
+			content = fs.Title(newFilename)
 		}
+
+		// No worries if we can't delete - we'll have a redundant file
+		_ = b.fs.Del(fs.DirRoot, newFilename)
 
 		err = b.addToFile(dir, filename, content)
 		if err != nil {
 			return fmt.Errorf("inline query: can't add to file %s: %w", filename, err)
 		}
-		_ = b.showHTML(fmt.Sprintf(i18n.Tr("Saved to %s"), fs.Title(filename)), nil)
+	
+		// Just an informative message
+		_, _ = b.tg.Send(b.userID, fmt.Sprintf(i18n.Tr("Saved to %s"), fs.Title(filename)), nil, tg.MarkupHTML)
 
 		return b.ShowToday(nil)
 	}
