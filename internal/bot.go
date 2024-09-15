@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"regexp"
 	"slices"
 	"strconv"
@@ -161,8 +162,12 @@ func (b *Bot) Answer(u UpdInterface) error {
 		}
 
 		if callbackQueryID, ok := u.CallbackQueryID(); ok {
-			// We can tolerate an error here, that won't affect UX
-			_ = b.tg.AnswerCallbackQuery(callbackQueryID, "")
+			if cmd.Name == consts.CmdComplete {
+				_ = b.tg.AnswerCallbackQuery(callbackQueryID, completedMsg())
+			} else {
+				// We can tolerate an error here, that won't affect UX
+				_ = b.tg.AnswerCallbackQuery(callbackQueryID, "")
+			}
 		}
 
 		return nil
@@ -2124,4 +2129,25 @@ func angerEmoji(file fs.File) string {
 	daysDiff = min(len(anger)-1, daysDiff)
 
 	return anger[daysDiff]
+}
+
+func completedMsg() string {
+	msgs := []string{
+		"Completed! 🚀",
+		"Done! 🎉",
+		"Awesome! 💪",
+		"Great job! 🌟",
+		"Good work! 🎈",
+		"Nice! 🎊",
+		"Fantastic! 🎇",
+		"Excellent! 🎯",
+		"Perfect! 🏆",
+		"Bravo! 👏",
+		"Superb! 🌠",
+		"You did it! ✅",
+		"Nicely done! 🎖",
+		"Nailed it! 🎯",
+	}
+
+	return msgs[rand.Intn(len(msgs))]
 }
