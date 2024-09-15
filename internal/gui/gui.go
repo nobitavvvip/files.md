@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"image/color"
 	"io"
 	"strings"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"zakirullin/stuffbot/internal"
@@ -120,12 +120,10 @@ func (c *ChatGUI) AnswerCallbackQuery(_ string, msg string) error {
 	if len(msg) == 0 {
 		return nil
 	}
-	msg = "🎉"
 
-	toast := canvas.NewText(msg, theme.Color(theme.ColorNamePrimary))
+	toast := canvas.NewText(msg, color.RGBA{R: 0, G: 0, B: 0, A: 30})
 	toast.Alignment = fyne.TextAlignCenter
 	Chat.container.Add(toast)
-	toast.Refresh()
 
 	Chat.window.Canvas().Content()
 	go func() {
