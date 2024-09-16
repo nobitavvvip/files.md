@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"image/color"
 	"io"
 	"strings"
 	"sync"
@@ -213,7 +212,7 @@ func sendMsg() {
 			Chat.updater(tg.NewFakeUpdCmd(1, tg.NewCmd(msg[1:], nil)))
 		} else {
 			removeBotMessages()
-			userMsg := canvas.NewText(msg, color.RGBA{R: 0, G: 0, B: 0, A: 80})
+			userMsg := widget.NewLabel(msg)
 			userMsg.Alignment = fyne.TextAlignTrailing
 			Chat.messages.Add(userMsg)
 			Chat.updater(tg.NewFakeUpd(1, msg))
