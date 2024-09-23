@@ -13,7 +13,7 @@ install:
 check:
 	go fmt ./... && go vet ./... && go test ./...
 
-server:
+init_server:
 	ssh $(host) "\
 		# Path for user files storage \
 		mkdir -p /app/storage && \
