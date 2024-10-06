@@ -654,7 +654,6 @@ func (b *Bot) showMD(probablyInvalidMD string) error {
 	probablyInvalidMD, _, links := txt.ExtractTextImgsLinks(probablyInvalidMD)
 
 	kb := tg.NewKeyboard(nil)
-	kb.AddRow(tg.NewRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil))))
 	for label, link := range links {
 		dir := fs.DirRoot
 		link = strings.TrimSpace(link)
@@ -663,10 +662,12 @@ func (b *Bot) showMD(probablyInvalidMD string) error {
 			dir = parts[0]
 			link = parts[1]
 		}
+		link += fs.FileExt
 
 		cmd := tg.NewCmd(consts.CmdShowFile, []string{fs.Hash(dir), fs.Hash(link)})
 		kb.AddRow(tg.NewRow(tg.NewBtn(txt.Ucfirst(label), cmd)))
 	}
+	kb.AddRow(tg.NewRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil))))
 
 	mid, hasLastKeyboard := b.db.LastKeyboardMsgID(b.userID)
 	textChunks := txt.SplitTextIntoChunks(probablyInvalidMD, maxMsgLength)

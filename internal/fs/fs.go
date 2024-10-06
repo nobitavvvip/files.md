@@ -43,6 +43,8 @@ const (
 	FilePomodoro = "Finished a break.md"
 	FileConfig   = "config.json"
 
+	FileExt = ".md"
+
 	minSearchSimilarity  = 70
 	escapedForwardSlash  = "{|}"
 	escapedBackwardSlash = "{||}"
@@ -369,7 +371,7 @@ func (fs FS) md5(filename string) string {
 }
 
 func Filename(title string) string {
-	return txt.Ucfirst(title) + ".md"
+	return txt.Ucfirst(title) + FileExt
 }
 
 func IsChecklistItem(filename string) bool {
@@ -514,7 +516,7 @@ func Title(filename string) string {
 	stripChecklistChars := regexp.MustCompile(`^-.*?-(.+)`)
 	title := stripChecklistChars.ReplaceAllString(filename, "$1")
 	title = strings.TrimPrefix(strings.TrimSuffix(title, "-"), "-")
-	title = txt.Ucfirst(strings.TrimSuffix(strings.TrimSpace(title), ".md"))
+	title = txt.Ucfirst(strings.TrimSuffix(strings.TrimSpace(title), FileExt))
 
 	return title
 }
@@ -624,7 +626,7 @@ func OnlyMDFiles(entries []File) []File {
 			continue
 		}
 
-		if filepath.Ext(file.Name) != ".md" {
+		if filepath.Ext(file.Name) != FileExt {
 			continue
 		}
 
