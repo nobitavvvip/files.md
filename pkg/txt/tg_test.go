@@ -188,12 +188,21 @@ Other text`,
 			expectedLinks:  map[string]string{},
 		},
 		{
-			name:           "Test with no images and only inline links",
-			input:          "This is a sample text with a link: [[docs/page1|Page1]]",
-			expectedText:   "This is a sample text with a link: `Page1`",
+			name:           "Test old links",
+			input:          `I have been to [[life/Thailand, 2023]]`,
+			expectedText:   "I have been to `Thailand, 2023`",
 			expectedImages: []string{},
 			expectedLinks: map[string]string{
-				"Page1": "docs/page1",
+				"Thailand, 2023": "life/Thailand, 2023",
+			},
+		},
+		{
+			name:           "Test with no images and only inline links",
+			input:          "This is a sample text with a link: [[docs/page1|Page1]]",
+			expectedText:   "This is a sample text with a link: `page1`",
+			expectedImages: []string{},
+			expectedLinks: map[string]string{
+				"page1": "docs/page1",
 			},
 		},
 		{
@@ -204,7 +213,7 @@ Other text`,
 			expectedText:   `Some text here.`,
 			expectedImages: []string{},
 			expectedLinks: map[string]string{
-				"Test Link": "path/to/test",
+				"test": "path/to/test",
 			},
 		},
 		{
@@ -221,8 +230,8 @@ Other text`,
 			expectedText:   `Some text here.`,
 			expectedImages: []string{},
 			expectedLinks: map[string]string{
-				"Test Link":  "path/to/test",
-				"Test Link2": "path/to/test2",
+				"test":  "path/to/test",
+				"test2": "path/to/test2",
 			},
 		},
 
@@ -238,8 +247,8 @@ Text
 			expectedText:   "Some text here.\nText",
 			expectedImages: []string{},
 			expectedLinks: map[string]string{
-				"Test Link":  "path/to/test",
-				"Test Link2": "path/to/test2",
+				"test":  "path/to/test",
+				"test2": "path/to/test2",
 			},
 		},
 		{

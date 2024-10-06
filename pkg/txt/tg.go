@@ -2,6 +2,7 @@ package txt
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode"
@@ -104,21 +105,25 @@ func ExtractTextImgsLinks(text string) (string, []string, map[string]string) {
 
 	// Regular expressions
 	imgRegexp := regexp.MustCompile(`!\[\[(.+?)\]\]`)
-	linkRegexp := regexp.MustCompile(`\[\[(.+?)\|(.+?)\]\]`)
+	linkRegexp := regexp.MustCompile(`\[\[(.+?)\]\]`)
 
 	// Eat bottom links
 	text = NormNewLines(text)
 	lines := strings.Split(text, "\n")
 	var processedLines []string
 	for _, line := range lines {
-		// If the line contains only a link reference, ignore it for now (bottom link)
+		// If the line contains only a link reference, ignore it for now
 		trimmedLine := strings.TrimSpace(line)
 		if !linkRegexp.MatchString(trimmedLine) || trimmedLine != linkRegexp.FindString(line) {
 			processedLines = append(processedLines, line)
 		} else {
 			matches := linkRegexp.FindStringSubmatch(line)
-			if len(matches) == 3 {
-				links[matches[2]] = matches[1]
+			if len(matches) == 2 {
+				content := matches[1]
+				parts := strings.SplitN(content, "|", 2)
+				linkPath := parts[0]
+				linkLabel := filepath.Base(linkPath)
+				links[linkLabel] = linkPath
 			}
 		}
 	}
@@ -128,7 +133,6 @@ func ExtractTextImgsLinks(text string) (string, []string, map[string]string) {
 	text = imgRegexp.ReplaceAllStringFunc(text, func(match string) string {
 		matches := imgRegexp.FindStringSubmatch(match)
 		if len(matches) == 2 {
-			fmt.Printf("%v\n", matches)
 			images = append(images, matches[1])
 			return "🖼"
 		}
@@ -138,10 +142,14 @@ func ExtractTextImgsLinks(text string) (string, []string, map[string]string) {
 	// Process inline links
 	text = linkRegexp.ReplaceAllStringFunc(text, func(match string) string {
 		matches := linkRegexp.FindStringSubmatch(match)
-		fmt.Printf("%v\n", matches)
-		if len(matches) == 3 {
-			links[matches[2]] = matches[1]
-			return "`" + matches[2] + "`"
+		if len(matches) == 2 {
+			content := matches[1]
+			parts := strings.SplitN(content, "|", 2)
+			linkPath := parts[0]
+			linkLabel := filepath.Base(linkPath)
+			links[linkLabel] = linkPath
+
+			return "`" + linkLabel + "`"
 		}
 		return match
 	})
