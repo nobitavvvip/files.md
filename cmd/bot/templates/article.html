@@ -390,12 +390,12 @@ stuff // 🧠+
     <div class="slider-container">
         <input type="range" id="slider" min="1" max="3" value="1" class="slider">
         <div class="slider-container-labels">
-            <span class="desktop">Quick</span>
-            <span class="desktop">Detailed</span>
-            <span class="desktop">Full</span>
-            <span class="mobile">⚡</span>
-            <span class="mobile">👀</span>
-            <span class="mobile">🧐</span>
+            <span class="desktop" data-value="1">Quick</span>
+            <span class="desktop" data-value="2">Detailed</span>
+            <span class="desktop" data-value="3">Full</span>
+            <span class="mobile" data-value="1">⚡</span>
+            <span class="mobile" data-value="2">👀</span>
+            <span class="mobile" data-value="3">🧐</span>
         </div>
     </div>
     <script>
@@ -447,16 +447,16 @@ stuff // 🧠+
             }
             window.scrollTo({
                 top: 0,
-                behavior: 'smooth' // For smooth scrolling, optional
+                behavior: 'smooth'
             });
         });
 
-        document.querySelectorAll('.slider-container-labels span').forEach((label, index) => {
+        document.querySelectorAll('.slider-container-labels span').forEach((label) => {
             label.addEventListener('click', function() {
                 const slider = document.getElementById('slider');
-                slider.value = index + 1; // Set slider value based on the label clicked (1, 2, or 3)
+                slider.value = label.dataset.value;
+                console.log('click', slider.value)
 
-                // Trigger slider input event to update hash and scroll
                 const event = new Event('input', { bubbles: true });
                 slider.dispatchEvent(event);
             });
