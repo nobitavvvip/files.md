@@ -607,10 +607,10 @@ func (b *Bot) restoreMsg(dir, filename string) (string, error) {
 	title := fs.Title(filename)
 	nonTruncatedTitle := strings.TrimRight(title, "...")
 	sanitizedContent := strings.ToLower(fs.SanitizeFilename(msg))
-	filenameHasUniqueContent := !strings.HasPrefix(sanitizedContent, strings.ToLower(nonTruncatedTitle))
+	contentHasNoTitle := !strings.HasPrefix(sanitizedContent, strings.ToLower(nonTruncatedTitle))
 	if len(msg) == 0 {
 		msg = title
-	} else if filenameHasUniqueContent {
+	} else if contentHasNoTitle {
 		msg = fmt.Sprintf("%s\n%s", title, msg)
 	}
 
