@@ -317,18 +317,14 @@ func (b *Bot) extractCmd(u Update) (*tg.Cmd, error) {
 }
 
 func (b *Bot) saveFromRegularMsg(u Update) error {
-	content := extractMarkdown(u)
-	title, err := b.extractTitle(content)
-	if err != nil {
-		return fmt.Errorf("save: %w", err)
-	}
+	msg := extractMarkdown(u)
 
 	// Collapse a few consecutive messages into one, see bot_forwards.go
 	msgTime, updateHasTime := u.Time()
 	if updateHasTime {
 		filename, shouldCollapse := collapseToMsg(b.userID, msgTime)
 		if shouldCollapse {
-			err = b.createOrAdd(fs.DirToday, filename, content)
+			err := b.createOrAdd(fs.DirToday, filename, msg)
 			if err != nil {
 				return fmt.Errorf("save collapsed: %w", err)
 			}
@@ -338,18 +334,12 @@ func (b *Bot) saveFromRegularMsg(u Update) error {
 
 	// Adding to an existing file
 	if replyMsgID, ok := u.ReplyToMsgID(); ok {
-		return b.addToRepliedFile(replyMsgID, content)
+		return b.addToRepliedFile(replyMsgID, msg)
 	}
 
-	sanitizedTitle := fs.SanitizeFilename(title)
-	// If title is the same as content, we don't need to save it
-	if sanitizedTitle == content {
-		content = ""
-	}
-	// If title is already in the content, remove it.
-	// See bot.filenameAndContent method to see how the content is restored.
-	if strings.HasPrefix(content, sanitizedTitle) {
-		content = strings.TrimSpace(strings.TrimPrefix(content, sanitizedTitle))
+	sanitizedTitle, content, err := b.extractTitleAndContent(msg)
+	if err != nil {
+		return fmt.Errorf("save: %w", err)
 	}
 
 	filename := fs.Filename(sanitizedTitle)
@@ -519,7 +509,7 @@ func (b *Bot) answerFileRequest(msg string) error {
 			return b.ShowToday(nil)
 		}
 
-		content, err := b.filenameAndContent(fs.DirRoot, newFilename)
+		content, err := b.restoreMsg(fs.DirRoot, newFilename)
 		if err != nil {
 			return fmt.Errorf("inline query: can't read file %s: %w", newFilename, err)
 		}
@@ -577,9 +567,9 @@ func (b *Bot) createOrAdd(dir, filename, content string) error {
 	return nil
 }
 
-func (b *Bot) extractTitle(msg string) (string, error) {
+func (b *Bot) extractTitleAndContent(msg string) (string, string, error) {
 	if len(msg) == 0 {
-		return "", fmt.Errorf("extract title: empty msg")
+		return "", "", fmt.Errorf("extract title: empty msg")
 	}
 
 	parts := strings.SplitN(msg, "\n", 2)
@@ -589,7 +579,42 @@ func (b *Bot) extractTitle(msg string) (string, error) {
 		title = txt.Substr(title, 0, maxTitleLength) + "..."
 	}
 
-	return title, nil
+	sanitizedTitle := fs.SanitizeFilename(title)
+	content := msg
+	// If title is the same as content, we don't need to save it
+	if sanitizedTitle == content {
+		content = ""
+	}
+	// If title is already in the content, remove it.
+	// See bot.restoreMsg() to see how the message is restored.
+	if strings.HasPrefix(content, sanitizedTitle) {
+		content = strings.TrimSpace(strings.TrimPrefix(content, sanitizedTitle))
+	}
+
+	return sanitizedTitle, content, nil
+}
+
+// If content is empty, use its filename as content.
+// If file has content, add filename to the beginning of the content.
+// If file has content, and filename was truncated (...), no need to add filename.
+// TODO add tests
+func (b *Bot) restoreMsg(dir, filename string) (string, error) {
+	msg, err := b.fs.Read(dir, filename)
+	if err != nil {
+		return "", fmt.Errorf("can't restore msg for '%s': %w", filename, err)
+	}
+
+	title := fs.Title(filename)
+	nonTruncatedTitle := strings.TrimRight(title, "...")
+	sanitizedContent := strings.ToLower(fs.SanitizeFilename(msg))
+	filenameHasUniqueContent := !strings.HasPrefix(sanitizedContent, strings.ToLower(nonTruncatedTitle))
+	if len(msg) == 0 {
+		msg = title
+	} else if filenameHasUniqueContent {
+		msg = fmt.Sprintf("%s\n%s", title, msg)
+	}
+
+	return msg, nil
 }
 
 func (b *Bot) tr(str string, args ...any) string {
@@ -1405,7 +1430,7 @@ func (b *Bot) moveToExistingFile(params []string) error {
 		return fmt.Errorf("move to file: can't unhash new filename '%s': %w", fromFilenameHash, err)
 	}
 
-	content, err := b.filenameAndContent(fromDir, fromFilename)
+	content, err := b.restoreMsg(fromDir, fromFilename)
 	if err != nil {
 		return fmt.Errorf("move to file: can't read content of '%s': %w", fromFilename, err)
 	}
@@ -1451,7 +1476,7 @@ func (b *Bot) moveToExistingNote(params []string) error {
 		return fmt.Errorf("move to existing note:: %w", err)
 	}
 
-	content, err := b.filenameAndContent(fs.DirToday, fromFilename)
+	content, err := b.restoreMsg(fs.DirToday, fromFilename)
 	if err != nil {
 		return fmt.Errorf("move to existing note: can't read file %s: %w", fromFilename, err)
 	}
@@ -1604,7 +1629,7 @@ func (b *Bot) moveToJournal(params []string) error {
 		return fmt.Errorf("move to journal: can't unhash filename: %w", err)
 	}
 
-	content, err := b.filenameAndContent(fs.DirToday, fromFilename)
+	content, err := b.restoreMsg(fs.DirToday, fromFilename)
 	if err != nil {
 		return fmt.Errorf("move to journal: can't read content of '%s': %w", fromFilename, err)
 	}
@@ -2243,29 +2268,6 @@ func (b *Bot) fullMode(_ []string) error {
 	}
 
 	return b.ShowToday(nil)
-}
-
-// If content is empty, use its filename as content.
-// If file has content, add filename to the beginning of the content.
-// If file has content, and filename was truncated (...), no need to add filename.
-// TODO add tests
-func (b *Bot) filenameAndContent(dir, filename string) (string, error) {
-	content, err := b.fs.Read(dir, filename)
-	if err != nil {
-		return "", fmt.Errorf("can't read content of '%s': %w", filename, err)
-	}
-
-	title := fs.Title(filename)
-	nonTruncatedTitle := strings.TrimRight(title, "...")
-	sanitizedContent := strings.ToLower(fs.SanitizeFilename(content))
-	filenameHasUniqueContent := !strings.HasPrefix(sanitizedContent, strings.ToLower(nonTruncatedTitle))
-	if len(content) == 0 {
-		content = title
-	} else if filenameHasUniqueContent {
-		content = fmt.Sprintf("%s\n%s", title, content)
-	}
-
-	return content, nil
 }
 
 func extractMarkdown(u Update) string {
