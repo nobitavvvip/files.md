@@ -97,6 +97,9 @@ type Database interface {
 	SetRecentCommand(userID int64, cmd string)
 	RecentCommandParams(userID int64) ([]string, bool)
 	SetRecentCommandParams(userID int64, params []string)
+	SetImageMsgID(userID int64, msgID int)
+	ImageMsgID(userID int64) (int, bool)
+	DelImageMsgID(userID int64)
 }
 
 // Bot provides commands that can be invoked by a user so to query
@@ -675,7 +678,10 @@ func (b *Bot) showMD(probablyInvalidMD string, kb *tg.Keyboard) error {
 		// Sending a gallery of images if there are any
 		if len(images) > 0 {
 			// We tolerate errors with the image gallery for now, text is more important
-			_, _ = b.tg.SendImages(b.userID, "", images)
+			imgMid, err := b.tg.SendImages(b.userID, "", images)
+			if err != nil {
+				b.db.SetImageMsgID(b.userID, imgMid)
+			}
 		}
 
 		// If our msg is too long, we send maxMsgsToSendAtOnce first messages.
@@ -1860,6 +1866,12 @@ func (b *Bot) delAllKeyboards() {
 	mid, hasLastKeyboard := b.db.LastKeyboardMsgID(b.userID)
 	if hasLastKeyboard {
 		b.db.DelLastKeyboardMsgID(b.userID)
+		msgIDs = append(msgIDs, mid)
+	}
+
+	mid, hasImageSent := b.db.ImageMsgID(b.userID)
+	if hasImageSent {
+		b.db.DelImageMsgID(b.userID)
 		msgIDs = append(msgIDs, mid)
 	}
 

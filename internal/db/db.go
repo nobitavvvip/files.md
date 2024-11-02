@@ -17,6 +17,7 @@ var (
 	inputExpectations     sync.Map
 	recentCommands        sync.Map
 	recentCommandsTargets sync.Map
+	sentImageMsgIDs       sync.Map
 )
 
 // DB Do we need a type at all?
@@ -133,4 +134,28 @@ func filenameByMsgIDKey(userID int64, msgID int) string {
 
 func tmpFilePath(userID int64, name string) string {
 	return fmt.Sprintf("%s/%d.%s", os.TempDir(), userID, name)
+}
+
+func (db *DB) SetImageMsgID(userID int64, msgID int) {
+	sentImageMsgIDs.Store(imageMsgIDKey(userID), msgID)
+}
+
+func (db *DB) ImageMsgID(userID int64) (int, bool) {
+	key := imageMsgIDKey(userID)
+	val, ok := sentImageMsgIDs.Load(key)
+	if !ok {
+		return 0, false
+	}
+
+	msgID, _ := val.(int)
+	return msgID, true
+}
+
+func (db *DB) DelImageMsgID(userID int64) {
+	key := imageMsgIDKey(userID)
+	sentImageMsgIDs.Delete(key)
+}
+
+func imageMsgIDKey(userID int64) string {
+	return fmt.Sprintf("%d:sentImageMsgID", userID)
 }
