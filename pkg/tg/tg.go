@@ -66,6 +66,7 @@ func (tg *TG) SendImages(userID int64, images []string) (int, error) {
 		return 0, fmt.Errorf("tg send images: %w", errNoMediaMessagesSent)
 	}
 
+	// For now we only support one sent message (a gallery of images)
 	return responses[0].MessageID, nil
 }
 
