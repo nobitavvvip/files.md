@@ -2942,7 +2942,6 @@ func TestRestoreMsg_EmptyMessage(t *testing.T) {
 
 	bot := NewBot(-1, nil, userFS, nil, nil)
 
-	// Write an empty message file
 	filename := "Empty.md"
 	err = userFS.Write("today", filename, "")
 	r.NoError(err)
@@ -2960,7 +2959,6 @@ func TestRestoreMsg_ContentWithoutTitle(t *testing.T) {
 
 	bot := NewBot(-1, nil, userFS, nil, nil)
 
-	// Write content without title in it
 	filename := "NewTask.md"
 	content := "Some content that doesn't include the title"
 	err = userFS.Write("today", filename, content)
@@ -2968,7 +2966,7 @@ func TestRestoreMsg_ContentWithoutTitle(t *testing.T) {
 
 	msg, err := bot.restoreMsg("today", filename)
 	r.NoError(err)
-	r.Equal("NewTask\n"+content, msg)
+	r.Equal("NewTask\nSome content that doesn't include the title", msg)
 }
 
 func TestRestoreMsg_ContentWithTitle(t *testing.T) {
@@ -2979,9 +2977,26 @@ func TestRestoreMsg_ContentWithTitle(t *testing.T) {
 
 	bot := NewBot(-1, nil, userFS, nil, nil)
 
-	// Write content with the title in it
 	filename := "Task.md"
 	content := "Task\nDetails about the task"
+	err = userFS.Write("today", filename, content)
+	r.NoError(err)
+
+	msg, err := bot.restoreMsg("today", filename)
+	r.NoError(err)
+	r.Equal(content, msg)
+}
+
+func TestRestoreMsg_ContentWithSanitizedTitle(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, nil, userFS, nil, nil)
+
+	filename := "Task{|}Slash.md"
+	content := "Task/Slash\nDetails about the task"
 	err = userFS.Write("today", filename, content)
 	r.NoError(err)
 
@@ -3008,7 +3023,7 @@ func TestRestoreMsg_WithImage(t *testing.T) {
 	r.Equal(content, msg)
 }
 
-func TestRestoreMsg_FileReadError(t *testing.T) {
+func TestRestoreMsg_WithImageSanitizedFilename(t *testing.T) {
 	r := require.New(t)
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
@@ -3016,8 +3031,12 @@ func TestRestoreMsg_FileReadError(t *testing.T) {
 
 	bot := NewBot(-1, nil, userFS, nil, nil)
 
-	filename := "NonExistent.md"
-	_, err = bot.restoreMsg("today", filename)
-	r.Error(err)
-	r.Contains(err.Error(), fmt.Sprintf("can't restore msg for '%s'", filename))
+	filename := "Caption{|}File"
+	content := "![img](tg_url.jpg)\nCaption/File"
+	err = userFS.Write("today", filename, content)
+	r.NoError(err)
+
+	msg, err := bot.restoreMsg("today", filename)
+	r.NoError(err)
+	r.Equal(content, msg)
 }
