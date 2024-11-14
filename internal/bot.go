@@ -1630,6 +1630,9 @@ func (b *Bot) moveToNewFile(params []string) error {
 		return fmt.Errorf("move to new file: can't create empty file: %w", err)
 	}
 
+	// We can tolerate this
+	_ = journal.AddRecord(b.fs, fmt.Sprintf("📄 %s", fs.Title(filename)), b.cfg.Timezone())
+
 	// TODO test
 	b.db.SetRecentCommand(b.userID, consts.CmdMoveToExistingFile)
 	b.db.SetRecentCommandParams(b.userID, []string{fs.ShortHash(newFilenameFromUserInput), fs.ShortHash(fs.DirToday)})
