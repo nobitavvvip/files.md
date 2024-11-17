@@ -38,6 +38,9 @@ var favicon string
 //go:embed templates/styles.css
 var styles string
 
+//go:embed templates/chat.css
+var chatStyles string
+
 //go:embed templates/tomassanchez.webp
 var img string
 
@@ -101,19 +104,6 @@ func Serve(habitsHost, certDir, logFilename string) {
 }
 
 func setupRouter(router *http.ServeMux, logger *log.Logger) {
-	router.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./editor/editor.index")
-	})
-
-	router.HandleFunc("/app/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/app/" {
-			http.ServeFile(w, r, "./editor/editor.index")
-			return
-		}
-
-		http.StripPrefix("/app/", http.FileServer(http.Dir("./editor"))).ServeHTTP(w, r)
-	})
-
 	// TODO add hashing or secrets
 	// TODO before release habits_v2 => habits
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -167,6 +157,12 @@ func setupRouter(router *http.ServeMux, logger *log.Logger) {
 		w.Header().Set("Content-Type", "text/css")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(styles))
+	})
+
+	router.HandleFunc("/chat.css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(chatStyles))
 	})
 
 	router.HandleFunc("GET /habits_v2/{userID}", func(w http.ResponseWriter, r *http.Request) {
