@@ -86,6 +86,7 @@ type Chat interface {
 	DownloadFile(fileID string, outFile io.Writer) (string, error)
 }
 
+// Database stores per user data like "last sent message id"
 type Database interface {
 	LastKeyboardMsgID() (int, bool)
 	SetLastKeyboardMsgID(ID int)
@@ -1507,7 +1508,6 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	return b.ShowToday(nil)
 }
 
-// TODO add tests
 // Move from today to existing note
 func (b *Bot) moveToExistingNote(params []string) error {
 	toFilenameHash := params[0]

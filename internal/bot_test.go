@@ -3336,3 +3336,77 @@ func TestExtractTitleAndContent_TitleNeedsSanitization(t *testing.T) {
 	r.Equal("Invalid{|}Title?Name", title)
 	r.Equal("Invalid/Title?Name\nContent here", content)
 }
+
+func TestMoveToExistingNote_Success(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+	err = userFS.Write("today", "Task.md", "Task content")
+	r.NoError(err)
+	err = userFS.MakeDir("notes")
+	r.NoError(err)
+	err = userFS.Write("notes", "ExistingNote.md", "Existing content\n")
+	r.NoError(err)
+
+	tgram := tg.NewFakeTG()
+	cfg := fakeConfig()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
+
+	toDirHash := fs.Hash("notes")
+	toFilenameHash := fs.Hash("ExistingNote.md")
+	fromFilenameHash := fs.Hash("Task.md")
+
+	err = bot.moveToExistingNote([]string{toFilenameHash, toDirHash, fromFilenameHash})
+	r.NoError(err)
+
+	content, err := userFS.Read("notes", "ExistingNote.md")
+	r.NoError(err)
+	r.Equal("#### 5 December, Thursday\nTask content\nExisting content", content)
+
+	_, err = userFS.Read("today", "Task.md")
+	r.Error(err)
+}
+
+func TestMoveToExistingNote_FileNotFound(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+
+	tgram := tg.NewFakeTG()
+	cfg := fakeConfig()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
+
+	toDirHash := fs.Hash("notes")
+	toFilenameHash := fs.Hash("ExistingNote.md")
+	fromFilenameHash := fs.Hash("Task.md")
+
+	err = bot.moveToExistingNote([]string{toFilenameHash, toDirHash, fromFilenameHash})
+	r.Error(err)
+}
+
+func TestMoveToExistingNote_InvalidHash(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	tgram := tg.NewFakeTG()
+	cfg := fakeConfig()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
+
+	toDirHash := "invalidHash"
+	toFilenameHash := "invalidHash"
+	fromFilenameHash := "invalidHash"
+
+	err = bot.moveToExistingNote([]string{toFilenameHash, toDirHash, fromFilenameHash})
+	r.Error(err)
+	r.Contains(err.Error(), "move to exsiting note")
+}
