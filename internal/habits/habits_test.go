@@ -108,7 +108,6 @@ func TestLastWeekHabitsWhenWeekFallsIntoTwoMonths(t *testing.T) {
 	r.NoError(err)
 	_ = userFS.Write(fs.DirInsights, "1970 Habits.md", twoMonthsMD)
 	_ = userFS.Write(fs.DirHabits, "Habit.md", "")
-	_ = userFS.Write(fs.DirHabits, "Mood.md", "")
 
 	savedNow := now
 	defer func() {
@@ -123,6 +122,7 @@ func TestLastWeekHabitsWhenWeekFallsIntoTwoMonths(t *testing.T) {
 	r.Len(habits, 2)
 	r.Len(habits["Habit"], 7)
 	r.EqualValues(Year{271: 0, 272: 1, 273: 0, 274: 0, 275: 0, 276: 1, 277: 0}, habits["Habit"])
+	r.EqualValues(Year{271: 5, 272: 2, 273: 5, 274: 0, 275: 5, 276: 4, 277: 0}, habits["Mood"])
 }
 
 func TestLastMonthHabitsMoods(t *testing.T) {
