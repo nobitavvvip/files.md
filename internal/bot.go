@@ -258,6 +258,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdRename:                      b.rename,
 		consts.CmdTasksOnlyMode:               b.tasksOnlyMode,
 		consts.CmdNotesOnlyMode:               b.notesOnlyMode,
+		consts.CmdJournalOnlyMode:             b.journalOnlyMode,
 		consts.CmdFullMode:                    b.fullMode,
 		// Used for button-like separators
 		consts.CmdDoNothing: func(s []string) error { return nil },
@@ -381,6 +382,10 @@ func (b *Bot) saveFromRegularMsg(u Update) error {
 	b.db.SetDirByMsgID(msgID, fs.DirToday)
 	b.db.SetFilenameByMsgID(msgID, filename)
 
+	if b.cfg.JournalOnlyMode() {
+		return b.moveToJournal([]string{fs.Hash(filename)})
+	}
+
 	return b.showMoveTo([]string{fs.Hash(filename)})
 }
 
@@ -415,7 +420,7 @@ func (b *Bot) saveFromImage(u Update) error {
 	return b.showMoveTo([]string{fs.Hash(filename)})
 }
 
-// saveImage saves a image to the filesystem and returns a markdown link to it
+// saveImage saves an image to the filesystem and returns a markdown link to it
 func (b *Bot) saveImage(u Update) (string, error) {
 	imageID, _ := u.PhotoOrImageID()
 
@@ -835,9 +840,13 @@ func (b *Bot) ShowToday(_ []string) error {
 		return b.showDirs(nil)
 	}
 
+	if b.cfg.JournalOnlyMode() {
+		return b.showHTML("What's on your mind?", nil)
+	}
+
 	files, err := b.fs.FilesAndDirs(fs.DirToday)
 	if err != nil {
-		return fmt.Errorf("show list: can't get files in %s dir: %w", fs.DirToday, err)
+		return fmt.Errorf("show today: can't get files in %s dir: %w", fs.DirToday, err)
 	}
 
 	var kb tg.Keyboard
@@ -2284,17 +2293,8 @@ func (b *Bot) showHelp(_ []string) error {
 	return err
 }
 
-func (b *Bot) notesOnlyMode(_ []string) error {
-	err := b.cfg.SetNotesOnlyMode(true)
-	if err != nil {
-		return fmt.Errorf("notes only mode: can't set notes only mode %w", err)
-	}
-
-	return b.ShowToday(nil)
-}
-
 func (b *Bot) tasksOnlyMode(_ []string) error {
-	err := b.cfg.SetNotesOnlyMode(false)
+	err := b.cfg.SetMode(userconfig.ModeTasks)
 	if err != nil {
 		return fmt.Errorf("tasks only mode: can't set notes only mode %w", err)
 	}
@@ -2326,8 +2326,26 @@ func (b *Bot) tasksOnlyMode(_ []string) error {
 	return b.ShowToday(nil)
 }
 
+func (b *Bot) notesOnlyMode(_ []string) error {
+	err := b.cfg.SetMode(userconfig.ModeNotes)
+	if err != nil {
+		return fmt.Errorf("notes only mode: can't set notes only mode %w", err)
+	}
+
+	return b.ShowToday(nil)
+}
+
+func (b *Bot) journalOnlyMode(_ []string) error {
+	err := b.cfg.SetMode(userconfig.ModeJournal)
+	if err != nil {
+		return fmt.Errorf("journal only mode: can't set notes only mode %w", err)
+	}
+
+	return b.ShowToday(nil)
+}
+
 func (b *Bot) fullMode(_ []string) error {
-	err := b.cfg.SetNotesOnlyMode(false)
+	err := b.cfg.SetMode(userconfig.ModeFull)
 	if err != nil {
 		return fmt.Errorf("full mode: can't set notes only mode %w", err)
 	}

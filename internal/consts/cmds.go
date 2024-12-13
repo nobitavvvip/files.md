@@ -59,6 +59,7 @@ const (
 	CmdShowSchedule                = "schedule"
 	CmdTasksOnlyMode               = "tasks_only"
 	CmdNotesOnlyMode               = "notes_only"
+	CmdJournalOnlyMode             = "journal_only"
 	CmdFullMode                    = "full"
 	CmdInlineQuerySearchEveryWhere = "search"
 	CmdInlineQuerySearchInDir      = "search_dir"

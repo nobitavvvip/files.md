@@ -14,6 +14,13 @@ import (
 	"zakirullin/stuffbot/internal/fs"
 )
 
+const (
+	ModeTasks   = "tasks"
+	ModeNotes   = "notes"
+	ModeJournal = "journal"
+	ModeFull    = "full"
+)
+
 var defaultConfig = config{
 	Language:                  "en",
 	Timezone:                  "UTC",
@@ -22,7 +29,7 @@ var defaultConfig = config{
 	Schedules:                 []Schedule{},
 	QuickCmds:                 []string{},
 	AllowTwoEmojisInButton:    false,
-	NotesOnlyMode:             false,
+	Mode:                      "tasks",
 }
 
 var (
@@ -51,7 +58,7 @@ type config struct {
 	Schedules                 []Schedule `json:"schedules"`
 	QuickCmds                 []string   `json:"quickCommands"`
 	AllowTwoEmojisInButton    bool       `json:"allowTwoEmojisInButton"`
-	NotesOnlyMode             bool       `json:"notesOnlyMode"`
+	Mode                      string     `json:"mode"`
 }
 
 func NewConfig(userFS *fs.FS, userID int64, filename string) *Config {
@@ -94,19 +101,25 @@ func (c *Config) Timezone() *time.Location {
 func (c *Config) NotesOnlyMode() bool {
 	cfg, _ := c.read(c.filename)
 
-	return cfg.NotesOnlyMode
+	return cfg.Mode == ModeNotes
 }
 
-func (c *Config) SetNotesOnlyMode(enabled bool) error {
+func (c *Config) JournalOnlyMode() bool {
+	cfg, _ := c.read(c.filename)
+
+	return cfg.Mode == ModeJournal
+}
+
+func (c *Config) SetMode(mode string) error {
 	lock := c.userLock()
 	lock.Lock()
 	defer lock.Unlock()
 
 	cfg, _ := c.read(c.filename)
-	cfg.NotesOnlyMode = enabled
+	cfg.Mode = mode
 	err := c.write(cfg)
 	if err != nil {
-		return fmt.Errorf("set notes only mode: can't write config: %w", err)
+		return fmt.Errorf("set mode: can't write config: %w", err)
 	}
 
 	return nil
