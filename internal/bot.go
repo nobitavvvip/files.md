@@ -1724,6 +1724,11 @@ func (b *Bot) moveToJournal(params []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't delete note: %w", err)
 	}
+
+	msg := txt.Emoji(i18n.Emoji("journal"), fmt.Sprintf(i18n.Tr("Saved to <b>journal</b>")))
+	// Just an informative messages
+	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
+
 	return b.ShowToday(nil)
 }
 
