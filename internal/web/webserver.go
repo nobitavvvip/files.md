@@ -18,7 +18,6 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 
 	"zakirullin/stuffbot/config"
-	"zakirullin/stuffbot/i18n"
 	"zakirullin/stuffbot/internal/fs"
 	"zakirullin/stuffbot/internal/habits"
 	"zakirullin/stuffbot/internal/journal"
@@ -173,18 +172,10 @@ func setupRouter(router *http.ServeMux, logger *log.Logger) {
 			_, _ = w.Write([]byte("can't write habits"))
 		}
 
-		var emoji string
+		emoji := habits.Emoji(userFS, habitName)
 		if habitName == habits.MoodHabit {
 			if int(status) < len(habits.MoodEmojis) {
 				emoji = habits.MoodEmojis[status]
-			}
-		} else {
-			emoji, _ = userFS.Read(fs.DirHabits, fs.Filename(habitName))
-			if emoji == "" {
-				emoji = i18n.Emoji(habitName)
-			}
-			if emoji == "" {
-				emoji = "⚡️"
 			}
 		}
 

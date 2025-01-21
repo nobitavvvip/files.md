@@ -10,6 +10,7 @@ import (
 
 	"github.com/rivo/uniseg"
 
+	"zakirullin/stuffbot/i18n"
 	"zakirullin/stuffbot/internal/fs"
 	"zakirullin/stuffbot/pkg/txt"
 )
@@ -232,6 +233,18 @@ func Write(userFS *fs.FS, year int, habits map[string]Year) error {
 	}
 
 	return nil
+}
+
+func Emoji(userFS *fs.FS, habitName string) string {
+	emoji, _ := userFS.Read(fs.DirHabits, fs.Filename(habitName))
+	if emoji == "" {
+		emoji = i18n.Emoji(habitName)
+	}
+	if emoji == "" {
+		emoji = "⚡️"
+	}
+
+	return emoji
 }
 
 func emojiForStatus(habitName string, day time.Time, status int) string {

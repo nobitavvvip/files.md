@@ -23,6 +23,7 @@ import (
 	"zakirullin/stuffbot/i18n"
 	"zakirullin/stuffbot/internal/consts"
 	"zakirullin/stuffbot/internal/fs"
+	"zakirullin/stuffbot/internal/habits"
 	"zakirullin/stuffbot/internal/journal"
 	"zakirullin/stuffbot/internal/plugins"
 	"zakirullin/stuffbot/internal/sched"
@@ -881,13 +882,14 @@ func (b *Bot) ShowToday(_ []string) error {
 		kb.AddRow(btn)
 	}
 
-	row := tg.NewRow()
-	row = append(row, tg.NewBtn("🤸‍♂️", tg.NewCmd(consts.CmdDoNothing, nil)))
-	row = append(row, tg.NewBtn("🍽", tg.NewCmd(consts.CmdDoNothing, nil)))
-	row = append(row, tg.NewBtn("🚶‍♂️", tg.NewCmd(consts.CmdDoNothing, nil)))
-	row = append(row, tg.NewBtn("📵", tg.NewCmd(consts.CmdDoNothing, nil)))
-	row = append(row, tg.NewBtn("💪", tg.NewCmd(consts.CmdDoNothing, nil)))
-	kb.AddRow(row)
+	remainingHabits, err := habits.LastWeekHabits(b.fs)
+	if err != nil {
+		return fmt.Errorf("can't show today: %w", err)
+	}
+	_, ok := remainingHabits[habits.MoodHabit]
+	if ok {
+		delete(remainingHabits, habits.MoodHabit)
+	}
 
 	quickBtns := b.quickBtns()
 	if len(quickBtns) > 0 {
