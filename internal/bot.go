@@ -179,7 +179,7 @@ func (b *Bot) Answer(u Update) error {
 
 		if callbackQueryID, ok := u.CallbackQueryID(); ok {
 			// We can tolerate an error here, that won't affect UX
-			if cmd.Name == consts.CmdComplete {
+			if cmd.Name == consts.CmdComplete || cmd.Name == consts.CmdCompleteHabit {
 				_ = b.tg.AnswerCallbackQuery(callbackQueryID, completedMsg())
 			} else {
 				_ = b.tg.AnswerCallbackQuery(callbackQueryID, "")
