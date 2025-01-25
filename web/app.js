@@ -28,6 +28,11 @@ let saveQueue = [];
 let queueWorkerInterval;
 let changesPollingInterval;
 
+// Normalize text to use only \n as line endings
+function norm(text) {
+    return text.replace(/\r\n|\r/g, "\n");
+}
+
 async function init(el) {
     initEditor(el);
 
@@ -62,8 +67,10 @@ async function init(el) {
         let currentContent = getCurrentContent();
         if (saveQueue.length === 0) {
             newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
-            if (currentContent !== newContent) {
-                console.log(currentContent, newContent, "File was modified, reloading...");
+            if (norm(currentContent) !== norm(newContent)) {
+                console.log(stringToUnicodePoints(currentContent));
+                console.log(stringToUnicodePoints(newContent));
+                console.log("'" + currentContent + "',", "'" + newContent + "'", "File was modified, reloading...");
                 await showFile(dir, file, false);
             }
         }
@@ -658,9 +665,8 @@ async function saveFile() {
 function getCurrentContent() {
     let content = editor.getValue();
     const header = editor.currentFile.replace(/\.md$/, '').replace(/^\w/, (c) => c.toUpperCase());
-    content = content.trimStart();
     if (content.startsWith(`# ${header}`)) {
-        content = content.slice(`# ${header}`.length).trimStart();
+        content = content.slice(`# ${header}\n`.length);
     }
 
     return content;
