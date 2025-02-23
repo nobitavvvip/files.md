@@ -147,7 +147,7 @@ function initEditor(el) {
     });
 
     editor.setOption("viewportMargin", Infinity);
-    editor.setOption("cursorScrollMargin", 200);
+    editor.setOption("cursorScrollMargin", 50);
 
     // TODO Image uploading
     editor.on("paste", async (_, event) => {
@@ -763,3 +763,4 @@ window.addEventListener("focus", async () => {
     files = await loadFiles(savedDirectoryHandle);
     console.log("files loaded");
 });
+
