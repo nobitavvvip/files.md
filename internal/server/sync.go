@@ -98,23 +98,19 @@ func Sync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	missingFiles := make([]File, 0)
-	for path, serverTime := range serverTimestamps {
-		parts := strings.Split(path, string(os.PathSeparator))
-		dir := parts[0]
-		requestTime, exists := request.Timestamps[dir]
-		if !exists || serverTime > requestTime {
-			missingFiles = append(missingFiles, File{path, 0, false, "content"})
-		}
-	}
-
 	dirTimestamps := make(map[string]int64)
+	missingFiles := make([]File, 0)
 	for path, serverTime := range serverTimestamps {
 		parts := strings.Split(path, string(os.PathSeparator))
 		dir := parts[0]
 		isInRoot := len(parts) == 1
 		if isInRoot {
 			dir = "."
+		}
+
+		requestTime, exists := request.Timestamps[dir]
+		if !exists || serverTime > requestTime {
+			missingFiles = append(missingFiles, File{path, 0, false, "content"})
 		}
 
 		existingTimestamp, exists := dirTimestamps[dir]
