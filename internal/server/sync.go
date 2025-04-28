@@ -108,6 +108,21 @@ func Sync(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	dirTimestamps := make(map[string]int64)
+	for path, serverTime := range serverTimestamps {
+		parts := strings.Split(path, string(os.PathSeparator))
+		dir := parts[0]
+		existingTimestamp, exists := dirTimestamps[dir]
+		if !exists {
+			dirTimestamps[dir] = serverTime
+			continue
+		}
+
+		if serverTime > existingTimestamp {
+			dirTimestamps[dir] = serverTime
+		}
+	}
+
 	response := syncResponse{
 		Files:      missingFiles,
 		Timestamps: serverTimestamps,
@@ -159,9 +174,7 @@ func timestamps(rootPath string) (map[string]int64, error) {
 			relPath = "."
 		}
 
-		// Record timestamp for all directories and files
-		modTime := info.ModTime()
-		timestamps[relPath] = modTime.Unix()
+		timestamps[relPath] = info.ModTime().Unix()
 
 		return nil
 	})
