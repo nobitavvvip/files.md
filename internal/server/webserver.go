@@ -194,6 +194,6 @@ func setupRouter(router *http.ServeMux, logger *log.Logger) {
 		}
 	})
 
-	router.HandleFunc("/timestamps", AuthMiddleware(Timestamps))
-	router.HandleFunc("/sync", AuthMiddleware(Sync))
+	router.HandleFunc("/timestamps", corsMiddleware(authMiddleware(Timestamps)))
+	router.HandleFunc("/sync", corsMiddleware(authMiddleware(Sync)))
 }
