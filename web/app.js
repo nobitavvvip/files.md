@@ -2,11 +2,6 @@
 let editor;
 let focusedItemIndex = -1;
 
-// Normalize text to use only \n as line endings
-function norm(text) {
-    return text.replace(/\r\n|\r/g, "\n");
-}
-
 async function init(el) {
     initEditor(el);
 
@@ -97,7 +92,7 @@ function initEditor(el) {
     editor.on("change", async function (cm, changeObj) {
         // Save on user input only
         if (changeObj.origin && changeObj.origin !== "setValue") {
-            unsavedChanges = true
+            hasUnsavedChanges = true
         }
     });
 
@@ -549,6 +544,11 @@ async function getImageUrl(fileHandle) {
     return URL.createObjectURL(file);
 }
 
+// Normalize text to use only \n as line endings
+function norm(text) {
+    return text.replace(/\r\n|\r/g, "\n");
+}
+
 function initDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('files', 1);
@@ -591,11 +591,13 @@ document.addEventListener('mousedown', (event) => {
 
 // Reload files once the app gains focus
 window.addEventListener("focus", async () => {
+    await saveCurrentFile();
+    await syncFileWithServer(editor.currentDir, editor.currentFile);
+
     const savedDirectoryHandle = await getRootDirHandle();
     files = await loadLocalFiles(savedDirectoryHandle);
     console.log("Files loaded");
-    // syncWithServer()
-    await saveCurrentFile();
-    await syncFileWithServer(editor.currentDir, editor.currentFile);
-    console.log("Sync completed");
+    await syncWithServer()
+
+    // console.log("Sync completed");
 });

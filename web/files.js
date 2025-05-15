@@ -1,7 +1,7 @@
 const saverInterval = 50; // ms, how often to save currently open file
 const loaderInterval = 3000; // ms, how often to load files from local system and sync with server
 
-let unsavedChanges = false;
+let hasUnsavedChanges = false;
 let isSaving = false;
 
 // Files structure:
@@ -40,6 +40,10 @@ const SYNC_STORAGE_KEY = 'files';
 // The code is quite messy. We have to make lots of optimizations,
 // otherwise it's going to be slow even with 5K files.
 async function loadLocalFiles(rootDirHandle) {
+    while (hasUnsavedChanges) {
+        await new Promise(r => setTimeout(r, 50));
+    }
+
     let newFiles = {};
 
     // Loads files recursively
@@ -141,7 +145,13 @@ async function syncWithServer() {
 
         console.log("Syncing " + path);
         let fileHandle = await getFileHandle(path);
+        if (fileHandle === null) {
+            // TODO fix once Chromium fixes the bug
+            console.log("Malformed name, skipping file...");
+            continue;
+        }
         let file = await fileHandle.getFile()
+
         let clientHash = hash(await file.text());
         let serverHash = hash(content);
         if (clientHash !== serverHash) {
@@ -161,9 +171,14 @@ async function syncWithServer() {
 }
 
 async function syncFileWithServer(dir, filename) {
-    let file = getFileHandle(`${dir}/${filename}`);
-    let lastModified = getMetadata(`${dir}/${filename}`)?.lastModified;
-    console.log(lastModified, file);
+    const path = `${dir}/${filename}`;
+    console.log(path);
+    let file = await (await getFileHandle(path)).getFile();
+    // TODO we might only need to send content when modifying
+    let content = await file.text();
+    let serverTimestamp = getMetadata(path)?.lastModified || 0;
+
+    console.log(serverTimestamp, file);
 
     return;
     let serverFile = {};
@@ -173,8 +188,8 @@ async function syncFileWithServer(dir, filename) {
             headers: {'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token')},
             body: JSON.stringify({
                 Path: `${dir}/${filename}`,
-                LastModified: lastModified,
-                Content: '',
+                LastModified: serverTimestamp,
+                Content: content,
             })
         });
         if (!response.ok) {
@@ -288,12 +303,12 @@ function getMetadata(path) {
 }
 
 function setMetadata(path, content, lastModified) {
-    filesMetadata['files'] = filesMetadata['files'] ?? {};
-    filesMetadata['files'][dir] = filesMetadata['files'][dir] ?? {};
-
     const parts = path.split('/');
     const filename = parts.pop();
+    const dir = parts.join('/');
 
+    filesMetadata['files'] = filesMetadata['files'] ?? {};
+    filesMetadata['files'][dir] = filesMetadata['files'][dir] ?? {};
     filesMetadata['files'][dir][filename] = {
         hash: hash(content),
         lastModified: lastModified,
@@ -306,7 +321,7 @@ function saveMetadata() {
 }
 
 async function saveCurrentFile() {
-    if (!unsavedChanges) return;
+    if (!hasUnsavedChanges) return;
 
     // Wait until not saving
     while (isSaving) {
@@ -335,7 +350,7 @@ async function saveCurrentFile() {
     }
 
     isSaving = false;
-    unsavedChanges = false;
+    hasUnsavedChanges = false;
 }
 
 function hash(str) {
@@ -366,7 +381,7 @@ async function initFiles() {
         let newContent = await updatedFile.text();
         // TODO dirty hack, we replace links on the fly
         let currentContent = getCurrentContent();
-        if (!unsavedChanges) {
+        if (!hasUnsavedChanges) {
             newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
             if (norm(currentContent) !== norm(newContent)) {
                 await showFile(dir, file, false);

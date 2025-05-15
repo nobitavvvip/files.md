@@ -1,3 +1,4 @@
+// TODO gzip
 package server
 
 import (
