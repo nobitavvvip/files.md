@@ -25,7 +25,7 @@ let files = [];
 const supportedFileTypes = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
 const systemDirs = ["img", "archive", "_read_", "_watch_", "_shop_", "today", "later", "journal", "habits", "triggers", "places"];
 
-let filesMetadata = {files: {}, timestamps: {}};
+let filesMetadata = {files: {}, timestamps: {}, mediaTimestamp: 0};
 const SYNC_STORAGE_KEY = 'files';
 
 // Returns files in flattened structure:
@@ -102,9 +102,9 @@ async function loadLocalFiles(rootDirHandle) {
     }
 
     // Load metadata
-    const savedStates = localStorage.getItem(SYNC_STORAGE_KEY);
-    if (savedStates) {
-        filesMetadata = JSON.parse(savedStates);
+    const savedMetadata = localStorage.getItem(SYNC_STORAGE_KEY);
+    if (savedMetadata) {
+        filesMetadata = JSON.parse(savedMetadata);
     }
 
     return newFiles;
@@ -294,7 +294,7 @@ async function saveMediaFile(path, blob, lastModified) {
         await writable.close();
         console.log(`Successfully wrote media file: ${path}`);
         // TODO we assume that we got no fails. Instead save filenames hashes, same for text
-        if (lastModified > filesMetadata['mediaTimestamp'] || 0) {
+        if (lastModified > (filesMetadata['mediaTimestamp'] || 0)) {
             filesMetadata['mediaTimestamp'] = lastModified;
             saveMetadata();
         }
