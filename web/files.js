@@ -129,7 +129,7 @@ async function syncAllWithServer() {
     let server = {};
     let filesToSend = await collectLocallyModifiedTextFiles();
     try {
-        let response = await fetch('https://habits.files.md/syncTexts', {
+        let response = await fetch('https://api.files.md/syncTexts', {
             method: 'POST',
             headers: {'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token')},
             body: JSON.stringify({
@@ -186,7 +186,7 @@ async function syncFileWithServer(dir, filename) {
 
     let serverFile = {};
     try {
-        let response = await fetch('https://habits.files.md/syncText', {
+        let response = await fetch('https://api.files.md/syncText', {
             method: 'POST',
             headers: {'Content-Type': 'application/json', 'Authorization': localStorage.getItem('token')},
             body: JSON.stringify({
@@ -228,7 +228,7 @@ async function syncMediaFilesFromServer() {
 
     const mediaTimestamp = filesMetadata['mediaTimestamp'] || 0;
     try {
-        const response = await fetch('https://habits.files.md/syncMedias', {
+        const response = await fetch('https://api.files.md/syncMedias', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -255,7 +255,7 @@ async function syncMediaFilesFromServer() {
 
             try {
                 // Fetch the binary file
-                const response = await fetch('https://habits.files.md/syncMedia', {
+                const response = await fetch('https://api.files.md/syncMedia', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
