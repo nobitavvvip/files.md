@@ -3209,6 +3209,9 @@
     var docLTR = doc.direction == "ltr";
 
     function add(left, top, width, bottom) {
+      if (width === null) {
+        console.log(rightSide);
+      }
       if (top < 0) { top = 0; }
       top = Math.round(top);
       bottom = Math.round(bottom);
@@ -3242,7 +3245,8 @@
           var openLeft = (docLTR ? openStart : openEnd) && first;
           var openRight = (docLTR ? openEnd : openStart) && last;
           var left = openLeft ? leftSide : (ltr ? fromPos : toPos).left;
-          var right = openRight ? rightSide : (ltr ? toPos : fromPos).right;
+          // var right = openRight ? rightSide : (ltr ? toPos : fromPos).right;
+          var right = openRight ? (ltr ? toPos : fromPos).right : (ltr ? toPos : fromPos).right;
           add(left, fromPos.top, right - left, fromPos.bottom);
         } else { // Multiple lines
           var topLeft, topRight, botLeft, botRight;
@@ -3276,6 +3280,8 @@
     } else {
       var fromLine = getLine(doc, sFrom.line), toLine = getLine(doc, sTo.line);
       var singleVLine = visualLine(fromLine) == visualLine(toLine);
+      var leftEnd = drawForLine(sFrom.line, sFrom.ch, fromLine.text.length).end;
+      var rightStart = drawForLine(sTo.line, 0, sTo.ch).start;
       var leftEnd = drawForLine(sFrom.line, sFrom.ch, singleVLine ? fromLine.text.length + 1 : null).end;
       var rightStart = drawForLine(sTo.line, singleVLine ? 0 : null, sTo.ch).start;
       if (singleVLine) {
@@ -3286,8 +3292,23 @@
           add(leftEnd.right, leftEnd.top, rightStart.left - leftEnd.right, leftEnd.bottom);
         }
       }
-      if (leftEnd.bottom < rightStart.top)
-        { add(leftSide, leftEnd.bottom, null, rightStart.top); }
+      // if (leftEnd.bottom < rightStart.top) {
+      //   add(leftSide, leftEnd.bottom, null, rightStart.top);
+      // }
+      if (leftEnd.bottom < rightStart.top) {
+        // Highlight each middle line from start to end of its text content
+        var startLine = cm.lineAtHeight(leftEnd.bottom, "div");
+        var endLine = cm.lineAtHeight(rightStart.top, "div");
+
+        for (var lineNum = startLine; lineNum < endLine; lineNum++) {
+          var line = getLine(doc, lineNum);
+          if (line.text.length > 0) {
+            var lineStart = charCoords(cm, Pos(lineNum, 0), "div");
+            var lineEnd = charCoords(cm, Pos(lineNum, line.text.length), "div");
+            add(lineStart.left, lineStart.top, lineEnd.right - lineStart.left, lineStart.bottom);
+          }
+        }
+      }
     }
 
     output.appendChild(fragment);
