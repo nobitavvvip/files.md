@@ -3,7 +3,7 @@ let editor;
 let focusedItemIndex = -1;
 
 async function init(el) {
-    initEditor(el);
+    // initEditor(el);
 
     const savedDirectoryHandle = await getRootDirHandle();
     const userHasOpenedDirectory = savedDirectoryHandle instanceof FileSystemDirectoryHandle;

@@ -90,7 +90,11 @@ async function loadLocalFiles(rootDirHandle) {
         }
 
         await Promise.all(dirPromises.map(({handle, dir, depth}) =>
-            loadDir(handle, dir, depth)
+        {
+            if (dir === "journal/" || dir === "img/") {
+                loadDir(handle, dir, depth)
+            }
+        }
         ));
     }
 
@@ -113,6 +117,7 @@ async function loadLocalFiles(rootDirHandle) {
 }
 
 async function syncAllWithServer() {
+    return;
     if (isSyncing) return;
     isSyncing = true;
 
@@ -174,6 +179,7 @@ async function syncAllWithServer() {
 }
 
 async function syncFileWithServer(dir, filename) {
+    return;
     const path = `${dir}/${filename}`;
     let file = await (await getFileHandle(path)).getFile();
     // TODO we might only need to send content when modifying
@@ -218,6 +224,7 @@ async function syncFileWithServer(dir, filename) {
 }
 
 async function syncMediaFilesFromServer() {
+    return;
     // TODO skip if already syncing
 
     console.log(`Starting media sync from img folder...`);
@@ -283,6 +290,7 @@ async function syncMediaFilesFromServer() {
 }
 
 async function saveMediaFile(path, blob, lastModified) {
+    return;
     const fileHandle = await getFileHandle(path);
     if (fileHandle === null) {
         console.log(`Malformed name for ${path}, skipping file...`);
@@ -458,6 +466,7 @@ async function isContentEqual(path, content) {
 }
 
 async function saveTextFile(path, content) {
+    return;
     let fileHandle = await getFileHandle(path);
     if (fileHandle === null) {
         // TODO fix once Chromium fixes the bug
@@ -503,6 +512,7 @@ function setMetadata(path, content, lastModified) {
 }
 
 function saveMetadata() {
+    return;
     localStorage.setItem(SYNC_STORAGE_KEY, JSON.stringify(filesMetadata));
 }
 
@@ -511,6 +521,7 @@ function saveMetadata() {
 // 2) Sync it with the server
 // TODO add hash of last read file comparison, merge on conflict (in which scenarious in can happen tho?)
 async function syncCurrentFile() {
+    return;
     // Wait until not saving
     while (isSaving) {
         await new Promise(r => setTimeout(r, 50));
