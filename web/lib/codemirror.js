@@ -3304,9 +3304,11 @@
           // Draw first line of selection
           let firstLine = cm.lineAtHeight(fromPos.top, "page")
           let firstVisualLine = getVisualLines(cm, firstLine)[0];
-          let firstLineRight = wrapXObj(cm, lineObj, firstVisualLine.startChar, dir, "before");
-          let firstLineLeft = wrapXObj(cm, lineObj, firstVisualLine.endChar, dir, "after");
-          drawRect(topLeft, fromPos.top, firstLineRight - firstLineLeft, fromPos.bottom);
+          if (firstVisualLine !== undefined) {
+            let firstLineRight = wrapXObj(cm, lineObj, firstVisualLine.startChar, dir, "before");
+            let firstLineLeft = wrapXObj(cm, lineObj, firstVisualLine.endChar, dir, "after");
+            drawRect(topLeft, fromPos.top, firstLineRight - firstLineLeft, fromPos.bottom);
+          }
 
 
           let areThereInBetweenLines = fromPos.bottom < toPos.top
@@ -3335,13 +3337,14 @@
             }
           }
 
-          // // Draw last line of selection
-          // let lastLine = cm.lineAtHeight(toPos.top, "page")
-          // let lastVisualLine = getVisualLines(cm, lastLine).pop();
-          // console.log(lastVisualLine);
-          // let lastLineRight = wrapXObj(cm, lineObj, lastVisualLine.startChar, dir, "before");
-          // let lastLineLeft = wrapXObj(cm, lineObj, lastVisualLine.endChar, dir, "after");
-          // drawRect(botLeft, toPos.top, lastLineRight - lastLineLeft, toPos.bottom);
+          // Draw last line of selection
+          let lastLine = cm.lineAtHeight(toPos.top, "page")
+          let lastVisualLine = getVisualLines(cm, lastLine).pop();
+          if (lastVisualLine !== undefined) {
+            let lastLineRight = wrapXObj(cm, lineObj, lastVisualLine.startChar, dir, "before");
+            let lastLineLeft = wrapXObj(cm, lineObj, lastVisualLine.endChar, dir, "after");
+            drawRect(botLeft, toPos.top, lastLineRight - lastLineLeft, toPos.bottom);
+          }
         }
 
         if (!start || cmpCoords(fromPos, start) < 0) { start = fromPos; }
