@@ -3302,14 +3302,12 @@
           // drawRect(botLeft, toPos.top, botRight - botLeft, toPos.bottom);
 
           // Draw first line of selection
-          let firstLine = cm.lineAtHeight(fromPos.top, "page")
+          let firstLine = cm.lineAtHeight(fromPos.top, "div")
           let firstVisualLine = getVisualLines(cm, firstLine)[0];
-          if (firstVisualLine !== undefined) {
-            let firstLineRight = wrapXObj(cm, lineObj, firstVisualLine.startChar, dir, "before");
-            let firstLineLeft = wrapXObj(cm, lineObj, firstVisualLine.endChar, dir, "after");
-            drawRect(topLeft, fromPos.top, firstLineRight - firstLineLeft, fromPos.bottom);
-          }
-
+          let firstLineRight = wrapXObj(cm, lineObj, firstVisualLine.startChar, dir, "before");
+          let firstLineLeft = wrapXObj(cm, lineObj, firstVisualLine.endChar, dir, "after");
+          drawRect(topLeft, fromPos.top, firstLineRight - firstLineLeft, fromPos.bottom);
+          console.log(fromPos.top, firstLine, firstVisualLine);
 
           let areThereInBetweenLines = fromPos.bottom < toPos.top
           if (areThereInBetweenLines) {
@@ -3338,13 +3336,11 @@
           }
 
           // Draw last line of selection
-          let lastLine = cm.lineAtHeight(toPos.top, "page")
+          let lastLine = cm.lineAtHeight(toPos.top, "div")
           let lastVisualLine = getVisualLines(cm, lastLine).pop();
-          if (lastVisualLine !== undefined) {
-            let lastLineRight = wrapXObj(cm, lineObj, lastVisualLine.startChar, dir, "before");
-            let lastLineLeft = wrapXObj(cm, lineObj, lastVisualLine.endChar, dir, "after");
-            drawRect(botLeft, toPos.top, lastLineRight - lastLineLeft, toPos.bottom);
-          }
+          let lastLineRight = wrapXObj(cm, lineObj, lastVisualLine.startChar, dir, "before");
+          let lastLineLeft = wrapXObj(cm, lineObj, lastVisualLine.endChar, dir, "after");
+          drawRect(botLeft, toPos.top, lastLineRight - lastLineLeft, toPos.bottom);
         }
 
         if (!start || cmpCoords(fromPos, start) < 0) { start = fromPos; }
