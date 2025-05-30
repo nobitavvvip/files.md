@@ -45,9 +45,9 @@ body {
 }
 
 .CodeMirror-wrap {
-    border-radius: 5px;
-    background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
+    /*border-radius: 5px;*/
+    /*background-color: var(--color-bg);*/
+    /*border: 1px solid var(--color-border);*/
 }
 
 .CodeMirror-code {
