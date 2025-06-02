@@ -128,32 +128,37 @@
                 var _this = this;
                 this.cm = cm;
                 /** remove modifier className to editor DOM */
-                // CHANGED, by commenting this out hover on regular https-links would show pointer
-                // this._mouseMove_keyDetect = function (ev) {
-                //     var el = _this.el;
-                //     var className = el.className, newClassName = className;
-                //     var altClass = "HyperMD-with-alt";
-                //     var ctrlClass = "HyperMD-with-ctrl";
-                //     if (!ev.altKey && className.indexOf(altClass) >= 0) {
-                //         newClassName = className.replace(altClass, "");
-                //     }
-                //     if (!ev.ctrlKey && className.indexOf(ctrlClass) >= 0) {
-                //         newClassName = className.replace(ctrlClass, "");
-                //     }
-                //     if (!ev.altKey && !ev.ctrlKey) {
-                //         _this._KeyDetectorActive = false;
-                //         el.removeEventListener('mousemove', _this._mouseMove_keyDetect, false);
-                //     }
-                //     if (className != newClassName)
-                //         el.className = newClassName.trim();
-                // };
+                this._mouseMove_keyDetect = function (ev) {
+                    var el = _this.el;
+                    var className = el.className, newClassName = className;
+                    var altClass = "HyperMD-with-alt";
+                    var ctrlClass = "HyperMD-with-ctrl";
+                    // CHANGED meta key support
+                    if ((!ev.altKey && !ev.metaKey) && className.indexOf(altClass) >= 0) {
+                        newClassName = className.replace(altClass, "");
+                    }
+                    if (!ev.ctrlKey && className.indexOf(ctrlClass) >= 0) {
+                        newClassName = className.replace(ctrlClass, "");
+                    }
+                    // CHANGED add meta key 
+                    if (!ev.altKey && !ev.ctrlKey && !ev.metaKey) {
+                        _this._KeyDetectorActive = false;
+                        el.removeEventListener('mousemove', _this._mouseMove_keyDetect, false);
+                    }
+                    if (className != newClassName)
+                        el.className = newClassName.trim();
+                };
                 /** add modifier className to editor DOM */
                 this._keyDown = function (ev) {
                     var kc = ev.keyCode || ev.which;
+                    console.log(kc);
                     var className = "";
                     if (kc == 17)
                         className = "HyperMD-with-ctrl";
                     if (kc == 18)
+                        className = "HyperMD-with-alt";
+                    // CHANGED meta-key support (cmd on mac)
+                    if (kc == 91 || kc == 93) className = "HyperMD-with-meta"; // Meta key (Cmd)
                         className = "HyperMD-with-alt";
                     var el = _this.el;
                     if (className && el.className.indexOf(className) == -1) {
