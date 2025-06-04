@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"sync"
-	"time"
 
 	"zakirullin/stuffbot/config"
 )
@@ -19,9 +18,9 @@ type LogEntry struct {
 	NewPath   string
 }
 
-func LogRename(oldPath, newPath string) {
+func LogRename(time int64, oldPath, newPath string) {
 	entry := LogEntry{
-		Timestamp: time.Now().Unix(),
+		Timestamp: time,
 		OldPath:   oldPath,
 		NewPath:   newPath,
 	}

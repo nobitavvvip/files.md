@@ -25,7 +25,7 @@ import (
 
 var (
 	NewUserFS = newUserFS
-	OnRename  = func(oldPath, newPath string) {} // callback that can be used to track renames
+	OnRename  = func(time int64, oldPath, newPath string) {} // callback that can be used to track renames
 
 	errUnsafePath   = errors.New("unsafe path, possible security issue")
 	errCannotUnhash = errors.New("cannot unhash, maybe the file is missing")
@@ -252,7 +252,12 @@ func (fs FS) Rename(oldDir, oldFilename, newDir, newFilename string) error {
 	if err != nil {
 		return fmt.Errorf("can't rename from '%s' to '%s': %w", oldPath, newPath, err)
 	}
-	OnRename(path.Join(oldDir, oldFilename), path.Join(newDir, newFilename))
+
+	ctime, err := fs.Ctime(newDir, newFilename)
+	// Nothing terrible will happen if we don't log a rename. The client would just have duplicate files.
+	if err == nil {
+		OnRename(ctime, path.Join(oldDir, oldFilename), path.Join(newDir, newFilename))
+	}
 
 	return nil
 }
