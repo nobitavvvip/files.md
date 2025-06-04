@@ -46,6 +46,12 @@ type syncResponse struct {
 	Deletions  []string         `json:"deletions"`
 }
 
+// SyncTexts sync texts between client and server.
+// The following steps are executed:
+// 1) Save client-modified files to the server
+// 2) In case of conflict (server has a newer modification), merge the files and include them in the response
+// 3) Based on known client dirs timestamps, send newly updated or created files
+// 4) Respond with last modification timestamps for every dir
 func SyncTexts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -65,11 +71,6 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error creating user FS", http.StatusInternalServerError)
 		return
 	}
-
-	// 1) Save client-modified files to the server
-	// 2) In case of conflict (server has a newer modification), merge the files and include them in the response
-	// 3) Based on known client dirs timestamps, send newly updated or created files
-	// 4) Respond with last modification timestamps for every dir
 
 	// Save client-modified files to the server
 	for _, clientFile := range request.Files {
@@ -97,7 +98,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 				logSync(fmt.Sprintf("Merging and writing: '%s'", clientFile.Path))
 				clientContent = Merge(string(serverContent), clientFile.Content)
 			} else {
-				// Server file hasn't changed since client's last sync
+				// Changed on client, unchanged on client
 				logSync(fmt.Sprintf("Writing only: '%s'", clientFile.Path))
 				clientContent = clientFile.Content
 			}
@@ -298,6 +299,24 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+//func possibleMoves(serverTimestamps, clientTimestamps map[string]int64) map[string]string {
+//	detectedMoves := map[string]string{} // oldPath -> newPath
+//	for _, clientFile := range request.Files {
+//		if strings.Contains(clientOnlyFiles, clientFile.Path) {
+//			clientHash := hash(clientFile.Content)
+//			for _, serverPath := range serverOnlyFiles {
+//				serverContent := readFile(serverPath)
+//				if hash(serverContent) == clientHash {
+//					detectedMoves[serverPath] = clientFile.Path
+//					break
+//				}
+//			}
+//		}
+//	}
+//
+//	return detectedMoves
+//}
 
 // validateAuthToken checks if the syncMediasRequest has a valid auth token
 func validateAuthToken(r *http.Request) bool {
