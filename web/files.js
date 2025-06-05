@@ -160,7 +160,9 @@ async function syncAllWithServer() {
     try {
         // Write files received from the server
         for (const fileInfo of server.files) {
+            console.log(fileInfo);
             const {path, content, lastModified} = fileInfo;
+            console.log(path);
             // If it is current file, skip, because we sync it separately
             // TODO if we skip current, don't take it's timestamp? We had a bug when sync was broken for 1 file
             // TODO fix missing / for root files
@@ -170,7 +172,7 @@ async function syncAllWithServer() {
             }
 
             // todo try-catch?
-            // server.renames is map[string]string, old => new path
+
             const shouldRename = path in server.renames;
             if (shouldRename) {
                 await rename(server.renames[path], path);
