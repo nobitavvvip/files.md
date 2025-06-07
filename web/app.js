@@ -353,15 +353,37 @@ function openSearchModal() {
     loadRecentFiles();
 }
 
+function openSearchModal() {
+    document.getElementById('move').style.display = 'block';
+    const inputField = document.getElementById('move-input');
+    inputField.focus();
+
+    focusedItemIndex = -1;
+    const goToFileResults = document.getElementById('move-results');
+    goToFileResults.innerHTML = '';
+    loadRecentFiles();
+}
+
+function isModifierKey(event) {
+    return event.metaKey || event.ctrlKey;
+}
+
 window.addEventListener('keydown', (event) => {
-    if (event.metaKey && event.key === 'p') {
+    if (isModifierKey(event) && event.key === 'p') {
         event.preventDefault();
         event.stopPropagation();
         document.getElementById('search-input').value = ''
         openSearchModal();
     }
 
-    if (event.metaKey && event.key === 'k') {
+    if (isModifierKey(event) && event.key === 'm') {
+        event.preventDefault();
+        event.stopPropagation();
+        document.getElementById('search-input').value = ''
+        openSearchModal();
+    }
+
+    if (isModifierKey(key) && event.key === 'k') {
         event.preventDefault();
         document.getElementById('search-input').value = ''
         openSearchModal();
@@ -457,6 +479,34 @@ function search() {
 
 function showSearchResults(results) {
     const list = document.getElementById('search-results');
+    results.forEach(({dir, filename}, index) => {
+        const listItem = document.createElement('li');
+        let title = filename.replace(/\.md$/, "")
+        if (dir !== '') {
+            listItem.textContent = `${dir}/${title}`;
+        } else {
+            listItem.textContent = title;
+        }
+        listItem.setAttribute('data-path', `${dir}/${filename}`);
+        listItem.setAttribute('data-index', index);
+        listItem.onclick = () => {
+            showFile(dir, filename);
+            closeSearchModal();
+        };
+        listItem.onmouseenter = () => {
+            document.querySelectorAll('#search-results li').forEach(li => li.classList.remove('focused'));
+            listItem.classList.add('focused');
+            focusedItemIndex = index;
+        };
+        list.appendChild(listItem);
+    });
+
+    focusedItemIndex = 0;
+    updateFocusedItem(list.querySelectorAll('li'));
+}
+
+function showMoveResults(results) {
+    const list = document.getElementById('move-results');
     results.forEach(({dir, filename}, index) => {
         const listItem = document.createElement('li');
         let title = filename.replace(/\.md$/, "")

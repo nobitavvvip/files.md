@@ -48,6 +48,12 @@
     </form>
     <ul id="search-results"></ul>
 </div>
+<div id="move" style="display: none;">
+    <form autocomplete="off">
+        <input type="text" id="move-input" placeholder="Go to file..." oninput="search()">
+    </form>
+    <ul id="move-results"></ul>
+</div>
 <div id="welcome"><p>100% local, we don't process your files: <button onClick="openDir()" id="openDirectory">Open directory with *.md files</button></p></div>
 <script src="app.js"></script>
 <script>

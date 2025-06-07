@@ -110,7 +110,7 @@ a:hover {
     color: var(--color-tx-hover);
 }
 
-#search {
+#search, #move {
     position: fixed;
     top: 30%;
     left: 50%;
@@ -124,7 +124,7 @@ a:hover {
     flex-direction: column;
 }
 
-#search-input {
+#search-input, #move-input {
     width: 100%;
     padding: 8px;
     font-size: 16px;
@@ -135,11 +135,11 @@ a:hover {
     background: var(--color-bg);
 }
 
-#search-input:focus {
+#search-input:focus, #move-input:focus {
     outline: none;
 }
 
-#search-results {
+#search-results, #move-results {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -147,12 +147,12 @@ a:hover {
     overflow-y: auto;
 }
 
-#search-results li {
+#search-results li, #move-results li {
     padding: 8px;
     cursor: pointer;
 }
 
-#search-results .focused {
+#search-results .focused, #move-results .focused {
     background-color: var(--color-tx-sel);
 }
 

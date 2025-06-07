@@ -318,24 +318,6 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//func possibleMoves(serverTimestamps, clientTimestamps map[string]int64) map[string]string {
-//	detectedMoves := map[string]string{} // oldPath -> newPath
-//	for _, clientFile := range request.Modified {
-//		if strings.Contains(clientOnlyFiles, clientFile.Path) {
-//			clientHash := hash(clientFile.Content)
-//			for _, serverPath := range serverOnlyFiles {
-//				serverContent := readFile(serverPath)
-//				if hash(serverContent) == clientHash {
-//					detectedMoves[serverPath] = clientFile.Path
-//					break
-//				}
-//			}
-//		}
-//	}
-//
-//	return detectedMoves
-//}
-
 // validateAuthToken checks if the syncMediasRequest has a valid auth token
 func validateAuthToken(r *http.Request) bool {
 	token := r.Header.Get("Authorization")
