@@ -151,7 +151,6 @@
                 /** add modifier className to editor DOM */
                 this._keyDown = function (ev) {
                     var kc = ev.keyCode || ev.which;
-                    console.log(kc);
                     var className = "";
                     if (kc == 17)
                         className = "HyperMD-with-ctrl";

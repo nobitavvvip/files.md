@@ -74,6 +74,8 @@
                     console.log("renderLine return " + changed);
             };
             this.cursorActivityHandler = function (doc) {
+                // CHANGED, if we don't do this, autoscroll is not working.
+                if (cm.somethingSelected()) return;
                 // CHANGED, prevent blinking
                 _this.updateImmediately();
                 // _this.update();

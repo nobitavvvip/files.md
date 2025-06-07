@@ -3251,7 +3251,6 @@
     var docLTR = doc.direction == "ltr";
 
     function drawSelectionRect(left, top, width, bottom) {
-      console.log("drawSelectionRect", left, top, width, bottom);
       // CHANGED, sometimes when we select "`code` text" hide/show tokens causes left to be negative.
       // That all causes blinking, so we just ignore negative lefts.
       if (left < 0) { return; }
@@ -3397,7 +3396,6 @@
           let visualLines = getVisualLines(cm, lineNum);
           visualLines.forEach(visualLine => {
             let firstCharPos = charCoords(cm, Pos(lineNum, visualLine.startChar), "div");
-            // console.log(firstCharPos);
             // TODO we only support LTR here
             let left = wrapXObj(cm, line, visualLine.startChar, 'ltr', "before");
             let right = wrapXObj(cm, line, visualLine.endChar, 'ltr', "after");

@@ -401,7 +401,6 @@ async function collectModifiedAndDeletedFiles() {
                 continue;
             }
             if (!existingFiles[toPath(dir, file)]) {
-                console.log(dir, file);
                 console.log("DELETED " + toPath(dir, file));
                 deleted.push(toPath(dir, file));
             }
