@@ -67,3 +67,7 @@
     color: var(--color-tx-faint);
     vertical-align: baseline;
 }
+
+.cm-s-hypermd-light .cm-strong {
+    font-weight: 600;
+}
