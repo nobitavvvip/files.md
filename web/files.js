@@ -120,6 +120,9 @@ async function loadLocalFiles(rootDirHandle) {
 }
 
 async function syncTextsWithServer() {
+    if (localStorage.getItem('token') === null) {
+        return;
+    }
     if (debug) {
         return;
     }
@@ -240,6 +243,9 @@ async function syncFileWithServer(dir, filename) {
 }
 
 async function syncMediaFilesFromServer() {
+    if (localStorage.getItem('token') === null) {
+        return;
+    }
     if (debug) {
         return;
     }
@@ -615,6 +621,9 @@ function getUserId() {
 // 2) Sync it with the server
 // TODO add hash of last read file comparison, merge on conflict (in which scenarious in can happen tho?)
 async function syncCurrentFile() {
+    if (localStorage.getItem('token') === null) {
+        return;
+    }
     if (debug) {
         return;
     }
