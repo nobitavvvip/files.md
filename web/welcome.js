@@ -53,9 +53,6 @@ let defaultFiles = {
                 "![Why taking notes](https://app.files.md/lib/notes.jpg)\n" +
                 "\n" +
                 "*Caption: This is a sample image with alt text*\n\n" +
-                "#### Inline Code\n" +
-                "Use `console.log()` for debugging.\n" +
-                "\n" +
                 "#### Links\n" +
                 "You can insert your own links by typing `[`.\n\n" +
                 "[Welcome](/Welcome.md)\n" +
