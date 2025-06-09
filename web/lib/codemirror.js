@@ -3173,6 +3173,14 @@
     return result
   }
 
+  function hasImageAtCursor(cm, head) {
+    let lineView = findViewForLine(cm, head.line);
+    if (!lineView || !lineView.text) return false;
+
+    let widgets = lineView.text.querySelectorAll('.CodeMirror-widget img');
+    return widgets.length > 0;
+  }
+
   // Draws a cursor for the given range
   // PATCHED, cursor height without padding
   function drawSelectionCursor(cm, head, output) {
@@ -3185,6 +3193,13 @@
     let lineView = findViewForLine(cm, head.line);
     let lineElement = lineView && lineView.text;
 
+    // Old way of doing things
+    if (hasImageAtCursor(cm, head)) {
+      cursor.style.top = pos.top + "px";
+      cursor.style.height = Math.max(0, pos.bottom - pos.top) * cm.options.cursorHeight + "px";
+      return;
+    }
+
     if (lineElement) {
       let style = window.getComputedStyle(lineElement);
 
@@ -3193,7 +3208,6 @@
       let token = cm.getTokenAt(head);
       let isHeader = token && token.type && token.type.includes('header');
       let visualLines = getVisualLines(cm, head.line);
-      console.log(head, visualLines[1]);
       let cursorIsNotAtFirstVisualLine = visualLines.length > 1 && head.ch >= visualLines[1].startChar;
       if (isHeader && cursorIsNotAtFirstVisualLine) {
         paddingTop = 0;
