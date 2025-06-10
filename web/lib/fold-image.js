@@ -49,7 +49,7 @@
                 }
                 let img = document.createElement("img");
                 img.style.cursor = "pointer";
-                // CUSTOMIZED, we don't want blank line with the cursor after image
+                // PATCHED, we don't want blank line with the cursor after image
                 let wrapper = document.createElement("span");
                 wrapper.style.display = "inline-flex";
                 wrapper.style.justifyContent = "center";

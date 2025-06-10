@@ -202,8 +202,7 @@
                     var text, url;
                     // PATCHED, don't follow if we click on text inside ()
                     let noMetaIsPressed = !metaKey && !ctrlKey && !altKey;
-                    console.log(token.type);
-                    let shouldIgnoreClick = (token.type === "string url" || token.type === "formatting formatting-link-string string url" || token.type === "string url hmd-barelink";
+                    let shouldIgnoreClick = token.type === "string url" || token.type === "formatting formatting-link-string string url";
                     if (noMetaIsPressed && shouldIgnoreClick) {
                        return;
                     }
@@ -229,9 +228,10 @@
                         text = cm.getRange(range.from, range.to).trim();
                         // now extract the URL. boring job
                         var tmp = void 0;
-                        if (text.slice(-1) === ')' &&
-                            (tmp = text.lastIndexOf('](')) !== -1 // xxxx](url)     image / link without ref
-                        ) {
+                        let isRegularLink = text.slice(-1) === ')' && (tmp = text.lastIndexOf('](')) !== -1 // xxxx](url)     image / link without ref
+                        // PATCHED, add support for wiki linkgs
+                        let isWikiLink = text.startsWith('[[');
+                        if (isRegularLink || isWikiLink) {
                             // PATCHED, ignore click if the link is unfolded
                             var target = ev.target;
                             var parent = target.parentElement;
@@ -246,7 +246,8 @@
                                         let hasHiddenLinkPart = sibling.className.includes('hmd-hidden-token');
                                         let isUrl = sibling.className.includes('cm-formatting') && sibling.className.includes('cm-url');
                                         let hasHiddenUrlPart = sibling.className.includes('hmd-hidden-token');
-                                        if ((isLink && !hasHiddenLinkPart) || (isUrl && !hasHiddenUrlPart)) {
+                                        let isHiddenWikiLink =  sibling.className.includes('cm-formatting') && sibling.className.includes('cm-formatting-link') && sibling.className.includes('cm-link') && !sibling.className.includes('hmd-hidden-token');
+                                        if ((isLink && !hasHiddenLinkPart) || (isUrl && !hasHiddenUrlPart) || isHiddenWikiLink) {
                                             isUnfolded = true;
                                             break;
                                         }
@@ -258,8 +259,11 @@
                             }
 
                             // PATCHED, add non-wiki links support
-                            if (typeof read_link_1 === 'undefined') {
-                                url = "[" + text.match(/\(([^)]+)\)/)[1] + "]"; // CUSTOMIZED for non-wiki links
+                            if (isWikiLink) {
+                                url = "[" + text.match(/\[\[([^\]]+)\]\]/)[1] + "]"; //
+                                cm.hmdReadLink(cm.hmdResolveURL(url));
+                            } else if (typeof read_link_1 === 'undefined') {
+                                url = "[" + text.match(/\(([^)]+)\)/)[1] + "]"; // PATCHED for non-wiki links
                                 url = url.replace(/\.md]$/, "]")
                                 cm.hmdReadLink(cm.hmdResolveURL(url));
                             } else {
