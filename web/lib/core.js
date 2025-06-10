@@ -855,8 +855,6 @@
         }
         ans.linkHref = linkHref;
 
-        // if (state)
-        console.log("ANswer", state.linkHref, state.linkText, ans);
         return ans;
     };
     /** get spans from a line and update the cache */
@@ -876,7 +874,6 @@
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             var types = this$1.getTokenTypes(token, tokens[i - 1]);
-            console.log('TYPES', types);
             for (var type in types) {
                 var span = unclosed[type];
                 if (types[type] & 1 /* IS_THIS_TYPE */ || lineText === '```') { // style is active PATCHED
@@ -904,7 +901,6 @@
                         unclosed[type] = null;
                     }
                 }
-                console.log('ANS', ans);
             }
         }
         this.caches[lineNo] = ans;

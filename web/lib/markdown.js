@@ -688,7 +688,6 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     if(stream.eatSpace()){
       return null;
     }
-    console.log('HERE', stream, state);
     var ch = stream.next();
     if (ch === '(' || ch === '[') {
       state.f = state.inline = getLinkHrefInside(ch === "(" ? ")" : "]");
