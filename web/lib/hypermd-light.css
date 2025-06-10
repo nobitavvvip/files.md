@@ -1,5 +1,5 @@
 :root {
-    --font: Inter,Arial,Helvetica,sans-serif;
+    --font: Rubik,Cambria,"Times New Roman",Times,serif;
     --color-bg: #FFF;
     --color-bg-alt: #F9F9F9;
     --color-inline-code: #657b83;
@@ -51,7 +51,7 @@
 
 
 .cm-s-hypermd-light .cm-header, .cm-s-hypermd-light .cm-strong, .cm-s-hypermd-light span.cm-url {
-    font-family: Rubik,Cambria,"Times New Roman",Times,serif !important;
+    font-family: var(--font) !important;
     font-weight: 400;
 }
 
