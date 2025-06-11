@@ -55,6 +55,11 @@ let defaultFiles = {
                 "\n" +
                 ">This is a blockquote. It can span multiple lines and is great for highlighting important information or quotes from other sources.\n" +
                 "\n" +
+                "#### Code Blocks\n" +
+                "```\n" +
+                "Here is some code.\n"+
+                "```\n" +
+                "\n" +
                 "#### Images\n" +
                 "![Why taking notes](https://app.files.md/lib/notes.jpg)\n" +
                 "\n" +
