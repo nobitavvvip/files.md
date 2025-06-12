@@ -5,7 +5,7 @@ import (
 )
 
 func hi(this js.Value, args []js.Value) interface{} {
-	return "Hello, world!"
+	return "Hello, world 2!"
 }
 
 func main() {
