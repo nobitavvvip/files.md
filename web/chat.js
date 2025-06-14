@@ -433,3 +433,70 @@ async function mkdirAll(args) {
 function receive(val) {
     processResponse(val)
 }
+
+const inputField = document.getElementById('input-field');
+
+function getImageExtension(mimeType) {
+    const mimeToExt = {
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+        'image/bmp': 'bmp'
+    };
+    return mimeToExt[mimeType] || 'png';
+}
+
+async function saveImageFile(fileName, file) {
+    try {
+        const rootHandle = await getRootDirHandle();
+        let mediaHandle;
+        try {
+            mediaHandle = await rootHandle.getDirectoryHandle('media');
+        } catch {
+            mediaHandle = await rootHandle.getDirectoryHandle('media', { create: true });
+        }
+
+        const fileHandle = await mediaHandle.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(file);
+        await writable.close();
+
+        return fileHandle;
+    } catch (error) {
+        console.error('Error saving file:', error);
+        return null;
+    }
+}
+
+inputField.addEventListener('paste', async (event) => {
+    const items = event.clipboardData.items;
+    for (const item of items) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+            event.preventDefault(); // Prevent default paste behavior
+            const file = item.getAsFile();
+            const fileName = `${new Date().toISOString().replace(/[:.]/g, '-')}.${getImageExtension(item.type)}`;
+            try {
+                const fileHandle = await saveImageFile(fileName, file);
+                if (fileHandle) {
+                    const markdownImageSyntax = `![](media/${fileName})`;
+                    const startPos = inputField.selectionStart;
+                    const endPos = inputField.selectionEnd;
+                    const textBefore = inputField.value.substring(0, startPos);
+                    const textAfter = inputField.value.substring(endPos);
+
+                    inputField.value = textBefore + markdownImageSyntax + textAfter;
+
+                    // Set cursor position after the inserted text
+                    const newCursorPos = startPos + markdownImageSyntax.length;
+                    inputField.setSelectionRange(newCursorPos, newCursorPos);
+                } else {
+                    console.error('Failed to save the image.');
+                }
+            } catch (error) {
+                console.error('Error saving image:', error);
+            }
+        }
+    }
+});

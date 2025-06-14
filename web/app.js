@@ -127,6 +127,7 @@ function initEditor(el) {
 
     initAutoscroll(editor);
 
+    // Image upload
     editor.on("paste", async (_, event) => {
         const items = (event.clipboardData || event.originalEvent.clipboardData).items;
         for (const item of items) {
