@@ -370,7 +370,6 @@ async function readDir(args) {
         return [];
     }
 
-// Navigate to the target directory
     for (const dirName of dirs) {
         if (dirName) {
             currentDirHandle = await currentDirHandle.getDirectoryHandle(dirName, {create: false});
@@ -395,6 +394,8 @@ async function readDir(args) {
             });
         }
     }
+
+    entries.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
     return entries;
 }
