@@ -4,6 +4,11 @@ let focusedSearchItemIndex = -1;
 let focusedMoveItemIndex = -1;
 let debug = false;
 // let debug = {dir: "", file: "Sim.md", loaded: false};
+let isChat = false;
+
+const sidebar = document.getElementById('sidebar');
+const sidebarContainer = document.getElementById('sidebar-container');
+const content = document.getElementById('content')
 
 async function init(el) {
     initEditor(el);
@@ -45,6 +50,8 @@ async function init(el) {
     await syncTextsWithServer();
     await syncMedia();
     console.log(`Files initialized in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
+
+    initChat();
 }
 
 function initEditor(el) {
@@ -233,6 +240,21 @@ function initEditor(el) {
             cm.focus();
         }
     });
+}
+
+async function initChat() {
+    const go = new Go();
+    const wasmFile = await fetch("main.wasm");
+    const wasmModule = await WebAssembly.instantiateStreaming(wasmFile, go.importObject);
+    go.run(wasmModule.instance);
+    let cmd = {
+        n: 'today',
+        t: "cmd"
+    }
+    replyCmd(JSON.stringify(cmd));
+
+    window.reply = reply
+    window.replyCmd = replyCmd
 }
 
 function createAutocompleteDict() {
@@ -717,18 +739,35 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-function openChat() {
-    window.location.href = '/chat';
+async function switchChat() {
+    if (isChat) {
+        sidebarContainer.style.display = 'block';
+        content.style.display = 'block';
+        chatContainer.style.display = 'none';
+        isChat = false;
+        editor.focus();
+
+        return;
+    }
+
+
+    sidebarContainer.style.display = 'none';
+    content.style.display = 'none';
+    chatContainer.style.display = 'flex';
+    input.focus();
+    isChat = true;
+
     window.resizeTo(500, 500);
     const left = (screen.availWidth - 500) / 2;
     const top = (screen.availHeight - 500) / 2;
     window.moveTo(left, top);
 }
+
 // Toggle focus mode
 document.addEventListener('keydown', function (event) {
     if (isModifierKey(event) && event.key === 'Enter') {
         event.preventDefault();
-        openChat();
+        switchChat();
 
         // const sidebar = document.getElementById('sidebar');
         // if (sidebar.style.display === 'none') {
@@ -915,8 +954,6 @@ window.addEventListener("focus", async () => {
 });
 
 
-// Sidebar resizing;
-const sidebar = document.getElementById('sidebar');
 const resizeHandle = document.querySelector('.resize-handle');
 let isResizing = false;
 resizeHandle.addEventListener('mousedown', initResize);

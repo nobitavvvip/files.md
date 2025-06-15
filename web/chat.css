@@ -1,27 +1,18 @@
-html {
-    text-align: center;
+#chat-container {
+    /*text-align: center;*/
     color: white;
 }
 
-body {
+#chat-container {
     overscroll-behavior: none;
     margin: 0;
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, "Nunito", "Segoe UI", "Roboto",
     "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f0f0;
-}
+    /*justify-content: center;*/
+    /*align-items: center;*/
 
-#app {
-    height: 100vh;
-    text-align: center;
-}
-
-#chat-container {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -29,6 +20,11 @@ body {
     border-radius: 5px;
     background-color: #fff;
     overflow: hidden;
+}
+
+#app {
+    height: 100vh;
+    text-align: center;
 }
 
 #messages {

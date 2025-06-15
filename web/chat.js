@@ -1,3 +1,9 @@
+const input = document.getElementById('input-field');
+const chatContainer = document.getElementById('chat-container');
+const sendButton = document.getElementById('send-button');
+const messagesContainer = document.getElementById('messages');
+const commandPopup = document.getElementById('command-popup');
+
 function sendMessage() {
     const msg = toMarkdown();
     if (msg === '') return;
@@ -94,12 +100,6 @@ function addMessage(text, author) {
 
     return messageBubble
 }
-
-const input = document.getElementById('input-field');
-const inputContainer = document.getElementById('input-container');
-const sendButton = document.getElementById('send-button');
-const messagesContainer = document.getElementById('messages');
-const commandPopup = document.getElementById('command-popup');
 
 const commands = [
     {command: '/today', display: '🏠 Today'},
@@ -219,13 +219,14 @@ function isModifierKey(event) {
 }
 
 document.addEventListener('keydown', function (event) {
-    if (isModifierKey(event) && event.key === 'Enter') {
-        event.preventDefault();
 
-        window.location.href = '/';
-        window.resizeTo(screen.availWidth, screen.availHeight);
-        window.moveTo(0, 0);
-    }
+    // if (isModifierKey(event) && event.key === 'Enter') {
+    //     event.preventDefault();
+    //
+    //     window.location.href = '/';
+    //     window.resizeTo(screen.availWidth, screen.availHeight);
+    //     window.moveTo(0, 0);
+    // }
 });
 
 function initDB() {
