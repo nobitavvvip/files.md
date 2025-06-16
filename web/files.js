@@ -632,10 +632,12 @@ async function isContentEqual(path, content) {
 
 // TODO save metadata & files
 async function saveTextFile(path, content) {
+    let fileHandle;
     try {
-        let fileHandle = await getFileHandle(path, true);
+        fileHandle = await getFileHandle(path, true);
     } catch( err) {
-        console.log('FILEHANDLE, ', err);
+        console.log('FILEHANDLE', err, path);
+        return;
     }
     if (fileHandle === null) {
         // TODO fix once Chromium fixes the bug
