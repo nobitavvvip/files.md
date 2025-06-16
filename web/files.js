@@ -203,7 +203,7 @@ async function syncTextsWithServer() {
     isSyncing = false;
 }
 
-async function syncFileWithServer(dir, filename) {
+async function syncLocalFileWithServer(dir, filename) {
     if (localStorage.getItem('token') === null) {
         return;
     }
@@ -370,7 +370,7 @@ async function syncMedia() {
 }
 
 async function saveMediaFile(path, blob, lastModified) {
-    const fileHandle = await getFileHandle(path);
+    const fileHandle = await getFileHandle(path, true);
     if (fileHandle === null) {
         console.log(`Malformed name for ${path}, skipping file...`);
         return;
@@ -552,7 +552,7 @@ async function getFileStatus(dir, filename) {
     };
 }
 
-async function getFileHandle(path) {
+async function getFileHandle(path, create = false) {
     let dir, filename;
     if (path.includes('/')) {
         const parts = path.split('/');
@@ -568,7 +568,7 @@ async function getFileHandle(path) {
     for (const dirName of dirs) {
         if (dirName) {
             try {
-                currentDirHandle = await currentDirHandle.getDirectoryHandle(dirName, {create: true});
+                currentDirHandle = await currentDirHandle.getDirectoryHandle(dirName, {create: create});
             } catch (error) {
                 console.error(`Error getting directory handle for '${dirName}':`, error);
                 return null;
@@ -622,7 +622,7 @@ async function isContentEqual(path, content) {
 
 // TODO save metadata & files
 async function saveTextFile(path, content) {
-    let fileHandle = await getFileHandle(path);
+    let fileHandle = await getFileHandle(path, true);
     if (fileHandle === null) {
         // TODO fix once Chromium fixes the bug
         throw new Error("Invalid file name");
@@ -796,10 +796,10 @@ async function syncCurrentFile() {
     isSyncingCurrent = true;
 
     try {
-        // Track if filename was changed
         // TODO track if no first line?
         const firstLine = editor.getValue().split('\n')[0];
-        if (firstLine !== toHeader(editor.currentFile)) {
+        const hasFilenameChanged = firstLine !== toHeader(editor.currentFile);
+        if (hasFilenameChanged) {
             console.log(firstLine, toHeader(editor.currentFile));
             const newFilename = fromHeader(firstLine);
             await removeFile(`${editor.currentDir}/${editor.currentFile}`);
@@ -809,7 +809,7 @@ async function syncCurrentFile() {
             files[editor.currentDir][newFilename] = {
                 content: getCurrentContent(),
                 lastModified: 0,
-                handle: await getFileHandle(toPath(editor.currentDir, newFilename)),
+                handle: await getFileHandle(toPath(editor.currentDir, newFilename), true),
             }
             editor.currentFile = newFilename;
 
@@ -895,7 +895,7 @@ async function syncCurrentFile() {
     }
 
     try {
-        await syncFileWithServer(editor.currentDir, editor.currentFile);
+        await syncLocalFileWithServer(editor.currentDir, editor.currentFile);
     } catch (error) {
         console.error("Error during sync with server:", error);
     }

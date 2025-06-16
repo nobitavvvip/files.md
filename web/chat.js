@@ -274,35 +274,6 @@ async function saveDirectoryHandle(directoryHandle) {
     await store.put(directoryHandle, 'savedDirectoryHandle');
 }
 
-async function getFileHandle(path, create = false) {
-    let dir, filename;
-    if (path.includes('/')) {
-        const parts = path.split('/');
-        filename = parts.pop();
-        dir = parts.join('/');
-    } else {
-        dir = '';
-        filename = path;
-    }
-
-    const dirs = dir.split('/');
-    let currentDirHandle = await getRootDirHandle();
-    if (currentDirHandle === undefined) {
-        console.error('PLS open dir')
-    }
-
-    for (const dirName of dirs) {
-        if (dirName) {
-            currentDirHandle = await currentDirHandle.getDirectoryHandle(dirName, {create: create});
-        }
-    }
-
-    let fileHandle;
-    fileHandle = await currentDirHandle.getFileHandle(filename, {create: create});
-
-    return fileHandle;
-}
-
 async function read(args) {
     let path = args[0];
     let fileHandle = await getFileHandle(path)
