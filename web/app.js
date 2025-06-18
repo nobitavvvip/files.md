@@ -2,9 +2,9 @@
 let editor;
 let focusedSearchItemIndex = -1;
 let focusedMoveItemIndex = -1;
+let isChat = false;
 let debug = false;
 // let debug = {dir: "", file: "Sim.md", loaded: false};
-let isChat = false;
 
 const sidebar = document.getElementById('sidebar');
 const sidebarContainer = document.getElementById('sidebar-container');
@@ -23,6 +23,10 @@ async function init(el) {
         buildSidebar();
         await openFile("", "Welcome.md");
         return;
+    } else {
+        document.getElementById('open-folder').style.display = 'none';
+        document.getElementById('new-file').style.display = 'inline';
+        document.getElementById('chat').style.display = 'inline';
     }
 
     const permission = await savedDirHandle.queryPermission({mode: 'read'});
@@ -775,7 +779,7 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-function openEditor(withSidebar = true) {
+async function openEditor(withSidebar = true) {
     if (!isChat) {
         return true;
     }
@@ -784,6 +788,12 @@ function openEditor(withSidebar = true) {
         sidebarContainer.style.display = 'block';
         window.resizeTo(screen.availWidth, screen.availHeight);
         window.moveTo(0, 0);
+
+        setTimeout(async () => {
+            const rootDirHandle = await getRootDirHandle();
+            files = await loadLocalFiles(rootDirHandle);
+            buildSidebar();
+        }, 1);
     }
     content.style.display = 'block';
     chatContainer.style.display = 'none';
@@ -992,6 +1002,8 @@ window.addEventListener('focus', async () => {
     if (isChat) {
         return false;
     }
+
+    console.log("FOCUS");
 
     if (editor.currentFile === undefined) {
         return;
