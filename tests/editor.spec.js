@@ -76,7 +76,7 @@ test.describe('Files.md Text Editor Sync Tests', () => {
 
         // Test 1: Select all text
         await page.keyboard.press('Control+a');
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(500);
 
         // Check if selection div is created with proper positioning
         const allSelections = page.locator('.CodeMirror-selected');
