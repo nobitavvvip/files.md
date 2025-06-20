@@ -4,6 +4,7 @@ let tree;
 let focusedSearchItemIndex = -1;
 let focusedMoveItemIndex = -1;
 let isChat = false;
+let isWelcome = false;
 let debug = false;
 // let debug = {dir: "", file: "Sim.md", loaded: false};
 
@@ -24,8 +25,10 @@ async function init(el) {
         files = defaultFiles;
         updateSidebar();
         await openFile("", "Welcome.md");
+        isWelcome = true;
         return;
     } else {
+        isWelcome = false;
         document.getElementById('open-folder').style.display = 'none';
         document.getElementById('new-file').style.display = 'inline';
         document.getElementById('new-folder').style.display = 'inline';
@@ -38,6 +41,7 @@ async function init(el) {
         document.getElementById('new-file').style.display = 'none';
         document.getElementById('new-folder').style.display = 'none';
         document.getElementById('chat').style.display = 'none';
+        isWelcome = true;
     }
 
     const rootDirHandle = await getRootDirHandle();
@@ -288,10 +292,6 @@ function createAutocompleteDict() {
     return dict;
 }
 function updateSidebar(focusDir = '') {
-    if (files === undefined) {
-        return
-    }
-
     let expandedDirs = new Set();
     let selectedDirs = new Set();
 
@@ -331,7 +331,7 @@ function updateSidebar(focusDir = '') {
         }
     }
 
-    if (files && files['']) {
+    if (files['']) {
         for (let file in files['']) {
             if (file === CONFIG_FILENAME) {
                 continue;
@@ -996,6 +996,7 @@ async function openDir() {
     document.getElementById('new-file').style.display = 'inline';
     document.getElementById('new-folder').style.display = 'inline';
     document.getElementById('chat').style.display = 'inline';
+    isWelcome = false;
     await saveDirectoryHandle(dirHandle);
     files = await loadLocalFiles(dirHandle)
     updateSidebar();
@@ -1081,7 +1082,7 @@ document.addEventListener('mousedown', (event) => {
 // Reload files once the app gains focus.
 window.addEventListener('focus', async () => {
     // We don't want to do heavy stuff when chat is open.
-    if (isChat) {
+    if (isChat || isWelcome) {
         return false;
     }
 
