@@ -35,6 +35,7 @@ init_server: # create directories and configuration files on the service
 			echo 'User=www-data' >> /etc/systemd/system/bot.service && \
 			echo 'ExecStart=/app/bot' >> /etc/systemd/system/bot.service && \
 			echo 'WorkingDirectory=/app' >> /etc/systemd/system/bot.service && \
+			echo 'Environment=TOKENS_SALT=your-secret-salt-here' >> /etc/systemd/system/bot.service && \
 			echo 'Restart=always' >> /etc/systemd/system/bot.service && \
 			echo 'RestartSec=5' >> /etc/systemd/system/bot.service && \
 			echo 'StandardOutput=append:/app/log' >> /etc/systemd/system/bot.service && \

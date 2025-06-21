@@ -17,6 +17,7 @@ type BotConfig struct {
 	AppHost        string `default:"" envconfig:"APP_HOST"`
 	ServerCertDir  string `default:"/tmp" envconfig:"SERVER_CERT_DIR"`
 	TokensDir      string `default:"/tmp" envconfig:"TOKENS_DIR"`
+	TokensSalt     string `envconfig:"TOKENS_SALT"`
 	ServerLogFile  string `default:"/tmp/server.log" envconfig:"SERVER_LOG_FILE"`
 	AuthToken      string `default:"" envconfig:"AUTH_TOKEN"`
 }

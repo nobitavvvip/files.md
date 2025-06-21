@@ -2,6 +2,7 @@ package server
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"log"
@@ -128,4 +129,10 @@ func genToken() string {
 	bytes := make([]byte, TokenLength)
 	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
+}
+
+func saltToken(token string) string {
+	h := sha256.New()
+	h.Write([]byte(token + config.BotCfg.TokensSalt))
+	return hex.EncodeToString(h.Sum(nil))
 }
