@@ -13,14 +13,14 @@ import (
 )
 
 var syncMediasRequest struct {
-	UserID        int64  `json:"userId"`
+	UserID        int64  `json:"userId"` // TODO not used
 	Dir           string `json:"dir"`
 	Timestamp     int64  `json:"timestamp"`
 	FilenamesHash string `json:"filenamesHash"`
 }
 
 type media struct {
-	UserID       int64  `json:"userId"`
+	UserID       int64  `json:"userId"` // TODO not used
 	Path         string `json:"path"`
 	LastModified int64  `json:"lastModified"`
 	Data         string `json:"data"`

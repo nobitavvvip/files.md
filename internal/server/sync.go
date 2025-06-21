@@ -23,11 +23,6 @@ const (
 	StatusUpdatedOnServer = "updatedOnServer"
 )
 
-var (
-	AuthToken string
-	tokensDir string
-)
-
 type file struct {
 	UserID       int64  `json:"userId"`
 	Status       string `json:"status"`
@@ -69,14 +64,14 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userFS, err := fs.NewUserFS(request.UserID)
+	userFS, err := fs.NewUserFS(r.Context().Value("userID").(int64))
 	if err != nil {
 		log.Printf("Error creating user FS: %v", err)
 		http.Error(w, "Error creating user FS", http.StatusInternalServerError)
 		return
 	}
 
-	// Delete files
+	// Delete files.
 	for _, path := range request.Deleted {
 		err = userFS.Del(fs.DirRoot, path)
 		if err != nil {
@@ -244,7 +239,7 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := clientFile.Path
-	userFS, err := fs.NewUserFS(clientFile.UserID)
+	userFS, err := fs.NewUserFS(r.Context().Value("userID").(int64))
 	if err != nil {
 		log.Printf("Error creating user FS: %v", err)
 		http.Error(w, "Error creating user FS", http.StatusInternalServerError)
@@ -339,17 +334,6 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
 	}
-}
-
-// validateAuthToken checks if the syncMediasRequest has a valid auth oneTimeToken
-func validateAuthToken(r *http.Request) bool {
-	token := r.Header.Get("Authorization")
-
-	if strings.HasPrefix(token, "Bearer ") {
-		token = token[7:]
-	}
-
-	return token == AuthToken
 }
 
 func logSync(msg string) {

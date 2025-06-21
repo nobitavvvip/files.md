@@ -100,18 +100,6 @@ func IssueToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO CHECK that user id belongs to oneTimeToken ID, or get user id by oneTimeToken
-func authMiddleware(next http.HandlerFunc, tokensDir string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token != AuthToken {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-		next(w, r)
-	}
-}
-
 func issueNewToken(oneTimeToken string) (string, bool) {
 	mu.Lock()
 	data, exists := oneTimeTokens[oneTimeToken]

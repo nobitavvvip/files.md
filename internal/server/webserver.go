@@ -3,6 +3,7 @@
 package server
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"log"
@@ -188,21 +189,6 @@ func newLogger(logFilename string) *log.Logger {
 	return log.New(logFile, "Server Error: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-OneTimeToken")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next(w, r)
-	}
-}
-
 func panicMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -223,5 +209,35 @@ func panicMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}()
 
 		next(w, r)
+	}
+}
+
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-OneTimeToken")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next(w, r)
+	}
+}
+
+// TODO CHECK that user id belongs to oneTimeToken ID, or get user id by oneTimeToken
+func authMiddleware(next http.HandlerFunc, tokensDir string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		userID, ok := UserID(token)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "userID", userID)
+		next(w, r.WithContext(ctx))
 	}
 }
