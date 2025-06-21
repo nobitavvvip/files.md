@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/spf13/afero"
-
 	"zakirullin/stuffbot/internal/fs"
 )
 
@@ -37,9 +35,9 @@ func SyncMedias(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO ../.. Attacks (fixed with fs.FS?)
-	mediaDir := filepath.Join(StorageDir, fs.DirMedia)
 	logSync(fmt.Sprintf("Media sync syncMediasRequest for folder: '%s', last sync: %d", fs.DirMedia, syncMediasRequest.Timestamp))
-	mediaFS, err := fs.NewFS(mediaDir, afero.NewOsFs())
+
+	userFS, err := fs.NewUserFS(userID(r))
 	if err != nil {
 		log.Printf("Error creating media FS: %v", err)
 		http.Error(w, "Error creating media FS", http.StatusInternalServerError)
@@ -50,13 +48,13 @@ func SyncMedias(w http.ResponseWriter, r *http.Request) {
 	latestTimestamp := int64(0)
 
 	// Find media files newer than client's timestamp
-	ctimes, err := mediaFS.Ctimes(fs.DirMedia)
+	ctimes, err := userFS.Ctimes(fs.DirMedia)
 	if err != nil {
 		log.Printf("Error getting ctimes for media files: %v", err)
 		http.Error(w, "Error getting media file times", http.StatusInternalServerError)
 		return
 	}
-	for path, modTime := range ctimes {
+	for filename, modTime := range ctimes {
 		if modTime <= syncMediasRequest.Timestamp {
 			continue
 		}
@@ -64,13 +62,8 @@ func SyncMedias(w http.ResponseWriter, r *http.Request) {
 			latestTimestamp = modTime
 		}
 
-		relPath, err := filepath.Rel(mediaDir, path)
-		if err != nil {
-			continue
-		}
-
 		mediaFiles = append(mediaFiles, media{
-			Path:         relPath,
+			Path:         filename,
 			LastModified: modTime,
 		})
 	}
