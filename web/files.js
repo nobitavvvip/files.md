@@ -778,6 +778,8 @@ function addFileToMemory(dir, filename, fileData) {
     }
 
     files[dir][filename] = fileData;
+
+    // Only sort the specific directory that was modified
     const sortedFiles = {};
     const sortedKeys = Object.keys(files[dir]).sort((a, b) => a.localeCompare(b));
     for (const key of sortedKeys) {
@@ -785,13 +787,8 @@ function addFileToMemory(dir, filename, fileData) {
     }
     files[dir] = sortedFiles;
 
-    const sortedDirs = {};
-    const sortedDirKeys = Object.keys(files).sort((a, b) => a.localeCompare(b));
-    for (const dirKey of sortedDirKeys) {
-        sortedDirs[dirKey] = files[dirKey];
-    }
-
-    files = sortedDirs;
+    // Remove the global re-sorting - it's messing up the natural order
+    // The directory order should stay as established by loadLocalFiles
 }
 
 async function moveFile(oldPath, newPath) {
