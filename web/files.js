@@ -290,8 +290,9 @@ async function syncLocalFileWithServer(dir, filename) {
             return;
         }
         if (json.status === 'updatedOnServer') {
+            console.log(`trying saved metadata3 for ${path} with timestamp ${json.lastModified}`);
             setServerFile(path, content, json.lastModified);
-            console.log(`saved metadata for ${path} with timestamp ${json.lastModified}`);
+            console.log(`saved metadata3 for ${path} with timestamp ${json.lastModified}`);
             saveServerFiles();
             return;
         }
