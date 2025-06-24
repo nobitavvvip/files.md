@@ -12,6 +12,11 @@ import (
 	"zakirullin/stuffbot/config"
 )
 
+const (
+	Rename = "ren"
+	Delete = "del"
+)
+
 var lock sync.RWMutex
 
 func LogRename(time int64, oldPath, newPath string) {
@@ -26,16 +31,16 @@ func LogRename(time int64, oldPath, newPath string) {
 
 	oldPath = url.QueryEscape(oldPath)
 	newPath = url.QueryEscape(newPath)
-	record := fmt.Sprintf("%d %s %s\n", time, oldPath, newPath)
+	record := fmt.Sprintf("%d %s %s %s\n", time, Rename, oldPath, newPath)
 
 	file.WriteString(record)
 	file.Sync()
 }
 
-// ReadLog reads the file system log and returns a map of:
+// RenamesLog reads the file system renames log and returns a map of:
 // newPath -> oldPath
 // AfterTimestamp is inclusive.
-func ReadLog(userID, afterTimestamp int64) map[string]string {
+func RenamesLog(userID, afterTimestamp int64) map[string]string {
 	lock.RLock()
 	defer lock.RUnlock()
 
@@ -52,8 +57,11 @@ func ReadLog(userID, afterTimestamp int64) map[string]string {
 	for scanner.Scan() {
 		line := scanner.Text()
 		var timestamp int64
-		var oldPath, newPath string
-		n, err := fmt.Sscanf(line, "%d %s %s", &timestamp, &oldPath, &newPath)
+		var op, oldPath, newPath string
+		n, err := fmt.Sscanf(line, "%d %s %s %s", &timestamp, &op, &oldPath, &newPath)
+		if op != Rename {
+			continue
+		}
 		if err != nil || n != 3 || timestamp < afterTimestamp {
 			continue
 		}

@@ -96,7 +96,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 	renames := make(map[string]string)
 	// Don't respond renames on first sync
 	if lastSync != 0 {
-		renames = ReadLog(userID(r), lastSync)
+		renames = RenamesLog(userID(r), lastSync)
 	}
 
 	// If a file was renamed and changed, on client we would rename then change?

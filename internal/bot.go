@@ -60,7 +60,7 @@ const (
 	wideSpacer = "<code>            ⁠</code>"
 )
 
-// Update represents incoming user updates
+// Update represents incoming user updates.
 type Update interface {
 	MsgText() string
 	UserID() int64
@@ -79,7 +79,7 @@ type Update interface {
 	Time() (int, bool)
 }
 
-// Chat provides a simple interface to chat API like Telegram
+// Chat provides a simple interface to chat API like Telegram.
 type Chat interface {
 	Send(userID int64, text string, kb *tg.Keyboard, markup string) (int, error)
 	SendImages(userID int64, images []string) ([]int, error)
