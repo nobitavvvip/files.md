@@ -216,6 +216,24 @@ test('rename file via header removal', async ({ page }) => {
     await page.pause();
 });
 
+test('rename to empty name saves to untitled', async ({ page }) => {
+    await setup(page);
+
+    await clickAndExpectContent(page, 'README', '# README\nHello world');
+
+    await page.evaluate(() => {
+        const cm = document.querySelector('.CodeMirror').CodeMirror;
+        cm.setCursor(0, cm.getLine(0).length);
+    });
+    await page.keyboard.press('Meta+Backspace');
+    await page.waitForTimeout(1000);
+
+    await clickAndExpectContent(page, 'Notes', '# Notes\nSome text');
+    await clickAndExpectContent(page, 'Untitled', '# Untitled\nHello world');
+
+    await page.pause();
+});
+
 test('create file and move', async ({ page }) => {
     await page.evaluate(() => {
         window.getRootDirHandle = async function() {

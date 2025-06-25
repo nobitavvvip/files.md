@@ -919,21 +919,22 @@ async function syncCurrentFile(syncWithServer = true) {
     try {
         // TODO track if no first line?
         const firstLine = editor.getValue().split('\n')[0];
-        const hasFilenameChanged = firstLine.toLowerCase() !== toHeader(editor.currentFile).toLowerCase();
-        if (hasFilenameChanged) {
-             let newFilename = ucfirst(fromHeaderToFilename(firstLine));
-            // If filename is empty, generate an available "Untitled" name
-            if (newFilename.trim() === '.md') {
-                let counter = 1;
-                newFilename = 'Untitled.md';
-                if (!editor.currentFile.startsWith('Untitled')) {
-                    while (files[editor.currentDir][newFilename]) {
-                        newFilename = `Untitled ${counter}.md`;
-                        counter++;
-                    }
+
+        let newFilename = ucfirst(fromHeaderToFilename(firstLine));
+        // If filename is empty, generate an available "Untitled" name
+        if (newFilename.trim() === '.md') {
+            let counter = 1;
+            newFilename = 'Untitled.md';
+            if (!editor.currentFile.startsWith('Untitled')) {
+                while (files[editor.currentDir][newFilename]) {
+                    newFilename = `Untitled ${counter}.md`;
+                    counter++;
                 }
             }
-            
+        }
+
+        const hasFilenameChanged = newFilename.toLowerCase() !== editor.currentFile.toLowerCase();
+        if (hasFilenameChanged) {
             await removeFile(`${editor.currentDir}/${editor.currentFile}`);
             delete files[editor.currentDir][editor.currentFile];
             console.log('Removed', `${editor.currentDir}/${editor.currentFile}`);

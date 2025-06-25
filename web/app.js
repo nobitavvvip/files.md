@@ -1148,6 +1148,10 @@ function getCurrentContent() {
         content = content.slice(`${header}\n`.length);
     }
 
+    if (content.toLowerCase().startsWith('# ')) {
+        content = content.slice(`$# `.length);
+    }
+
     return content;
 }
 
