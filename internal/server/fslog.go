@@ -79,7 +79,7 @@ func RenamesLog(userID, afterTimestamp int64) map[string]string {
 		if op != Rename {
 			continue
 		}
-		if err != nil || n != 3 || timestamp < afterTimestamp {
+		if err != nil || n != 4 || timestamp < afterTimestamp {
 			continue
 		}
 		oldPath, err = url.QueryUnescape(oldPath)
