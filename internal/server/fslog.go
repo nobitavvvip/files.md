@@ -37,6 +37,23 @@ func LogRename(time int64, oldPath, newPath string) {
 	file.Sync()
 }
 
+func LogDelete(time int64, filepath string) {
+	lock.Lock()
+	defer lock.Unlock()
+
+	file, err := os.OpenFile(path.Join(config.BotCfg.WorkingDir, "fslog"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	filepath = url.QueryEscape(filepath)
+	record := fmt.Sprintf("%d %s %s\n", time, Delete, filepath)
+
+	file.WriteString(record)
+	file.Sync()
+}
+
 // RenamesLog reads the file system renames log and returns a map of:
 // newPath -> oldPath
 // AfterTimestamp is inclusive.

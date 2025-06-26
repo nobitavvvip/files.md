@@ -1150,7 +1150,7 @@ async function openDir() {
 
     // Create welcome markdown file if empty
     if (Object.keys(files).length === 0) {
-        const hotkeysFilename = '🎛️ Hotkeys.md';
+        const hotkeysFilename = '🎹 Hotkeys.md';
         await saveTextFile(hotkeysFilename, HOTKEYS_CONTENT);
         files[''] = {};
         files[''][hotkeysFilename] = {

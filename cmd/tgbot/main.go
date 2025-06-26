@@ -48,8 +48,9 @@ func main() {
 	}
 	telegram := tg.NewTG(api)
 
-	// Save all renames to an append-only log.
+	// Save all renames and deletes to an append-only log.
 	fs.LogRename = server.LogRename
+	fs.LogDelete = server.LogDelete
 
 	// Due tasks scheduler
 	ticker := time.NewTicker(5 * time.Second)

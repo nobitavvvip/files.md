@@ -33,6 +33,7 @@ var (
 	ReadDir   = readDir
 
 	LogRename = func(time int64, oldPath, newPath string) {} // callback that can be used to track renames
+	LogDelete = func(time int64, path string) {}             // callback that can be used to track deletes
 
 	errUnsafePath   = errors.New("unsafe path, possible security issue")
 	errCannotUnhash = errors.New("cannot unhash, maybe the file is missing")
@@ -214,6 +215,14 @@ func (fs FS) Del(dir, filename string) error {
 		return fmt.Errorf("fs file: can't remove '%s': %w", filePath, err)
 	}
 
+	// Log deletion.
+	ctime, err := fs.Ctime(filePath, "")
+	// Nothing terrible will happen if we don't log a rename. The client would just have duplicate files.
+	if err == nil {
+		absPath := path.Join(fs.rootPath, filePath)
+		LogDelete(ctime, absPath)
+	}
+
 	return nil
 }
 
@@ -238,6 +247,7 @@ func (fs FS) Rename(oldDir, oldFilename, newDir, newFilename string) error {
 		return fmt.Errorf("can't rename from '%s' to '%s': %w", oldPath, newPath, err)
 	}
 
+	// Log renaming.
 	ctime, err := fs.Ctime(newDir, newFilename)
 	// Nothing terrible will happen if we don't log a rename. The client would just have duplicate files.
 	if err == nil {
