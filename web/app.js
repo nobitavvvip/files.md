@@ -80,7 +80,7 @@ async function init(el) {
     const rootDirHandle = await getRootDirHandle();
 
     let perf = performance.now();
-    files = await loadLocalFiles(rootDirHandle);
+    sidebarFiles = await loadLocalFiles(rootDirHandle);
     console.log(`Files loaded in ${performance.now() - perf}ms`);
 
     initChat();
@@ -154,8 +154,8 @@ function initEditor(el) {
 
         const match = path.match(/^media\/(.+\.(png|jpg|jpeg|gif|webp))$/i);
 
-        if (match && files['media'] && files['media'][match[1]]) {
-            return files['media'][match[1]].imageUrl;
+        if (match && sidebarFiles['media'] && sidebarFiles['media'][match[1]]) {
+            return sidebarFiles['media'][match[1]].imageUrl;
         }
 
         return path;
@@ -214,10 +214,10 @@ function initEditor(el) {
                 try {
                     const fileHandle = await saveImageFile(fileName, file);
                     if (fileHandle) {
-                        if (!files['media']) {
-                            files['media'] = {};
+                        if (!sidebarFiles['media']) {
+                            sidebarFiles['media'] = {};
                         }
-                        files['media'][fileName] = {
+                        sidebarFiles['media'][fileName] = {
                             handle: fileHandle,
                             lastModified: Date.now(),
                             imageUrl: URL.createObjectURL(file)
@@ -350,7 +350,7 @@ function createAutocompleteDict() {
     const dict = {};
 
     Object.keys(excludeDirs(SYSTEM_DIRS)).forEach(dir => {
-        Object.keys(files[dir]).forEach(filename => {
+        Object.keys(sidebarFiles[dir]).forEach(filename => {
             if (filename === CONFIG_FILENAME) {
                 return;
             }
@@ -393,7 +393,7 @@ function updateSidebar(focusDir = '') {
     root = new TreeNode('');
 
     // Process directories
-    for (const dir in files) {
+    for (const dir in sidebarFiles) {
         if (dir === '' || dir === 'media') {
             continue;
         }
@@ -401,7 +401,7 @@ function updateSidebar(focusDir = '') {
         let dirNode = new TreeNode(dir, {expanded: false, dir: true});
 
         // Process files in directory
-        for (let file in files[dir]) {
+        for (let file in sidebarFiles[dir]) {
             let fileNode = new TreeNode(file.replace(/\.md$/, ''), {expanded: false});
             fileNode.on('click', async function (n, node) {
                 await openFile(node.parent.toString(), node.toString() + '.md');
@@ -427,8 +427,8 @@ function updateSidebar(focusDir = '') {
     }
 
     // Process root-level files
-    if (files['']) {
-        for (let file in files['']) {
+    if (sidebarFiles['']) {
+        for (let file in sidebarFiles['']) {
             if (file === CONFIG_FILENAME) {
                 continue;
             }
@@ -459,7 +459,7 @@ async function showRandomFile() {
 
     const allFiles = [];
     for (let dir in excludeDirs(SYSTEM_DIRS)) {
-        for (let file in files[dir]) {
+        for (let file in sidebarFiles[dir]) {
             if (file === CONFIG_FILENAME) {
                 continue;
             }
@@ -487,7 +487,7 @@ async function openFile(dir, filename, saveToHistory = true) {
 
     const start = performance.now();
     filename = filename.normalize('NFC');
-    const fileData = files[dir][filename];
+    const fileData = sidebarFiles[dir][filename];
 
     // Check if we're loading the same file and save cursor position
     let cursorPos = null;
@@ -550,7 +550,7 @@ async function newFile() {
     let filename = 'New file.md';
 
     let num = 1;
-    while (files[dir] && files[dir][filename]) {
+    while (sidebarFiles[dir] && sidebarFiles[dir][filename]) {
         filename = `New file (${num}).md`;
         num++;
     }
@@ -588,14 +588,14 @@ async function newFolder() {
 
     let finalFolderName = folderName;
     let num = 1;
-    while (files[finalFolderName]) {
+    while (sidebarFiles[finalFolderName]) {
         finalFolderName = `${folderName} (${num})`;
         num++;
     }
 
     const rootDirHandle = await getRootDirHandle();
     await rootDirHandle.getDirectoryHandle(finalFolderName, {create: true});
-    files[finalFolderName] = {};
+    sidebarFiles[finalFolderName] = {};
 
     console.log('CREATED folder', finalFolderName);
 
@@ -715,7 +715,7 @@ window.addEventListener('keydown', async (event) => {
         editor.currentFile = undefined;
         await removeFile(path);
         // Remove from files object
-        delete files[dir][filename];
+        delete sidebarFiles[dir][filename];
         await showRandomFile();
         await updateSidebar();
     }
@@ -751,9 +751,9 @@ function closeMoveModal() {
 function loadRecentFiles() {
     let results = [];
     for (const dir of Object.keys(excludeDirs(SYSTEM_DIRS))) {
-        for (const filename of Object.keys(files[dir])) {
+        for (const filename of Object.keys(sidebarFiles[dir])) {
             results.push({
-                dir, filename, lastModified: files[dir][filename].lastModified,
+                dir, filename, lastModified: sidebarFiles[dir][filename].lastModified,
             });
         }
     }
@@ -767,7 +767,7 @@ function loadRecentFiles() {
 
 function getMoveDestinations() {
     let dirs = ['/'];
-    for (const dir of Object.keys(files)) {
+    for (const dir of Object.keys(sidebarFiles)) {
         if (dir === '' || dir === 'media') {
             continue;
         }
@@ -796,13 +796,13 @@ function search() {
         const folderName = search.slice(0, -1);
 
         // Check if the folder exists in files
-        if (files[folderName]) {
+        if (sidebarFiles[folderName]) {
             const list = document.getElementById('search-results');
             list.innerHTML = '';
 
             // Get all files from the specified folder
             const folderResults = [];
-            for (const filename in files[folderName]) {
+            for (const filename in sidebarFiles[folderName]) {
                 folderResults.push({
                     filename: filename,
                     dir: folderName,
@@ -828,8 +828,8 @@ function search() {
 
     // Similarity matching, check for direct file matches across directories.
     for (const dir of searchDirs) {
-        if (!files[dir] || dir === 'media') continue;
-        for (const filename in files[dir]) {
+        if (!sidebarFiles[dir] || dir === 'media') continue;
+        for (const filename in sidebarFiles[dir]) {
             const potentialMatch = filename.replace(/\.md$/, '');
             let similarityScore = similarity(search, potentialMatch);
 
@@ -845,8 +845,8 @@ function search() {
     }
 
     // If search is equal to directory
-    if (files[search]) {
-        for (const filename in files[search]) {
+    if (sidebarFiles[search]) {
+        for (const filename in sidebarFiles[search]) {
             results.push({
                 filename: filename,
                 dir: search,
@@ -861,8 +861,8 @@ function search() {
         const dirName = search.substring(0, spaceIndex);
         const fileName = search.substring(spaceIndex + 1);
 
-        if (files[dirName]) {
-            for (const filename in files[dirName]) {
+        if (sidebarFiles[dirName]) {
+            for (const filename in sidebarFiles[dirName]) {
                 const potentialMatch = filename.replace(/\.md$/, '');
                 if (potentialMatch.toLowerCase().includes(fileName.toLowerCase())) {
                     results.push({
@@ -876,14 +876,14 @@ function search() {
     }
 
     // Substring matching
-    for (const dir in files) {
+    for (const dir in sidebarFiles) {
         // If dir is not in search dirs, skip
         if (dir === 'media') {
             continue;
         }
 
 
-        for (const filename in files[dir]) {
+        for (const filename in sidebarFiles[dir]) {
             const potentialMatch = filename.replace(/\.md$/, '');
             const isSubstringMatch = potentialMatch.toLowerCase().includes(search.toLowerCase());
 
@@ -1014,7 +1014,7 @@ async function openEditor(withSidebar = true) {
 
         setTimeout(async () => {
             const rootDirHandle = await getRootDirHandle();
-            files = await loadLocalFiles(rootDirHandle);
+            sidebarFiles = await loadLocalFiles(rootDirHandle);
             updateSidebar();
         }, 1);
     }
@@ -1142,9 +1142,9 @@ document.getElementById('move').addEventListener('keydown', (event) => {
 function excludeDirs(excludedDirs) {
     const filteredFiles = {};
 
-    for (const dir in files) {
+    for (const dir in sidebarFiles) {
         if (!excludedDirs.includes(dir)) {
-            filteredFiles[dir] = files[dir];
+            filteredFiles[dir] = sidebarFiles[dir];
         }
     }
 
@@ -1159,7 +1159,7 @@ async function openDir() {
     document.getElementById('chat').style.display = 'inline';
 
     await saveDirectoryHandle(dirHandle);
-    files = await loadLocalFiles(dirHandle)
+    sidebarFiles = await loadLocalFiles(dirHandle)
 
     initChat();
 
@@ -1293,7 +1293,7 @@ window.addEventListener('focus', async () => {
     await syncCurrentFile();
 
     const start = performance.now();
-    files = await loadLocalFiles(savedDirectoryHandle);
+    sidebarFiles = await loadLocalFiles(savedDirectoryHandle);
     const end = performance.now();
     console.log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()
@@ -1316,7 +1316,7 @@ window.addEventListener('blur', async function () {
 
     // Benchmark time took
     const start = performance.now();
-    files = await loadLocalFiles(savedDirectoryHandle);
+    sidebarFiles = await loadLocalFiles(savedDirectoryHandle);
     const end = performance.now();
     console.log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()
@@ -1365,18 +1365,19 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    if (isMetaKey(e) && e.key === 'a') {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Select all except the first line
-        const lastLine = editor.lastLine();
-        const lastLineLength = editor.getLine(lastLine).length;
-
-        editor.getDoc().setSelection(
-            {line: 1, ch: 0},                    // anchor
-            {line: lastLine, ch: lastLineLength}, // head
-            {scroll: false}  // don't scroll to cursor
-        );
-    }
+    // TODO uncomment, we won't this work only if focus on editor or sidebar, not in dialogs or input fields
+    // if (isMetaKey(e) && e.key === 'a') {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //
+    //     // Select all except the first line
+    //     const lastLine = editor.lastLine();
+    //     const lastLineLength = editor.getLine(lastLine).length;
+    //
+    //     editor.getDoc().setSelection(
+    //         {line: 1, ch: 0},                    // anchor
+    //         {line: lastLine, ch: lastLineLength}, // head
+    //         {scroll: false}  // don't scroll to cursor
+    //     );
+    // }
 }, true);

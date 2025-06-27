@@ -536,7 +536,6 @@ body.dragging * {
 }
 
 #chat-input {
-    height: 50px !important;
     margin: 5px;
     border-radius: 5px;
     border: 1px solid var(--color-border);
