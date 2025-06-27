@@ -1,6 +1,10 @@
+// Global variables
+let messages = [];
 let chatContainer;
 let messageInput;
 const CHAT_FILENAME = 'Chat.txt';
+
+
 
 function parseFileContent(content) {
     const lines = content.split('\n');
@@ -63,19 +67,17 @@ function formatFileContent(messages) {
 
 async function loadData() {
     try {
-        const fileHandle = await getFileHandle(CHAT_FILENAME);
-        const content = await fileHandle.text();
+        const file = await ((await getFileHandle(CHAT_FILENAME)).getFile());
+        const content = await file.text();
 
-        // Parse the content and load into main.txt for now
-        // You can extend this to support multiple files
-        const messages = parseFileContent(content);
-        sidebarFiles['main.txt'] = messages;
+        // Parse the content and load messages
+        messages = parseFileContent(content);
 
         console.log(`Loaded ${messages.length} messages from ${CHAT_FILENAME}`);
     } catch (error) {
         console.error('Error loading data:', error);
         // Initialize with empty data if file doesn't exist or can't be read
-        sidebarFiles['main.txt'] = [];
+        messages = [];
     }
 }
 
@@ -112,14 +114,6 @@ function initChat() {
     loadData().then(() => {
         renderMessages();
     });
-
-    // Notify sidebar about initial state (commented for future implementation)
-    // updateSidebar();
-
-    // Listen for sidebar file switching (commented for future implementation)
-    // window.addEventListener('fileSwitch', function(e) {
-    //     switchFile(e.detail.fileName);
-    // });
 }
 
 function handleSend() {
@@ -149,8 +143,6 @@ function handleSend() {
 }
 
 function renderMessages() {
-    const messages = sidebarFiles[currentFile];
-
     if (messages.length === 0) {
         chatContainer.innerHTML = `
             <div class="empty-state">
@@ -161,7 +153,7 @@ function renderMessages() {
                     <line x1="16" y1="17" x2="8" y2="17"/>
                     <polyline points="10,9 9,9 8,9"/>
                 </svg>
-                <div class="empty-title">No notes in ${currentFile}</div>
+                <div class="empty-title">No notes found</div>
                 <div class="empty-desc">Start typing to add your first note</div>
             </div>
         `;
@@ -177,7 +169,6 @@ function renderMessages() {
             <div class="message-footer">
                 <span class="message-time">${note.timestamp}</span>
                 <div class="message-actions">
-                    ${renderMoveButtons(note.id)}
                     <button class="action-btn delete-btn" data-note-id="${note.id}">
                         🗑️
                         <span class="btn-label">Delete</span>
@@ -190,29 +181,7 @@ function renderMessages() {
     attachEventListeners();
 }
 
-function renderMoveButtons(noteId) {
-    const targetFiles = Object.keys(sidebarFiles).filter(f => f !== currentFile);
-    const buttonConfigs = {
-        'journal.txt': { label: 'Journal', emoji: '📔' },
-        'shop.txt': { label: 'Shop', emoji: '🛒' },
-        'read-list.txt': { label: 'Read', emoji: '📚' },
-        'watch-list.txt': { label: 'Watch', emoji: '📺' },
-        'ideas.txt': { label: 'Ideas', emoji: '💡' },
-        'tasks.txt': { label: 'Tasks', emoji: '✅' },
-        'archive.txt': { label: 'Archive', emoji: '📦' },
-        'main.txt': { label: 'Main', emoji: '📝' }
-    };
 
-    return targetFiles.map(fileName => {
-        const config = buttonConfigs[fileName];
-        return `
-            <button class="action-btn move-btn" data-note-id="${noteId}" data-target-file="${fileName}">
-                ${config.emoji}
-                <span class="btn-label">${config.label}</span>
-            </button>
-        `;
-    }).join('');
-}
 
 function attachEventListeners() {
     // Add event listeners for editing message content
@@ -232,17 +201,9 @@ function attachEventListeners() {
                 e.target.blur();
             }
             if (e.key === 'Escape') {
-                e.target.textContent = sidebarFiles[currentFile].find(n => n.id == e.target.dataset.noteId).text;
+                e.target.textContent = messages.find(n => n.id == e.target.dataset.noteId).text;
                 e.target.blur();
             }
-        });
-    });
-
-    // Add click listeners to move buttons
-    chatContainer.querySelectorAll('.move-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            moveNote(btn.dataset.noteId, btn.dataset.targetFile);
         });
     });
 
@@ -255,24 +216,10 @@ function attachEventListeners() {
     });
 }
 
-function moveNote(noteId, targetFile) {
-    const sourceMessages = sidebarFiles[currentFile];
-    const noteIndex = sourceMessages.findIndex(note => note.id == noteId);
 
-    if (noteIndex !== -1) {
-        const note = sourceMessages.splice(noteIndex, 1)[0];
-        sidebarFiles[targetFile].push(note);
-
-        saveData();
-        renderMessages();
-
-        // Notify sidebar of changes (commented for future implementation)
-        // updateSidebar();
-    }
-}
 
 function saveEdit(noteId, newText) {
-    const note = sidebarFiles[currentFile].find(n => n.id == noteId);
+    const note = messages.find(n => n.id == noteId);
     if (note && newText.trim() !== '') {
         note.text = newText.trim();
         saveData();
@@ -280,12 +227,9 @@ function saveEdit(noteId, newText) {
 }
 
 function deleteNote(noteId) {
-    sidebarFiles[currentFile] = sidebarFiles[currentFile].filter(n => n.id != noteId);
+    messages = messages.filter(n => n.id != noteId);
     saveData();
     renderMessages();
-
-    // Notify sidebar of changes (commented for future implementation)
-    // updateSidebar();
 }
 
 function scrollToBottom() {
@@ -300,17 +244,8 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Methods for sidebar integration (commented for future implementation)
-// function switchFile(fileName) {
-//     currentFile = fileName;
-//     renderMessages();
-// }
-//
-// function updateSidebar() {
-//     window.dispatchEvent(new CustomEvent('filesUpdated', {
-//         detail: { files: files, currentFile: currentFile }
-//     }));
-// }
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', init);
 
 const chatInput = document.getElementById('chat-input');
 function autoResize() {
