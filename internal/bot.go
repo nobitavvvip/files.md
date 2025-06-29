@@ -413,7 +413,7 @@ func (b *Bot) saveFromTextMsg(u Update) error {
 		return b.moveToJournal([]string{strconv.Itoa(index)})
 	}
 
-	return b.showMoveTo([]string{strconv.Itoa(index)})
+	return b.showMoveTo([]string{strconv.Itoa(-index)})
 }
 
 // TODO test collapsing from both regular messages and images
@@ -1568,10 +1568,16 @@ func (b *Bot) moveToNewDir(params []string) error {
 	return b.moveToDir([]string{dir, fs.DirRoot, filenameHash})
 }
 
+// TODO support both hashes and indices
 func (b *Bot) moveToExistingFile(params []string) error {
 	// TODO Remove input expectations if dir is not today (?)
 	existingFilenameHash := params[0]
-	index, _ := strconv.Atoi(params[1])
+	index, err := strconv.Atoi(params[1])
+	if err != nil {
+		return fmt.Errorf("move to file: can't parse index from params: %w", err)
+	}
+	index = -index
+
 	//fromDirHash := params[1]
 	//fromFilenameHash := params[2]
 
@@ -1801,6 +1807,7 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 	return b.moveToDir([]string{dir, fs.DirToday, filenameHash})
 }
 
+// TODO support both indexes and hashes
 func (b *Bot) moveToJournal(params []string) error {
 	//index, _ := strconv.Atoi(params[0])
 	var indices []int
@@ -1809,7 +1816,7 @@ func (b *Bot) moveToJournal(params []string) error {
 		if err != nil {
 			return fmt.Errorf("move to journal: can't convert index '%s' to int: %w", indexStr, err)
 		}
-		indices = append(indices, index)
+		indices = append(indices, -index)
 	}
 
 	//fromFilename, err := b.fs.Unhash(fs.DirToday, index)
@@ -2408,7 +2415,9 @@ func (b *Bot) addToFile(dir, filename, content string) error {
 	}
 
 	header := fmt.Sprintf("#### %d %s %d, %s", now().Day(), now().Format("January"), now().Year(), now().Weekday())
+	fmt.Println(header)
 	newContent := txt.InsertTextAfterHeader(existingContent, header, content)
+	fmt.Println(existingContent)
 
 	err = b.fs.Write(dir, filename, newContent)
 	if err != nil {

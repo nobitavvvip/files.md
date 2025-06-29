@@ -125,10 +125,40 @@ func InsertTextAfterHeader(existingContent, header, newContent string) string {
 		return strings.TrimSpace(fmt.Sprintf("%s\n%s\n%s", header, newContent, existingContent))
 	}
 
-	headerAndContent := fmt.Sprintf("%s\n%s", header, newContent)
-	content := strings.Replace(existingContent, header, headerAndContent, 1)
+	lines := strings.Split(existingContent, "\n")
+	headerIndex := -1
 
-	return strings.TrimSpace(content)
+	// Find the header line
+	for i, line := range lines {
+		if line == header {
+			headerIndex = i
+			break
+		}
+	}
+
+	if headerIndex == -1 {
+		return strings.TrimSpace(fmt.Sprintf("%s\n%s\n%s", header, newContent, existingContent))
+	}
+
+	// Find where to insert (after the last line belonging to this header)
+	insertIndex := headerIndex + 1
+
+	// Look for the next header or end of content
+	for i := headerIndex + 1; i < len(lines); i++ {
+		if strings.HasPrefix(lines[i], "###") {
+			insertIndex = i
+			break
+		}
+		insertIndex = i + 1
+	}
+
+	// Insert the new content
+	newLines := make([]string, 0, len(lines)+1)
+	newLines = append(newLines, lines[:insertIndex]...)
+	newLines = append(newLines, newContent)
+	newLines = append(newLines, lines[insertIndex:]...)
+
+	return strings.TrimSpace(strings.Join(newLines, "\n"))
 }
 
 func FirstWord(str string) string {

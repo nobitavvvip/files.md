@@ -2388,7 +2388,7 @@ func TestSaveToNewTask(t *testing.T) {
 	r.Equal(msgID, tgram.LastSentMessageID)
 }
 
-func TestSaveToExistingFileIntegration(t *testing.T) {
+func TestSaveToExistingFile(t *testing.T) {
 	r := require.New(t)
 
 	savedNow := now
@@ -2409,7 +2409,10 @@ func TestSaveToExistingFileIntegration(t *testing.T) {
 	r.NoError(err)
 	err = userFS.CreateDirsIfNotExist()
 	r.NoError(err)
-	err = userFS.Write("", "File.md", "File content")
+
+	err = userFS.Write("/", "Chat.txt", "#### 27 June, Friday\n`01:01` New\ncontent")
+	r.NoError(err)
+	err = userFS.Write("", "File.md", "#### 1 January 1970, Thursday\nExisting\ncontent")
 	r.NoError(err)
 
 	cfg := userconfig.NewConfig(userFS, -1, "config.json")
@@ -2458,14 +2461,14 @@ func TestSaveToExistingFileIntegration(t *testing.T) {
 	})
 	r.Equal(selectFileKB, tgram.LastEditedKeyboard)
 
-	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mf", []string{"7595e", "/", "23200"})))
+	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mf", []string{"7595e", "0"})))
 	r.NoError(err)
 
 	r.Nil(tgram.LastEditedKeyboard)
 
 	content, err := userFS.Read("", "File.md")
 	r.NoError(err)
-	r.Equal("#### 1 January 1970, Thursday\nText\nFile content", content)
+	r.Equal("#### 1 January 1970, Thursday\nExisting\ncontent\nNew\ncontent", content)
 
 	r.Nil(database.InputExpectation())
 	keybdMsgID, ok := database.LastKeyboardMsgID()
