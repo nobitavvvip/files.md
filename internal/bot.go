@@ -209,14 +209,14 @@ func (b *Bot) Reply(u Update) error {
 func (b *Bot) handlers() map[string]func([]string) error {
 	handlers := map[string]func([]string) error{
 		// Direct user commands
-		consts.CmdShowToday:          b.ShowToday,
-		consts.CmdShowStart:          b.showStart,
-		consts.CmdShowLater:          b.showLaterTasks,
-		consts.CmdShowFiles:          b.showFiles,
-		consts.CmdShowDirs:           b.showDirs,
-		consts.CmdShowChecklists:     b.showChecklists,
-		consts.CmdShowPostpone:       b.showPostpone,
-		consts.CmdShowMoveFromToday:  b.showMoveFromToday,
+		consts.CmdShowToday:      b.ShowToday,
+		consts.CmdShowStart:      b.showStart,
+		consts.CmdShowLater:      b.showLaterTasks,
+		consts.CmdShowFiles:      b.showFiles,
+		consts.CmdShowDirs:       b.showDirs,
+		consts.CmdShowChecklists: b.showChecklists,
+		consts.CmdShowPostpone:   b.showPostpone,
+		//consts.CmdShowMoveFromToday:  b.showMoveFromToday,
 		consts.CmdShowMoveTo:         b.showMoveTo,
 		consts.CmdShowRename:         b.showRename,
 		consts.CmdShowStats:          b.showStats,
@@ -1608,7 +1608,7 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	//// We can tolerate this
 	//_ = b.fs.Del(fromDir, fromFilename)
 
-	err = b.MoveRecordFromChat(func(content string, timestamp time.Time) error {
+	err = b.MoveFromChat(func(content string, timestamp time.Time) error {
 		return b.addToFile(fs.DirRoot, existingFilename, content)
 	}, index)
 	if err != nil {
@@ -1822,7 +1822,7 @@ func (b *Bot) moveToJournal(params []string) error {
 	//	return fmt.Errorf("move to journal: can't read content of '%s': %w", fromFilename, err)
 	//}
 
-	err := b.MoveRecordFromChat(func(content string, t time.Time) error {
+	err := b.MoveFromChat(func(content string, t time.Time) error {
 		// TODO take into account time
 		return journal.AddRecord(b.fs, content, b.cfg.Timezone())
 	}, indices...)

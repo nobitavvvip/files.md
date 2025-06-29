@@ -1372,8 +1372,6 @@ func TestMoveToExistingFile(t *testing.T) {
 	r.NoError(err)
 	err = userFS.Write("/", "Chat.txt", "#### 27 June, Friday\n`12:00` New message")
 	r.NoError(err)
-	//err = userFS.Write("", "New file.md", "")
-	//r.NoError(err)
 	err = userFS.Write("", "Existing file.md", "")
 	r.NoError(err)
 
@@ -1401,22 +1399,20 @@ func TestMoveToExistingFileExistingRecord(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("today", "Task.md", "")
-	r.NoError(err)
-	err = userFS.Write("", "New file.md", "")
+	err = userFS.Write("/", "Chat.txt", "#### 27 June, Friday\n`12:00` New message")
 	r.NoError(err)
 	err = userFS.Write("", "Existing file.md", "### 11.08.2024 Sunday\nContent")
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
-	upd := tg.NewUpdCmd(-1, tg.NewCmd("mf", []string{"1c8f819d075", "/", "501ef2410e2"}))
+	upd := tg.NewUpdCmd(-1, tg.NewCmd("mf", []string{"1c8f819d075", "0"}))
 	err = bot.Reply(upd)
 	r.NoError(err)
 
 	content, err := userFS.Read("", "Existing file.md")
 	r.NoError(err)
-	r.Equal("#### 11 August 2024, Sunday\nNew file\n### 11.08.2024 Sunday\nContent", content)
+	r.Equal("#### 11 August 2024, Sunday\nNew message\n### 11.08.2024 Sunday\nContent", content)
 }
 
 func TestShowMoveTo(t *testing.T) {
@@ -1449,7 +1445,7 @@ func TestShowMoveTo(t *testing.T) {
 	err = bot.Reply(tg.NewUpd(-1, "New task\nContent"))
 	r.NoError(err)
 
-	r.Equal("Task added for <b>today</b>!", tgram.SentTexts[0])
+	r.Equal("Saved!", tgram.SentTexts[0])
 
 	kb := tg.NewKeyboard([]tg.Row{
 		[]tg.Btn{
@@ -1731,13 +1727,14 @@ func TestMoveToJournal(t *testing.T) {
 	r.NoError(err)
 	err = userFS.CreateDirsIfNotExist()
 	r.NoError(err)
-	err = userFS.Write("today", "Note.md", "Multiline\ncontent")
+
+	err = userFS.Write("/", "Chat.txt", "#### 27 June, Friday\n`01:01` Multiline\ncontent")
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
-	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mv_to_journal", []string{"345fbd7ab08"})))
+	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mv_to_journal", []string{"0"})))
 	r.NoError(err)
 
 	files, err := userFS.FilesAndDirs("journal")
@@ -1746,7 +1743,11 @@ func TestMoveToJournal(t *testing.T) {
 
 	content, err := userFS.Read("journal", files[0].Name)
 	r.NoError(err)
-	r.Equal("#### 1 January, Thursday\n`00:00` Note\nMultiline\ncontent\n", content)
+	r.Equal("#### 1 January, Thursday\n`00:00` Multiline\ncontent\n", content)
+
+	content, err = userFS.Read("/", "Chat.txt")
+	r.NoError(err)
+	r.Equal("#### 27 June, Friday", content)
 }
 
 func TestAddToJournalFromShortcut(t *testing.T) {

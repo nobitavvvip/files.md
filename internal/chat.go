@@ -79,7 +79,7 @@ func (b *Bot) saveToChat(content string, timezone *time.Location) (int, error) {
 	return recordCount + 1, nil
 }
 
-func (b *Bot) MoveRecordFromChat(callback func(content string, timestamp time.Time) error, indices ...int) error {
+func (b *Bot) MoveFromChat(callback func(content string, timestamp time.Time) error, indices ...int) error {
 	key, err := b.fs.SafePath(fs.DirRoot, "")
 	if err != nil {
 		return fmt.Errorf("failed to get safe path: %w", err)
@@ -94,14 +94,14 @@ func (b *Bot) MoveRecordFromChat(callback func(content string, timestamp time.Ti
 		return err
 	}
 
-	blocks := readMessages(content)
+	messages := readMessages(content)
 
-	// Filter to find record blocks (not headers)
+	// Filter to find record messages (not headers)
 	headerRegex := regexp.MustCompile(`^#### `)
 	var recordIndices []int
 
-	for i, block := range blocks {
-		if !headerRegex.MatchString(block) {
+	for i, message := range messages {
+		if !headerRegex.MatchString(message) {
 			recordIndices = append(recordIndices, i)
 		}
 	}
@@ -130,32 +130,39 @@ func (b *Bot) MoveRecordFromChat(callback func(content string, timestamp time.Ti
 		}
 	}
 
-	// Track which block indices to remove
-	blocksToRemove := make(map[int]bool)
+	// Track which message indices to remove
+	messagesToRemove := make(map[int]bool)
 
 	// Process each record
 	for _, index := range uniqueIndices {
 		targetBlockIndex := recordIndices[index]
-		targetRecord := blocks[targetBlockIndex]
+		targetRecord := messages[targetBlockIndex]
 
 		// Find closest header above target record for date context
 		var headerDate string
 		for i := targetBlockIndex - 1; i >= 0; i-- {
-			if headerRegex.MatchString(blocks[i]) {
-				headerDate = blocks[i]
+			if headerRegex.MatchString(messages[i]) {
+				headerDate = messages[i]
 				break
 			}
 		}
 
-		// Extract time from record and content without timestamp
-		timestampRegex := regexp.MustCompile(`^` + "`" + `(\d{2}:\d{2})` + "`" + ` (.*)`)
-		matches := timestampRegex.FindStringSubmatch(targetRecord)
-		if len(matches) < 3 {
+		// Extract time and get full content
+		timestampRegex := regexp.MustCompile(`^` + "`" + `(\d{2}:\d{2})` + "`" + ` `)
+		if !timestampRegex.MatchString(targetRecord) {
 			return fmt.Errorf("failed to parse record timestamp for index %d", index)
 		}
 
-		timeStr := matches[1]
-		recordContent := matches[2]
+		// Extract timestamp
+		timeMatch := regexp.MustCompile(`^` + "`" + `(\d{2}:\d{2})` + "`").FindStringSubmatch(targetRecord)
+		if len(timeMatch) < 2 {
+			return fmt.Errorf("failed to extract timestamp for index %d", index)
+		}
+
+		timeStr := timeMatch[1]
+		// Remove timestamp prefix to get full content (including newlines)
+		timestampPrefix := "`" + timeStr + "` "
+		recordContent := strings.TrimPrefix(targetRecord, timestampPrefix)
 
 		// Parse full timestamp from header date + time
 		dateRegex := regexp.MustCompile(`^#### (\d{1,2}) ([A-Za-z]+), [A-Za-z]+`)
@@ -176,19 +183,19 @@ func (b *Bot) MoveRecordFromChat(callback func(content string, timestamp time.Ti
 			return fmt.Errorf("callback failed for index %d: %w", index, err)
 		}
 
-		// Mark block for removal
-		blocksToRemove[targetBlockIndex] = true
+		// Mark message for removal
+		messagesToRemove[targetBlockIndex] = true
 	}
 
-	// Remove target blocks and rebuild content
-	newBlocks := make([]string, 0, len(blocks)-len(blocksToRemove))
-	for i, block := range blocks {
-		if !blocksToRemove[i] {
-			newBlocks = append(newBlocks, block)
+	// Remove target messages and rebuild content
+	newMessages := make([]string, 0, len(messages)-len(messagesToRemove))
+	for i, block := range messages {
+		if !messagesToRemove[i] {
+			newMessages = append(newMessages, block)
 		}
 	}
 
-	modifiedContent := strings.TrimSpace(strings.Join(newBlocks, "\n"))
+	modifiedContent := strings.TrimSpace(strings.Join(newMessages, "\n"))
 
 	return b.fs.Write(fs.DirRoot, fs.ChatFilename, modifiedContent)
 }
@@ -209,19 +216,28 @@ func readMessages(content string) []string {
 		isHeader := headerRegex.MatchString(line)
 		isTimestamp := timestampRegex.MatchString(line)
 
-		if isHeader || isTimestamp {
+		if isHeader {
 			// Save previous block if exists
 			if currentBlock.Len() > 0 {
 				blocks = append(blocks, strings.TrimSpace(currentBlock.String()))
 				currentBlock.Reset()
 			}
-
-			// Start new block
+			// Header is always its own block
+			blocks = append(blocks, line)
+		} else if isTimestamp {
+			// Save previous block if exists
+			if currentBlock.Len() > 0 {
+				blocks = append(blocks, strings.TrimSpace(currentBlock.String()))
+				currentBlock.Reset()
+			}
+			// Start new block with timestamp
 			currentBlock.WriteString(line)
 		} else {
-			// Continue current block
+			// Continue current block or start new block
 			if currentBlock.Len() > 0 {
 				currentBlock.WriteString("\n")
+				currentBlock.WriteString(line)
+			} else {
 				currentBlock.WriteString(line)
 			}
 		}
