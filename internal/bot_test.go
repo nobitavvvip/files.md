@@ -4038,6 +4038,9 @@ func FuzzSaveFromTextMsg(f *testing.F) {
 			return
 		}
 
+		err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})))
+		r.NoError(err)
+
 		tasks, err := bot.fs.FilesAndDirs("today")
 		r.NoError(err)
 
