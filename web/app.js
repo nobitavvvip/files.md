@@ -10,6 +10,8 @@ let debug = false;
 const sidebar = document.getElementById('sidebar');
 const sidebarContainer = document.getElementById('sidebar-container');
 const content = document.getElementById('content')
+const chat = document.getElementById('chat');
+const chatInput = document.getElementById('chat-input');
 
 async function init(el) {
     // Authorize if we have one-time token in URL.
@@ -492,6 +494,16 @@ async function showRandomFile() {
 async function openFile(dir, filename, saveToHistory = true) {
     await syncCurrentFile(false);
 
+    if (dir === '' && filename === CHAT_FILENAME) {
+        openChat();
+        return;
+    } else {
+        const codemirror = document.querySelector('.CodeMirror-wrap');
+        codemirror.style.display = 'block';
+        chat.style.display = 'none';
+        chatInput.style.display = 'none';
+    }
+
     const start = performance.now();
     filename = filename.normalize('NFC');
     const fileData = files[dir][filename];
@@ -817,6 +829,20 @@ async function openEditor(withSidebar = true) {
 }
 
 function openChat() {
+    if (isChat) {
+        return;
+    }
+
+    const codemirror = document.querySelector('.CodeMirror-wrap');
+    codemirror.style.display = 'none';
+    chat.style.display = 'flex';
+    chatInput.style.display = 'block';
+
+    chatInput.focus();
+    isChat = true;
+}
+
+function openBot() {
     if (isChat) {
         return;
     }

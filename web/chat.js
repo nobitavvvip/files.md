@@ -369,8 +369,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-const chatInput = document.getElementById('chat-input');
-
 function autoResize() {
     chatInput.style.height = 'auto';
     chatInput.style.height = Math.min(chatInput.scrollHeight, 250) + 'px';

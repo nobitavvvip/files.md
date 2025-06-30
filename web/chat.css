@@ -180,11 +180,6 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.CodeMirror-wrap {
-    display: none;
-}
-
-
 .message.selected {
     background: rgba(99, 102, 241, 0.2);
     border-color: var(--color-link);
