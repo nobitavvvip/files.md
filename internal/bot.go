@@ -2107,29 +2107,36 @@ func (b *Bot) showChecklistItem(params []string) error {
 }
 
 func (b *Bot) schedule(params []string) error {
-	filenameHash := params[0]
+	msgIndex, err := strconv.Atoi(params[0])
+	if err != nil {
+		return fmt.Errorf("schedule: can't parse msgIndex from params: %w", err)
+	}
 	timeStr := params[1]
 	cron := params[2]
 
-	scheduleTime, err := strconv.ParseInt(timeStr, 10, 64)
-	if err != nil {
-		return fmt.Errorf("schedule: can't parse timestamp: %w", err)
-	}
+	err = b.moveFromChat(func(content string, timestamp time.Time) error {
+		scheduleTime, err := strconv.ParseInt(timeStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf("schedule: can't parse timestamp: %w", err)
+		}
 
-	filename, err := b.fs.Unhash(fs.DirToday, filenameHash)
-	if err != nil {
-		return fmt.Errorf("schedule: can't unhash filename %s in list: %s", filenameHash, err)
-	}
+		sanitizedTitle, content, err := b.extractTitleAndContent(content)
+		if err != nil {
+			return fmt.Errorf("schedule: %w", err)
+		}
+		filename := fs.Filename(sanitizedTitle)
+		err = b.fs.Write(fs.DirLater, filename, content)
+		if err != nil {
+			return fmt.Errorf("schedule: can't write file %s: %w", filename, err)
+		}
 
-	err = b.cfg.AddToSchedule(filename, scheduleTime, cron)
-	if err != nil {
-		return fmt.Errorf("schedule: can't add to schedule: %w", err)
-	}
+		err = b.cfg.AddToSchedule(filename, scheduleTime, cron)
+		if err != nil {
+			return fmt.Errorf("schedule: can't add to schedule: %w", err)
+		}
 
-	err = b.fs.Rename(fs.DirToday, filename, fs.DirLater, filename)
-	if err != nil {
-		return fmt.Errorf("schedule: can't rename file %s: %w", filename, err)
-	}
+		return nil
+	}, msgIndex)
 
 	return b.ShowToday(nil)
 }
