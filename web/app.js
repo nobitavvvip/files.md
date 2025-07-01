@@ -494,7 +494,7 @@ async function openFile(dir, filename, saveToHistory = true) {
         chatInput.style.display = 'none';
         isChat = false;
     }
-    chatButton.style.display = 'block';
+    chatButton.classList.remove('hidden');
     chatContainer.style.display = 'none';
 
 

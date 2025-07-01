@@ -271,6 +271,14 @@
     border-radius: 50%;
 }
 
+#open-chat:not(.hidden) {
+    display: block !important;
+}
+
+#open-chat:not(.hidden) svg {
+    display: block !important;
+}
+
 #chat-container.modal #close-chat {
     position: absolute;
     top: 10px;

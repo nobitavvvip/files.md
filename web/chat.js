@@ -10,8 +10,8 @@ const chatContainer = document.getElementById('chat-container');
 
 async function openChat() {
     chatContainer.style.display = 'flex';
-
-    document.getElementById('open-chat').style.display = 'none';
+    chatButton.classList.add('hidden');
+    
     if (editor.currentFile !== CHAT_FILENAME) {
         const state = {dir: editor.currentDir, file: editor.currentFile};
         history.pushState(state, '');
@@ -40,7 +40,7 @@ async function openChatModal() {
 
     chatContainer.classList.add('modal');
     chatContainer.style.display = 'flex';
-    chatButton.style.display = 'none';
+    chatButton.classList.add('hidden');
     chat.style.display = 'block';
     chatInput.style.display = 'block';
     chat.style.display = 'flex';
@@ -56,7 +56,7 @@ async function openChatModal() {
 function closeChatModal() {
     chatContainer.classList.remove('modal');
     chatContainer.style.display = 'none';
-    chatButton.style.display = 'block';
+    chatButton.classList.remove('hidden');
     chat.style.display = 'none';
     chatInput.style.display = 'none';
 }
