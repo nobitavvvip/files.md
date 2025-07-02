@@ -285,7 +285,7 @@ class SearchModal {
                 messagesToRemove = [btn.closest('.message')];
             }
 
-            sendCmd('mf', [filename, indices.join(',')]);
+            sendCmd('mvn', [filename, dir, indices.join(',')]);
             messagesToRemove.forEach(message => {
                 message.classList.add('removing');
                 setTimeout(() => {

@@ -1708,6 +1708,7 @@ func (b *Bot) moveToNewDir(params []string) error {
 	return b.moveToDirFromChat([]string{dir, strconv.Itoa(index)})
 }
 
+// TODO reuse move to existing note as more general?
 func (b *Bot) moveToExistingFile(params []string) error {
 	// TODO Remove input expectations if dir is not today (?)
 	existingFilenameHash := params[0]
@@ -1745,36 +1746,49 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	return b.ShowToday(nil)
 }
 
-// Move from today to existing note
 func (b *Bot) moveToExistingNote(params []string) error {
 	toFilenameHash := params[0]
 	toDirHash := params[1]
-	msgIndex, err := strconv.Atoi(params[2])
+
+	msgIndicesStr := strings.Split(params[2], ",")
+	var msgIndices []int
+	for _, msgIndexStr := range msgIndicesStr {
+		msgIndex, err := strconv.Atoi(msgIndexStr)
+		if err != nil {
+			return fmt.Errorf("move to file: can't parse msgIndex from params: %w", err)
+		}
+		msgIndices = append(msgIndices, msgIndex)
+	}
+
+	toDir, err := b.fs.Unhash(fs.DirRoot, toDirHash)
 	if err != nil {
-		return fmt.Errorf("move to existing note: can't parse hash or index from params: %w", err)
+		return fmt.Errorf("move to exsiting note: %w", err)
+	}
+
+	toFilename, err := b.fs.Unhash(toDir, toFilenameHash)
+	if err != nil {
+		return fmt.Errorf("move to exsiting note:: %w", err)
 	}
 
 	err = b.moveFromChat(func(content string, t time.Time) error {
-		toDir, err := b.fs.Unhash(fs.DirRoot, toDirHash)
-		if err != nil {
-			return fmt.Errorf("move to exsiting note: %w", err)
-		}
-
-		toFilename, err := b.fs.Unhash(toDir, toFilenameHash)
-		if err != nil {
-			return fmt.Errorf("move to exsiting note:: %w", err)
-		}
-
 		err = b.addToFile(toDir, toFilename, content)
 		if err != nil {
 			return fmt.Errorf("move to existing note: can't add to file %s: %w", toFilename, err)
 		}
 
+		b.db.SetRecentCommand(consts.CmdMoveToExistingNote)
+		b.db.SetRecentCommandParams([]string{toFilename, fs.ShortHash(toDir)})
+
 		return nil
-	}, msgIndex)
+	}, msgIndices...)
 	if err != nil {
 		return fmt.Errorf("move to existing note: can't read content from chat: %w", err)
 	}
+
+	b.delAllKeyboards()
+	msg := txt.Emoji(i18n.Emoji("file"), fmt.Sprintf(i18n.Tr("Saved to <b>%s</b>"), fs.Title(toFilename)))
+	// Just an informative messages
+	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
 	return b.ShowToday(nil)
 }
