@@ -100,6 +100,7 @@ async function init(el) {
 }
 
 function initEditor(el) {
+    console.log('init editor');
     if (window.editor !== undefined && el.id === 'editor-textarea' ) {
         editor.off();
         const wrapper = editor.getWrapperElement();
@@ -654,7 +655,7 @@ async function openFile(dir, filename, saveToHistory = true, el = 'editor-textar
         // TODO only focus if there's no quick dialogue
         currentEditor.focus();
     } else {
-        focusLastLine();
+        // focusLastLine();
     }
 
     const end = performance.now();
