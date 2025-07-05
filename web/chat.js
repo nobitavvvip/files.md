@@ -230,6 +230,15 @@ function initChat() {
         }
     });
 
+    // On mobiles and some browsers the Enter key is not detected, so we use beforeinput
+    chatInput.addEventListener('beforeinput', function(e) {
+        if (e.inputType === 'insertLineBreak' && !e.shiftKey) {
+            e.preventDefault();
+            send();
+            autoResize();
+        }
+    });
+
     loadData().then(() => {
         renderMessages();
     });

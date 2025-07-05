@@ -569,6 +569,10 @@ body.dragging * {
         max-width: 300px;
         margin-left: 17%;
     }
+
+    #sidebar {
+        display: none;
+    }
 }
 
 .cm-s-hypermd-light span.cm-formatting-task {
