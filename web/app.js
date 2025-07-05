@@ -1112,6 +1112,7 @@ function findNextFile(currentDir, currentFilename) {
 }
 
 function showEditor2() {
+    rememberEditorPos();
     const editor2Container = document.getElementById('editor2-container');
 
     editor2Container.style.display = 'flex';
@@ -1120,15 +1121,33 @@ function showEditor2() {
 
     editor.refresh();
     editor2.focus();
+    restoreEditorPos();
 }
 
 function hideEditor2() {
     const editor2Container = document.getElementById('editor2-container');
 
     editor2Container.classList.remove('show');
+    restoreEditorPos();
 
     setTimeout(() => {
         editor2Container.style.display = 'none';
         editor.refresh(); // IT seems we have to refresh once size changes.
     }, 300);
+}
+
+let topLineNumber;
+function rememberEditorPos() {
+    const scrollInfo = editor.getScrollInfo();
+    const topCoords = editor.coordsChar({left: 0, top: scrollInfo.top}, "local");
+    topLineNumber = topCoords.line;
+}
+
+function restoreEditorPos() {
+    if (topLineNumber === undefined) {
+        return;
+    }
+    editor.refresh();
+    const newTopLineY = editor.charCoords({line: topLineNumber, ch: 0}, "local").top;
+    editor.scrollTo(null, newTopLineY);
 }
