@@ -889,6 +889,7 @@ function getCurrentContent() {
     if (content.toLowerCase().startsWith(header)) {
         content = content.slice(`${header}\n`.length);
     } else if (content.toLowerCase().startsWith('# ')) {
+        // Skip header placeholder.
         // What is the case when starts with # '? Empty filename? Header not equal to original header?
         // TODO but do we always have \n?
         content = content.slice(`# \n`.length);
