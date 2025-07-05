@@ -106,7 +106,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 	for _, clientFile := range request.Modified {
 		path := clientFile.Path
 
-		serverModifiedTime, err := userFS.Ctime(fs.DirRoot, path)
+		serverModifiedTime, err := userFS.Mtime(fs.DirRoot, path)
 		var clientContent string
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			slog.Error("Sync error: syncTexts: error reading file '%s': %v", path, err)
@@ -150,7 +150,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Based on known client dirs timestamps, send newly updated or created files.
-	serverTimestamps, err := userFS.Ctimes(fs.DirRoot, fs.MDExt, ".txt")
+	serverTimestamps, err := userFS.Mtimes(fs.DirRoot, fs.MDExt, ".txt")
 	if err != nil {
 		slog.Error("Sync error: syncTexts: error getting server timestamps", "error", err)
 		http.Error(w, fmt.Sprintf("Failed to get timestamps: %v", err), http.StatusInternalServerError)
@@ -158,7 +158,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Include config file timestamp, so it will be sent to the client if stale.
-	configCtime, err := userFS.Ctime(fs.DirRoot, config.BotCfg.ConfigFilename)
+	configCtime, err := userFS.Mtime(fs.DirRoot, config.BotCfg.ConfigFilename)
 	if err != nil {
 		slog.Error("Sync error: syncTexts: error getting timestamp for config file", "error", err)
 	} else {

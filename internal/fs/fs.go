@@ -515,17 +515,17 @@ func (fs FS) Mtime(dir, filename string) (int64, error) {
 	return Mtime(info), nil
 }
 
-// Ctimes recursively scans a directory and returns the ctime
+// Mtimes recursively scans a directory and returns the mtime
 // for all files with specified extension as Unix timestamps.
 // Returns [relPath] => ctime
 // TODO add tests
-func (fs FS) Ctimes(root string, extensions ...string) (map[string]int64, error) {
+func (fs FS) Mtimes(root string, extensions ...string) (map[string]int64, error) {
 	rootPath, err := fs.SafePath(root, "")
 	if err != nil {
-		return nil, fmt.Errorf("fs ctimes: unsafe rootPath '%s': %w", rootPath, errUnsafePath)
+		return nil, fmt.Errorf("fs mtimes: unsafe rootPath '%s': %w", rootPath, errUnsafePath)
 	}
 
-	ctimes := make(map[string]int64)
+	mtimes := make(map[string]int64)
 	err = afero.Walk(fs.backend, rootPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil
@@ -562,7 +562,7 @@ func (fs FS) Ctimes(root string, extensions ...string) (map[string]int64, error)
 			relPath = "."
 		}
 
-		ctimes[relPath] = Ctime(info)
+		mtimes[relPath] = Mtime(info)
 
 		return nil
 	})
@@ -571,7 +571,7 @@ func (fs FS) Ctimes(root string, extensions ...string) (map[string]int64, error)
 		return nil, err
 	}
 
-	return ctimes, nil
+	return mtimes, nil
 }
 
 // SafePath returns safe path to a file or directory, error if the path is unsafe.

@@ -756,12 +756,12 @@ func FuzzWrite(f *testing.F) {
 func TestCtimes(t *testing.T) {
 	r := require.New(t)
 
-	saved := Ctime
+	saved := Mtime
 	defer func() {
-		Ctime = saved
+		Mtime = saved
 	}()
 
-	Ctime = func(fi os.FileInfo) int64 {
+	Mtime = func(fi os.FileInfo) int64 {
 		switch fi.Name() {
 		case "file1.md":
 			return 1000
@@ -793,7 +793,7 @@ func TestCtimes(t *testing.T) {
 	r.NoError(err)
 
 	// Test Ctimes
-	ctimes, err := fs.Ctimes("/", ".md")
+	ctimes, err := fs.Mtimes("/", ".md")
 	r.NoError(err)
 
 	fmt.Println(ctimes)
@@ -810,15 +810,15 @@ func TestCtimes(t *testing.T) {
 	r.False(exists)
 }
 
-func TestCtimesAllExtensions(t *testing.T) {
+func TestMtimesAllExtensions(t *testing.T) {
 	r := require.New(t)
 
-	saved := Ctime
+	saved := Mtime
 	defer func() {
-		Ctime = saved
+		Mtime = saved
 	}()
 
-	Ctime = func(fi os.FileInfo) int64 {
+	Mtime = func(fi os.FileInfo) int64 {
 		switch fi.Name() {
 		case "file1.md":
 			return 1000
@@ -851,7 +851,7 @@ func TestCtimesAllExtensions(t *testing.T) {
 	err = fs.Write("today", ".hidden.md", "hidden content")
 	r.NoError(err)
 
-	ctimes, err := fs.Ctimes("/")
+	ctimes, err := fs.Mtimes("/")
 	r.NoError(err)
 
 	r.Len(ctimes, 4)
@@ -868,15 +868,15 @@ func TestCtimesAllExtensions(t *testing.T) {
 	r.False(exists)
 }
 
-func TestCtimesInSubDir(t *testing.T) {
+func TestMtimesInSubDir(t *testing.T) {
 	r := require.New(t)
 
-	saved := Ctime
+	saved := Mtime
 	defer func() {
-		Ctime = saved
+		Mtime = saved
 	}()
 
-	Ctime = func(fi os.FileInfo) int64 {
+	Mtime = func(fi os.FileInfo) int64 {
 		switch fi.Name() {
 		case "file1.md":
 			return 1000
@@ -910,7 +910,7 @@ func TestCtimesInSubDir(t *testing.T) {
 	r.NoError(err)
 
 	// Test Ctimes
-	ctimes, err := fs.Ctimes("today", ".md")
+	ctimes, err := fs.Mtimes("today", ".md")
 	r.NoError(err)
 
 	// Should only include .md files, not .txt or hidden files
@@ -936,7 +936,7 @@ func TestCtimesEmptyDir(t *testing.T) {
 	err = fs.MakeDir("empty")
 	r.NoError(err)
 
-	ctimes, err := fs.Ctimes("empty", ".md")
+	ctimes, err := fs.Mtimes("empty", ".md")
 	r.NoError(err)
 	r.Empty(ctimes)
 }

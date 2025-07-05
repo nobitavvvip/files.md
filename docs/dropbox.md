@@ -18,3 +18,5 @@ Extended attributes - Dropbox adds xattrs to track sync state
 Permission changes - Dropbox might adjust permissions for sharing
 
 Could be any of these.
+
+P.S. Migrated to mtime, all good now.
