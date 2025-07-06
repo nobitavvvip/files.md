@@ -526,10 +526,10 @@ function TreeView(root, container, options) {
         var groupHeaderText = "";
         var groupHeaderClass = "";
 
-        if (node.parent === root) {
+        if (node.parent === root && !isWelcome) {
             var siblings = root.getChildren();
             var myIndex = siblings.indexOf(node);
-            console.log("My index among root children:", myIndex);
+            console.log("My index among root children:", myIndex, isWelcome);
 
             if (myIndex === 0) {
                 needsGroupHeader = true;
@@ -538,7 +538,6 @@ function TreeView(root, container, options) {
                 needsGroupHeader = true;
                 console.log("Previous sibling has isGroupEnd - needs header");
             }
-            console.log(needsGroupHeader);
 
             if (needsGroupHeader) {
                 var nodeStr = node.toString();
@@ -562,7 +561,6 @@ function TreeView(root, container, options) {
         if (needsGroupHeader) {
             var fragment = document.createDocumentFragment();
             fragment.appendChild(createGroupHeader(groupHeaderText, groupHeaderClass));
-            // Continue with normal node rendering...
         }
 
         if (node.isGroupEnd) {

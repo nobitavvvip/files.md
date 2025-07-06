@@ -45,7 +45,7 @@
         color: var(--color-tx-alt) !important;
     }
 
-    #open-chat:hover svg {
+    #open-chat-modal:hover svg {
        stroke: var(--color-link) !important;
     }
 
@@ -57,7 +57,7 @@
         color: var(--color-link) !important;
     }
 
-    #open-chat svg {
+    #open-chat-modal svg {
         stroke: #F5F5F5 !important;
     }
 

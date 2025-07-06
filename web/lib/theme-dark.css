@@ -37,11 +37,11 @@
         stroke: var(--color-link) !important;
     }
 
-    #open-chat svg {
+    #open-chat-modal svg {
         stroke: var(--color-link) !important;
     }
 
-    #open-chat:hover svg {
+    #open-chat-modal:hover svg {
         stroke: var(--color-tx) !important;
     }
 

@@ -5,7 +5,7 @@ let chatIsClean = true; // Are there any unsaved changes?
 
 const chat = document.getElementById('chat');
 const chatInput = document.getElementById('chat-input');
-const chatButton = document.getElementById('open-chat');
+const chatButton = document.getElementById('open-chat-modal');
 const chatContainer = document.getElementById('chat-container');
 
 async function openChat() {

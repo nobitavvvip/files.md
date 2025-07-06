@@ -51,10 +51,11 @@ async function init(el) {
         document.getElementById('new-file').style.display = 'none';
         document.getElementById('new-folder').style.display = 'none';
         document.getElementById('open-chat').style.display = 'none';
+        document.getElementById('open-chat-modal').style.display = 'none';
         files = DEFAULT_FILES;
+        isWelcome = true;
         renderSidebar();
         await openFile('', 'Welcome.md');
-        isWelcome = true;
         return;
     } else {
         isWelcome = false;
@@ -62,6 +63,7 @@ async function init(el) {
         document.getElementById('new-file').style.display = 'inline';
         document.getElementById('new-folder').style.display = 'inline';
         document.getElementById('open-chat').style.display = 'inline';
+        document.getElementById('open-chat-modal').style.display = 'inline';
     }
 
     const permission = await savedDirHandle.queryPermission({mode: 'readwrite'});
@@ -71,6 +73,7 @@ async function init(el) {
         document.getElementById('new-file').style.display = 'none';
         document.getElementById('new-folder').style.display = 'none';
         document.getElementById('open-chat').style.display = 'none';
+        document.getElementById('open-chat-modal').style.display = 'none';
         isWelcome = true;
     }
 

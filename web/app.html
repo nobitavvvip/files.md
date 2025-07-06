@@ -64,6 +64,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-8M12 17h8"/>
                 </svg>
             </button>
+            <button id="open-chat" onclick="openChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 34 32">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M 25 7 H 11 a 4 4 0 0 0 -4 4 v 10 a 4 4 0 0 0 4 4 h 7 l 6 4 v -4 h 1 a 4 4 0 0 0 4 -4 V 11 a 4 4 0 0 0 -4 -4 z"/>
+                </svg>
+            </button>
             <!--        <button id="move-file" title="Move file" onclick="openMoveModal()">-->
             <!--            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 32 32">-->
             <!--                <path stroke="#535358" stroke-linecap="round" stroke-width="2" d="M5 16h21"/>-->
@@ -111,7 +116,7 @@
         <button id="fullscreen-chat" onclick="openChat()" title="Toggle fullscreen" style="display: none">⛶</button>
     </div>
 
-    <button class="hidden" id="open-chat" style="display: none" title="Open Chat" onclick="toggleChat()">
+    <button class="hidden" id="open-chat-modal" style="display: none" title="Open Chat" onclick="toggleChat()">
         <svg style="display: none" xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 34 32">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M 25 7 H 11 a 4 4 0 0 0 -4 4 v 10 a 4 4 0 0 0 4 4 h 7 l 6 4 v -4 h 1 a 4 4 0 0 0 4 -4 V 11 a 4 4 0 0 0 -4 -4 z"/>
         </svg>

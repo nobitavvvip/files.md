@@ -394,7 +394,7 @@
     user-select: none;
 }
 
-#open-chat {
+#open-chat-modal {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -402,16 +402,16 @@
     border: none;
 }
 
-#open-chat:hover svg {
+#open-chat-modal:hover svg {
     cursor: pointer;
     border-radius: 50%;
 }
 
-#open-chat:not(.hidden) {
+#open-chat-modal:not(.hidden) {
     display: block !important;
 }
 
-#open-chat:not(.hidden) svg {
+#open-chat-modal:not(.hidden) svg {
     display: block !important;
 }
 
