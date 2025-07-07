@@ -39,6 +39,10 @@ const urlsToCache = [
     '/modals.js',
 ];
 
+const urlParams = new URLSearchParams(self.location.search);
+const COMMIT_HASH = urlParams.get('v') ? `?v=${urlParams.get('v')}` : '';
+console.log('SW commit hash:', COMMIT_HASH);
+
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -46,7 +50,7 @@ self.addEventListener('install', event => {
                 // Cache each file individually to find the problem
                 const cachePromises = urlsToCache.map(url => {
                     console.log('Trying to cache:', url);
-                    return cache.add(url + window.COMMIT_HASH)
+                    return cache.add(url + COMMIT_HASH)
                         .then(() => console.log('✓ Cached:', url))
                         .catch(err => console.error('✗ Failed to cache:', url, err));
                 });
