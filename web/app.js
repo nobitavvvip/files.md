@@ -542,29 +542,30 @@ function renderSidebar(focusDir = '') {
     let expandedDirs = new Set();
     let selectedNodes = new Set();
 
-    if (tree) {
-        // Save state for all nodes (both directories and files)
-        function saveNodeState(node) {
-            if (node.isExpanded()) {
-                expandedDirs.add(node.toString());
-            }
-            if (node.isSelected()) {
-                selectedNodes.add(node.toString());
-            }
-
-            // Recursively save state for child nodes
-            if (node.getChildren) {
-                node.getChildren().forEach(child => {
-                    saveNodeState(child);
-                });
-            }
-        }
-
-        tree.getRoot().getChildren().forEach(child => {
-            saveNodeState(child);
-        });
-    }
-
+    // TODO save state
+    // if (tree) {
+    //     // Save state for all nodes (both directories and files)
+    //     function saveNodeState(node) {
+    //         if (node.isExpanded()) {
+    //             expandedDirs.add(node.toString());
+    //         }
+    //         if (node.isSelected()) {
+    //             selectedNodes.add(node.toString());
+    //         }
+    //
+    //         // Recursively save state for child nodes
+    //         if (node.getChildren) {
+    //             node.getChildren().forEach(child => {
+    //                 saveNodeState(child);
+    //             });
+    //         }
+    //     }
+    //
+    //     tree.getRoot().getChildren().forEach(child => {
+    //         saveNodeState(child);
+    //     });
+    // }
+    //
     root = new TreeNode('');
 
     // Process directories
@@ -604,7 +605,7 @@ function renderSidebar(focusDir = '') {
     dirNodes[''] = root; // Root is empty path
 
     walk(files, (path, item, isFile) => {
-        if (path === 'media') {
+        if (path === 'media' || path.startsWith('media/')) {
             return;
         }
 
@@ -671,25 +672,25 @@ function renderSidebar(focusDir = '') {
     }
 
     // Process root-level files
-    if (files['']) {
-        for (let file in files['']) {
-            if (file === CONFIG_FILENAME || file === CHAT_FILENAME) {
-                continue;
-            }
-
-            let fileNode = new TreeNode(file.replace(/\.md$/, '').replace(/\.txt$/, ''), {expanded: false});
-            fileNode.on('click', async function (n, node) {
-                await openFile('', file);
-            });
-            root.addChild(fileNode);
-
-            // Restore selected state for root-level file nodes
-            if (selectedNodes.has(file.replace(/\.md$/, ''))) {
-                fileNode.setSelected(true);
-            }
-        }
-    }
-
+    // if (files['']) {
+    //     for (let file in files['']) {
+    //         if (file === CONFIG_FILENAME || file === CHAT_FILENAME) {
+    //             continue;
+    //         }
+    //
+    //         let fileNode = new TreeNode(file.replace(/\.md$/, '').replace(/\.txt$/, ''), {expanded: false});
+    //         fileNode.on('click', async function (n, node) {
+    //             await openFile('', file);
+    //         });
+    //         root.addChild(fileNode);
+    //
+    //         // Restore selected state for root-level file nodes
+    //         if (selectedNodes.has(file.replace(/\.md$/, ''))) {
+    //             fileNode.setSelected(true);
+    //         }
+    //     }
+    // }
+    //
 
     tree = new TreeView(root, '#sidebar-tree', {
         show_root: false,
