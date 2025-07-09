@@ -469,21 +469,26 @@ function createAutocompleteDict() {
     const entries = [];
 
     // Collect all files with their metadata
-    Object.keys(excludeDirs(SYSTEM_DIRS)).forEach(dir => {
-        Object.keys(files[dir]).forEach(filename => {
-            if (filename === CONFIG_PATH || filename === CHAT_PATH) {
-                return;
-            }
-            const key = `${filename.replace(/\.md$/, '')}`;
-            const url = `${dir}/${filename}`.replace(/ /g, '%20');
-            const filePath = `${filename.replace(/\.md$/, '')}](${url})`;
+    walk(files, (path, isFile) => {
+        if (!isFile) {
+            return;
+        }
 
-            entries.push({
-                key,
-                filePath,
-                lastModified: files[dir][filename].lastModified
-            });
+        if (path === CONFIG_PATH || path === CHAT_PATH) {
+            return;
+        }
+
+        const filename = toFilename(path);
+        const key = `${filename.replace(/\.md$/, '')}`;
+        const url = path.replace(/ /g, '%20');
+        const filePath = `${filename.replace(/\.md$/, '')}](${url})`;
+
+        entries.push({
+            key,
+            filePath,
+            lastModified: getMemFile(path).lastModified
         });
+
     });
 
     // Sort by last modified (most recent first)
@@ -494,7 +499,11 @@ function createAutocompleteDict() {
     });
 
     let lowPriorityEntries = [];
-    ['_read_', '_watch_', '_shop_', 'today', 'later', 'journal'].forEach(dir => {
+    ['_read_/', '_watch_/', '_shop_/', 'today/', 'later/', 'journal/'].forEach(dir => {
+        if (!files[dir]) {
+            return;
+        }
+
         Object.keys(files[dir]).forEach(filename => {
             if (filename === CONFIG_PATH || filename === CHAT_PATH) {
                 return;
