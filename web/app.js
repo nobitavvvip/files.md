@@ -193,6 +193,7 @@ function initEditor(el) {
     };
 
     newEditor.hmdReadLink = async function (path) {
+        console.log('PATH', path);
         path = path.replace(/\|.*]$/, '');
         path = path.replace('[', '').replace(']', '');
 
@@ -203,34 +204,37 @@ function initEditor(el) {
         }
 
         console.log('READ LINK', path);
-        let parts = path.split('/');
-        // TODO multidir
-        if (parts.length === 1) {
-            path += '.md';
-            // Does file exist in root dir?
-            if (files[''] && files[''][path]) {
-                openFile('', path, true, 'editor2-textarea');
-                return;
-            }
-
-            // Does file exist in current dir?
-            if (files[editor.currentDir] && files[editor.currentDir][path]) {
-                openFile(editor.currentDir, path, true, 'editor2-textarea');
-                return;
-            }
-
-            // Loop through all 1st level dirs to find
-            for (const dir in files) {
-                if (files[dir][path]) {
-                    openFile(dir, path, true, 'editor2-textarea');
-                    return;
-                }
-            }
-
-            return;
-        }
-
-        await openFile(parts[0], parts[1] + '.md', true, 'editor2-textarea');
+        // let parts = path.split('/');
+        // // TODO multidir
+        // if (parts.length === 1) {
+        //     path += '.md';
+        //     // Does file exist in root dir?
+        //     if (files[''] && files[''][path]) {
+        //         openFile('', path, true, 'editor2-textarea');
+        //         return;
+        //     }
+        //
+        //     // Does file exist in current dir?
+        //     if (files[editor.currentDir] && files[editor.currentDir][path]) {
+        //         openFile(editor.currentDir, path, true, 'editor2-textarea');
+        //         return;
+        //     }
+        //
+        //     // Loop through all 1st level dirs to find
+        //     for (const dir in files) {
+        //         if (files[dir][path]) {
+        //             openFile(dir, path, true, 'editor2-textarea');
+        //             return;
+        //         }
+        //     }
+        //
+        //     return;
+        // }
+        //
+        // await openFile(parts[0], parts[1] + '.md', true, 'editor2-textarea');
+        // TODO add obsidian like "search file through all dirs"
+        console.log(path);
+        openFile(path + '.md', true, 'editor2-textarea')
     };
 
     newEditor.on('inputRead', async function (cm, change) {
@@ -476,6 +480,12 @@ function createAutocompleteDict() {
 
         if (path === CONFIG_PATH || path === CHAT_PATH) {
             return;
+        }
+
+        for (const dir in SYSTEM_DIRS) {
+            if (path.startsWith(joinPath('/', SYSTEM_DIRS[dir], '/'))) {
+                return;
+            }
         }
 
         const filename = toFilename(path);
