@@ -867,10 +867,11 @@ function TreeView(root, container, options) {
                 const sourceDir = draggedNode.parent ? draggedNode.parent.toString() : '';
                 console.log(draggedNode.parent);
                 console.log(sourceDir);
-                const sourceFile = draggedNode.toString() + '.md';
 
-                let targetDir = '';
+                const sourceFile = draggedNode.toString() + '.md';
+                let targetDir;
                 if (position === 'inside' && !node.isLeaf()) {
+                    // TODO handle multiple subdirs?
                     targetDir = node.toString();
                 } else {
                     targetDir = node.parent ? node.parent.toString() : '';
@@ -1103,8 +1104,9 @@ const TreeUtil = {
 window.handleNodeMove = async function(sourceDir, sourceFile, targetDir) {
     console.log(`Moving ${sourceDir}/${sourceFile} to ${targetDir}/`);
 
-    // TODO multidir
-    if (sourceDir === editor.currentDir && sourceFile === editor.currentFile) {
+    console.log(`${sourceDir}/${sourceFile}`);
+    if (currentEditor.path === `${sourceDir}/${sourceFile}`) {
+        console.log('move currentl');
        await moveCurrentFile(targetDir);
     } else {
         await moveFile(`${sourceDir}/${sourceFile}`, `${targetDir}/${sourceFile}`);

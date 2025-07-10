@@ -17,6 +17,8 @@ let isLoadingLocalFiles = false;
 // - memFile, in-memory representation of local file
 // The latter is needed for quick access to file's handle and metadata.
 
+// We operate with absolute paths in our webapp. Server/wasm is currently operating with relative paths (better for safety checks).
+
 // In-memory mapping of local file system:
 // {
 //   'dir/': [
