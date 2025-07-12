@@ -1449,6 +1449,11 @@ function walk(obj, callback, path = '/') {
             continue;
         }
 
+        const isDir = path.endsWith('/');
+        if (!isDir) {
+            return;
+        }
+
         const keys = Object.keys(currentObj);
         const files = [];
         const dirs = [];
