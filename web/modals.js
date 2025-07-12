@@ -30,6 +30,11 @@ class SearchModal {
                 this.close();
                 event.preventDefault();
                 event.stopPropagation();
+                if (isChat) {
+                    chatInput.focus();
+                } else {
+                    currentEditor.focus();
+                }
             }
         });
 
@@ -430,6 +435,11 @@ class MoveModal {
                 this.close();
                 event.preventDefault();
                 event.stopPropagation();
+                if (isChat) {
+                    chatInput.focus();
+                } else {
+                    currentEditor.focus();
+                }
             }
         });
 
