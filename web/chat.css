@@ -10,7 +10,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--col-bg-alt);
+    background: var(--col-bg);
 }
 
 #chat-container.modal {
