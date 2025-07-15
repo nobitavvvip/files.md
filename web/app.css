@@ -742,3 +742,7 @@ body.dragging * {
 .tj_container ul ul ul li span.tj_description {
     padding-left: 4em !important;
 }
+
+.sidebar-inbox {
+    font-weight: 600;
+}

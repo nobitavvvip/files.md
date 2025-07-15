@@ -36,6 +36,15 @@ function renderSidebar(focusDir = '', modifiedPaths) {
     }
 
     root = new TreeNode('');
+    root.path = '/';
+
+    let inbox = new TreeNode("inbox");
+    inbox.path = CHAT_PATH;
+    inbox.setSelected(currentEditor.path === CHAT_PATH);
+    inbox.on('click', async function (n, node) {
+        await openChat();
+    });
+    root.addChild(inbox)
 
     // Process directories
     // for (const dir in files) {
@@ -84,6 +93,10 @@ function renderSidebar(focusDir = '', modifiedPaths) {
         }
 
         let dirNode = new TreeNode(toFilename(path), {expanded: false, dir: true});
+        dirNode.path = removeTrailingSlash(path);
+        if (path === '/archive/') {
+            dirNode.isGroupEnd = true;
+        }
         dirNodes[removeTrailingSlash(path)] = dirNode;
 
         // Add to parent
@@ -127,6 +140,7 @@ function renderSidebar(focusDir = '', modifiedPaths) {
         const {dirPath, filename} = toDirPathAndFilename(path);
 
         let fileNode = new TreeNode(filename.replace(/\.md$/, '').replace(/\.txt$/, ''), {expanded: false});
+        fileNode.path = path;
         fileNode.on('click', async function (n, node) {
             await openFile(path);
         });
@@ -141,7 +155,7 @@ function renderSidebar(focusDir = '', modifiedPaths) {
 
     const groupedDirs = new Set(['_read_', '_watch_', '_shop_', 'journal', 'habits', 'insights', 'archive', 'today', 'later']);
     const underscoreDirs = [];
-    // Find all directories that match _list_ pattern
+    // Group all checklists
     for (const dir in dirNodes) {
         const filename = toFilename(dir);
         if (filename.startsWith('_') && filename.endsWith('_')) {
@@ -160,10 +174,9 @@ function renderSidebar(focusDir = '', modifiedPaths) {
         }
     });
 
-    // TODO if we have only two groups - hide them (personal + files case)
     const groups = [
         ['today', 'later'],
-        ['journal', 'habits', 'insights', 'archive'],
+        ['journal', 'habits', 'insights'],
     ];
     for (let i = 0; i < groups.length; i++) {
         const dirList = groups[i];
@@ -229,15 +242,24 @@ function renderSidebar(focusDir = '', modifiedPaths) {
     // }
     //
 
+    // Dirs first
     function sortTreeNode(node) {
         const children = node.getChildren();
         if (children && children.length > 0) {
             children.sort((a, b) => {
+                const aName = a.toString();
+                const bName = b.toString();
                 const aIsDir = a.getOptions()?.dir === true;
                 const bIsDir = b.getOptions()?.dir === true;
 
+                // Inbox always comes first
+                if (aName === 'inbox') return 1;
+                if (bName === 'inbox') return 1;
+
+                // Then sort by directory vs file
                 if (aIsDir && !bIsDir) return -1;
                 if (!aIsDir && bIsDir) return 1;
+
                 return 0;
             });
 
@@ -245,9 +267,7 @@ function renderSidebar(focusDir = '', modifiedPaths) {
             children.forEach(child => sortTreeNode(child));
         }
     }
-
     sortTreeNode(root);
-
 
     tree = new TreeView(root, '#tree', {
         show_root: false,
@@ -294,6 +314,25 @@ function TreeNode(userObject, options) {
             children.push(node);
 
             //Konstante hinzufügen (workaround)
+            Object.defineProperty(node, "parent", {
+                value: this,
+                writable: false,
+                enumerable: true,
+                configurable: true
+            });
+        } else {
+            throw new Error("Parameter 1 must be of type TreeNode");
+        }
+    }
+
+    this.prependChild = function (node) {
+        if (!TreeUtil.getProperty(options, "allowsChildren", true)) {
+            console.warn("Option allowsChildren is set to false, no child added");
+            return;
+        }
+        if (node instanceof TreeNode) {
+            children.unshift(node); // Add to beginning instead of end
+            // Set parent property (same as addChild)
             Object.defineProperty(node, "parent", {
                 value: this,
                 writable: false,
@@ -786,14 +825,13 @@ function TreeView(root, container, options) {
         span_desc.className = "tj_description";
         span_desc.tj_node = node;
 
-        // NEW CODE: Check if this node needs a group header
         var needsGroupHeader = false;
         var groupHeaderText = "";
         var groupHeaderClass = "";
 
         if (node.parent === root) {
-            var siblings = root.getChildren();
-            var myIndex = siblings.indexOf(node);
+            let siblings = root.getChildren();
+            let myIndex = siblings.indexOf(node);
 
             // ?? =)
             if (myIndex === 0) {
@@ -803,16 +841,19 @@ function TreeView(root, container, options) {
             }
 
             if (needsGroupHeader) {
-                var nodeStr = node.toString();
+                let nodeStr = node.toString();
                 if (nodeStr.startsWith('_') && nodeStr.endsWith('_')) {
                     groupHeaderText = "Lists";
                     groupHeaderClass = "lists";
                 } else if (['today', 'later'].includes(nodeStr)) {
                     groupHeaderText = "Tasks";
                     groupHeaderClass = "tasks";
-                } else if (['journal', 'habits', 'insights', 'archive'].includes(nodeStr)) {
+                } else if (['journal', 'habits', 'insights'].includes(nodeStr)) {
                     groupHeaderText = "Personal";
                     groupHeaderClass = "personal";
+                } else if (nodeStr === 'inbox') {
+                    groupHeaderText = "Flow";
+                    groupHeaderClass = "flow";
                 } else {
                     groupHeaderText = "Files";
                     groupHeaderClass = "user-dirs";
@@ -1014,7 +1055,7 @@ function TreeView(root, container, options) {
             if (startsWithEmoji(name)) {
                 ret += '<span class="tj_mod_icon" ><div style="width: 22px; text-align: center; transform: translateY(-2px);">' + getFirstEmoji(node.toString()) + '</div></span>';
                 name = trimFirstEmoji(name);
-            } else if (node.toString() === 'chat') {
+            } else if (node.toString() === 'inbox') {
                 ret += '<span class="tj_mod_icon" style="padding-right: 2px">' + TreeConfig.chat_icon + '</span>';
             } else if (icon != "") {
                 ret += '<span class="tj_mod_icon">' + icon + '</span>';
@@ -1026,6 +1067,9 @@ function TreeView(root, container, options) {
 
             span_desc.innerHTML = ret + name + "</span>";
             span_desc.classList.add("tj_leaf");
+            if (node.toString() === 'inbox') {
+                span_desc.classList.add("sidebar-inbox");
+            }
 
             li_outer.appendChild(span_desc);
         } else {

@@ -1,7 +1,26 @@
-const {test, expect} = require('@playwright/test');
+const {test, expect: baseExpect} = require('@playwright/test');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+
+const expect = baseExpect.extend({
+    toBeNumberOrNull(received) {
+        const pass = received === null || (typeof received === 'number' && !isNaN(received));
+
+        if (pass) {
+            return {
+                message: () => `expected ${received} not to be a number or null`,
+                pass: true,
+            };
+        } else {
+            return {
+                message: () => `expected ${received} to be a number or null, but got ${typeof received}`,
+                pass: false,
+            };
+        }
+    }
+});
+
 
 const getServerDir = (workerIndex) => `../storage/${currentWorkerIndex}`;
 const getTokensDir = () => `../storage/-1`;
@@ -365,7 +384,7 @@ test('files exist on both client and server, serverFiles contains proper server 
         'another.md': {
             hash: expect.any(Number),
             isFile: true,
-            lastModified: expect.any(Number),
+            lastModified: expect.toBeNumberOrNull(),
             lastClientModified: null,
             path: '/another.md'
         },
@@ -582,3 +601,4 @@ async function expectCurrentContent(page, content) {
     });
     expect(codeMirrorContent).toBe(content);
 }
+
