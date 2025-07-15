@@ -118,7 +118,6 @@ function renderSidebar(focusDir = '', modifiedPaths) {
             console.log('PATHS', toRootDirName(modifiedPaths[0]), dir);
         }
         if (modifiedPaths !== undefined && modifiedPaths.some(modPath => toRootDirName(modPath) === dir)) {
-            console.log('SHOULD blink', dir);
             dirNode.shouldBlink = true;
         }
     });
@@ -870,6 +869,7 @@ function TreeView(root, container, options) {
         if (node.shouldBlink) {
             span_desc.classList.add('sidebar-blink');
             setTimeout(() => span_desc.classList.remove('sidebar-blink'), 1500);
+            node.shouldBlink = false;
         }
 
         if (node.isGroupEnd) {
