@@ -266,7 +266,9 @@
 .cm-s-hypermd-light div.HyperMD-hr-bg {
     left: 0px;
     right: 0px;
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAQAAAAziH6sAAAADklEQVR42mOc+Z9x5n8ACTkDM4ikM1IAAAAASUVORK5CYII=) repeat-x 0px center;
+    /*background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAQAAAAziH6sAAAADklEQVR42mOc+Z9x5n8ACTkDM4ikM1IAAAAASUVORK5CYII=) repeat-x 0px center;*/
+    /*PATCHED*/
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAABHNCSVQICAgIfAhkiAAAABJJREFUCJljePHixX8mBgYGBgAbzgO6DsvG+QAAAABJRU5ErkJggg==) repeat-x 0px center;
 }
 /*PATCHED*/
 .cm-s-hypermd-light pre.HyperMD-quote:before {
