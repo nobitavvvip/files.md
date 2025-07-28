@@ -136,7 +136,7 @@ func moveTaskToToday(task string, userFS *fs.FS) (bool, error) {
 	if itemWasRemoved {
 		err = userFS.Write(fs.DirArchive, fs.DoneFilename, reducedDoneMD)
 		if err != nil {
-			return false, fmt.Errorf("moveTaskToToday: can't write to done file: %w", err)
+			return true, fmt.Errorf("moveTaskToToday: can't write to done file: %w", err)
 		}
 
 		return true, nil
@@ -149,11 +149,11 @@ func moveTaskToToday(task string, userFS *fs.FS) (bool, error) {
 	if itemWasRemoved {
 		err = userFS.Write(fs.DirRoot, fs.LaterFilename, reducedLaterMD)
 		if err != nil {
-			return false, fmt.Errorf("moveTaskToToday: can't write to done file: %w", err)
+			return true, fmt.Errorf("moveTaskToToday: can't write to done file: %w", err)
 		}
 
 		return true, nil
 	}
 
-	return false, nil
+	return true, nil
 }
