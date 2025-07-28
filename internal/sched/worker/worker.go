@@ -14,6 +14,7 @@ import (
 	"zakirullin/stuffbot/internal"
 	"zakirullin/stuffbot/internal/db"
 	"zakirullin/stuffbot/internal/fs"
+	"zakirullin/stuffbot/internal/journal"
 	"zakirullin/stuffbot/internal/sched"
 	"zakirullin/stuffbot/internal/userconfig"
 	"zakirullin/stuffbot/pkg/txt"
@@ -186,6 +187,10 @@ func RemoveCompletedChecklistItems(
 			err = userFS.Write(fs.DirArchive, fs.DoneFilename, doneMD)
 			if err != nil {
 				slog.Error("schedule worker: can't write done file", "err", err)
+			}
+
+			for task := range txt.ChecklistItems(doneMD) {
+				_ = journal.AddRecord(userFS, fmt.Sprintf("✅ %s", task), userconf.Timezone())
 			}
 		}
 
