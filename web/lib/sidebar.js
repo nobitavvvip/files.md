@@ -898,7 +898,7 @@ function TreeView(root, container, options) {
             span_desc.classList.add("group-end");
         }
 
-        if (node.isLeaf()) {
+        if (node.isLeaf() && !['today', 'later', 'watch', 'shop', 'read', 'inbox'].includes(node.toString())) {
             span_desc.draggable = true;
         }
 
