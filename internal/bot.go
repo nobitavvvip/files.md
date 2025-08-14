@@ -1028,13 +1028,26 @@ func (b *Bot) ShowToday(_ []string) error {
 			block = strings.TrimSpace(block[8:])
 		}
 
-		if len([]rune(block)) >= maxTitleLengthForMobile {
+		// Skip image link if any.
+		parts := strings.Split(block, "\n")
+		title := txt.Ucfirst(strings.TrimSpace(parts[0]))
+		if txt.HasImage(title) {
+			if len(parts) > 1 {
+				title = txt.Ucfirst(strings.TrimSpace(parts[1]))
+			}
+
+			if title == "" || len(parts) == 1 {
+				title = fmt.Sprintf("Img %s", now().Format("02.01.06 15:04"))
+			}
+		}
+
+		if len([]rune(title)) >= maxTitleLengthForMobile {
 			cmd := tg.NewCmd(consts.CmdShowLongItemFromInbox, []string{strconv.Itoa(msgIndex)})
-			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), block), cmd)
+			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), title), cmd)
 			kb.AddRow(btn)
 		} else {
 			cmd := tg.NewCmd(consts.CmdCompleteFromChat, []string{strconv.Itoa(msgIndex)})
-			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("chat"), block), cmd)
+			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("chat"), title), cmd)
 			kb.AddRow(btn)
 		}
 
