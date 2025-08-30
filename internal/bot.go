@@ -2058,7 +2058,7 @@ func (b *Bot) moveToExistingNote(params []string) error {
 		}
 
 		b.db.SetRecentCommand(consts.CmdMoveToExistingNote)
-		b.db.SetRecentCommandParams([]string{toFilename, fs.ShortHash(toDir)})
+		b.db.SetRecentCommandParams([]string{fs.ShortHash(toFilename), fs.ShortHash(toDir)})
 
 		return nil
 	}, false, msgIndices...)
