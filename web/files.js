@@ -227,7 +227,7 @@ async function syncTextsWithServer() {
                 });
 
                 console.log('SYNC texts: write file: ', path);
-                setServerFile(path, content, lastModified);
+                setServerFile(path, content, lastModified, lastClientModified);
                 // Unfortunately rename is not working, so we have to delete the old file
                 const shouldRemoveOldFile = relPath in response.renames;
                 // TODO write e2e for renames
@@ -295,6 +295,8 @@ async function syncLocalFileWithServer(path) {
                 path: path,
                 lastModified: serverTimestamp,
                 clientLastModified: clientLastModified,
+                // We take the last client timestamp known to the server. Server can
+                // decide whether the file was modified on client or not.
                 clientLastSynced: getServerFile(path)?.lastClientModified || 0,
                 content: content,
             })
@@ -1004,18 +1006,6 @@ function getServerFile(path) {
 }
 
 function setServerFile(path, content, lastModifiedAt, lastClientModifiedAt = null) {
-    // const parts = path.split('/');
-    // const filename = parts.pop();
-    // const dir = parts.join('/');
-    //
-    // serverFiles['files'] = serverFiles['files'] ?? {};
-    // serverFiles['files'][dir] = serverFiles['files'][dir] ?? {};
-    // serverFiles['files'][dir][filename] = {
-    //     hash: hash(content),
-    //     lastModified: lastModifiedAt,
-    //     lastSynced: clientLastSynced,
-    //     path: path,
-    // };
     let dirs = path.split('/');
     dirs = dirs.filter(d => d !== '');
     const filename = dirs.pop();
