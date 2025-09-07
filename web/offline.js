@@ -48,22 +48,29 @@ const cacheName = `files-md-v${COMMIT_HASH}`;
 
 
 self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(cacheName)
-            .then(cache => {
-                const cachePromises = urlsToCache.map(url => {
-                    if (url !== "/" && url !== 'favicon.ico' && url !== 'small_icon.png' && url !== 'icon.png') {
-                        url += COMMIT_HASH;
-                    }
-                    return cache.add(url)
-                        .catch(err => console.error('✗ Failed to cache:', url, err));
-                });
-                return Promise.allSettled(cachePromises); // Won't fail if one fails
-            })
-            .then(() => {
-                return self.skipWaiting();
-            })
-    );
+    event.waitUntil((async () => {
+        let cache;
+        try {
+            cache = await caches.open(cacheName);
+        } catch (err) {
+            console.error('Failed to open cache:', err);
+            return;
+        }
+
+        for (let url of urlsToCache) {
+            if (url !== "/" && url !== 'favicon.ico' && url !== 'small_icon.png' && url !== 'icon.png') {
+                url = url + COMMIT_HASH;
+            }
+
+            try {
+                await cache.add(url);
+            } catch (err) {
+                console.error('✗ Failed to cache:', url, err);
+            }
+        }
+
+        return await self.skipWaiting();
+    })());
 });
 
 self.addEventListener("activate", (event) => {
