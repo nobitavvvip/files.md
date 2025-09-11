@@ -136,7 +136,7 @@ async function loadLocalFiles(rootDirHandle) {
     try {
         await loadDir(rootDirHandle);
     } catch (error) {
-        console.log('Load Local files: ', error);
+        log('Load Local files: ', error);
         isLoadingLocalFiles = false;
         throw error;
     }
@@ -168,7 +168,7 @@ async function syncTextsWithServer() {
     isSyncing = true;
 
     const startTime = performance.now();
-    console.log('Starting sync with server...');
+    log('Starting sync with server...');
 
     // Send locally modified files and timestamps of last seen dirs from the server
     // TODO check if we fully synced at least once (timestamps exists)
@@ -178,10 +178,10 @@ async function syncTextsWithServer() {
     // TODO is it possible that the server has zero files? I think at least '.' is sent
     let hasFullySyncedFilesAtLeastOnce = server['timestamps'] !== undefined && Object.keys(server['timestamps']).length > 0;;
     if (hasFullySyncedFilesAtLeastOnce) {
-        console.log('SYNCED AT LEAST ONCE, collecting local files', server['timestamps']);
+        log('SYNCED AT LEAST ONCE, collecting local files', server['timestamps']);
         ({modified, deleted} = await collectModifiedAndDeletedFiles());
     } else {
-        console.log('NEVER SYNCED BEFORE');
+        log('NEVER SYNCED BEFORE');
     }
     const response = await post('syncTexts', {
         modified: modified,
@@ -211,7 +211,7 @@ async function syncTextsWithServer() {
             // TODO if we skip current, don't take it's timestamp? We had a bug when sync was broken for 1 file
             // TODO fix missing / for root files
             if (path === editor.path || path === editor2.path) {
-                console.log('Skip receiving current file during bath sync', path);
+                log('Skip receiving current file during bath sync', path);
                 continue;
             }
 
@@ -226,7 +226,7 @@ async function syncTextsWithServer() {
                     handle: await getFileHandle(path),
                 });
 
-                console.log('SYNC texts: write file: ', path);
+                log('SYNC texts: write file: ', path);
                 setServerFile(path, content, lastModified, lastClientModified);
                 // Unfortunately rename is not working, so we have to delete the old file
                 const shouldRemoveOldFile = relPath in response.renames;
@@ -234,17 +234,17 @@ async function syncTextsWithServer() {
                 if (shouldRemoveOldFile) {
                     const oldPath = joinPath('/', response.renames[relPath]);
                     try {
-                        console.log('DELETED due to renaming', oldPath);
+                        log('DELETED due to renaming', oldPath);
                         await removeFile(oldPath);
                     } catch (err) {
-                        console.log('RENAME: cant remove file: ', err, path);
+                        log('RENAME: cant remove file: ', err, path);
                     }
                 }
                 saveServerFiles();
             } catch (error) {
                 console.warn(`Error saving file ${path}:`, error);
                 // Don't treat malformed filenames as sync error.
-                console.log(error);
+                log(error);
                 if (!error.message.includes('Name is not allowed')) {
                     failedAtLeastOnce = true;
                 }
@@ -256,17 +256,17 @@ async function syncTextsWithServer() {
         // will be sent by subsequent syncTexts call, because collectLocalFiles
         // would report them as new.
         if (!failedAtLeastOnce) {
-            console.log('BATCH sync ok, moving timestamps');
+            log('BATCH sync ok, moving timestamps');
             server['timestamps'] = response.timestamps;
             saveServerFiles();
         } else {
-            console.log("BATCH sync error, timestamps aren't moved");
+            log("BATCH sync error, timestamps aren't moved");
         }
     } catch (error) {
         console.error("Can't sync:", error.message)
     }
 
-    console.log('Sync completed in ' + (performance.now() - startTime) + 'ms');
+    log('Sync completed in ' + (performance.now() - startTime) + 'ms');
 
     isSyncing = false;
 }
@@ -302,7 +302,7 @@ async function syncLocalFileWithServer(path) {
             })
         });
         if (!response.ok) {
-            console.log(`Server responded with ${response.status}`);
+            log(`Server responded with ${response.status}`);
             return;
         }
         let json = await response.json();
@@ -316,7 +316,7 @@ async function syncLocalFileWithServer(path) {
         if (json.status === 'updatedOnServer') {
             // TODO maybe RC here? When file was updated, but during this time we already changed it
             setServerFile(path, content, json.lastModified, clientLastModified);
-            console.log(`Moved lastModified for ${path} with timestamp ${json.lastModified}`, json);
+            log(`Moved lastModified for ${path} with timestamp ${json.lastModified}`, json);
             saveServerFiles();
             return;
         }
@@ -333,13 +333,13 @@ async function syncLocalFileWithServer(path) {
     // 3) Merged on server
     const lastClientModified = await saveTextFile(path, serverFile.content);
     setServerFile(path, serverFile.content, serverFile.lastModified, lastClientModified);
-    console.log(`Saved server file for ${path} with timestamp ${serverFile.lastModified}`);
+    log(`Saved server file for ${path} with timestamp ${serverFile.lastModified}`);
     saveServerFiles();
     if (path === editor.path) {
-        console.log('Opening file after sync');
+        log('Opening file after sync');
         await openFile(path);
     }
-    console.log('File synced with server');
+    log('File synced with server');
 }
 
 async function syncMedia() {
@@ -396,7 +396,7 @@ async function syncMedia() {
                         lastModified: 0, // We don't track binary files modifications.
                     };
                     saveServerFiles();
-                    console.log(`Successfully synced media file: ${mediaFilename}`);
+                    log(`Successfully synced media file: ${mediaFilename}`);
                 } else {
                     console.error(`Failed to sync media file ${mediaFilename}:`, response.statusText, response, await response.text());
                 }
@@ -426,7 +426,7 @@ async function syncMedia() {
         let filesProcessed = 0;
         for (const fileInfo of serverData.files) {
             const {filename, lastModified} = fileInfo;
-            console.log(`Downloading media file: ${filename}`);
+            log(`Downloading media file: ${filename}`);
 
             try {
                 // Fetch binary file
@@ -454,7 +454,7 @@ async function syncMedia() {
             }
         }
 
-        console.log(`Media sync completed in ${(performance.now() - startTime).toFixed(2)}ms. Downloaded ${filesProcessed} files.`);
+        log(`Media sync completed in ${(performance.now() - startTime).toFixed(2)}ms. Downloaded ${filesProcessed} files.`);
     } catch (error) {
         console.error('Network error during media sync:', error.message);
     }
@@ -466,7 +466,7 @@ async function syncMedia() {
 async function saveMediaFile(path, blob, lastModified) {
     const fileHandle = await getFileHandle(path, true);
     if (fileHandle === null) {
-        console.log(`Malformed name for ${path}, skipping file...`);
+        log(`Malformed name for ${path}, skipping file...`);
         return;
     }
 
@@ -483,11 +483,11 @@ async function saveMediaFile(path, blob, lastModified) {
                 lastModified: lastModified,
             }
             saveServerFiles();
-            console.log(`File ${path} already exists and is up to date, skipping...`);
+            log(`File ${path} already exists and is up to date, skipping...`);
             return;
         }
     } catch (error) {
-        console.log(`File ${path} doesn't exist or can't be read, will create it`);
+        log(`File ${path} doesn't exist or can't be read, will create it`);
     }
 
     try {
@@ -497,7 +497,7 @@ async function saveMediaFile(path, blob, lastModified) {
         const writable = await fileHandle.createWritable();
         await writable.write(blob);
         await writable.close();
-        console.log(`Successfully wrote media file: ${path}`);
+        log(`Successfully wrote media file: ${path}`);
         if (lastModified > server['mediaTimestamp']) {
             server['mediaTimestamp'] = lastModified;
         }
@@ -533,7 +533,7 @@ async function collectModifiedAndDeletedFiles() {
     //         // TODO write tests for that?
     //         if ((dir === editor.currentDir && filename === editor.currentFile)
     //             || (dir === editor2.currentDir && filename === editor2.currentFile)) {
-    //             console.log('Skip sending current file: ' + dir + '/' + filename);
+    //             log('Skip sending current file: ' + dir + '/' + filename);
     //             continue;
     //         }
     //
@@ -555,7 +555,7 @@ async function collectModifiedAndDeletedFiles() {
     // Freeze paths to prevent RC. Current file can change during collecting.
     const editorPath = editor.path;
     const editor2Path = editor2.path;
-    console.log('Frozen paths:', editorPath, editor2Path);
+    log('Frozen paths:', editorPath, editor2Path);
     walk(files, (path, isFile) => {
         if (!isFile) {
             return;
@@ -567,7 +567,7 @@ async function collectModifiedAndDeletedFiles() {
 
         // TODO write tests for that?
         if (path === editorPath || path === editor2Path) {
-            console.log('Skip sending current file: ' + path);
+            log('Skip sending current file: ' + path);
             return;
         }
 
@@ -601,7 +601,7 @@ async function collectModifiedAndDeletedFiles() {
     //             continue;
     //         }
     //         if (!existingFiles[toPath(dir, filename)]) {
-    //             console.log('DELETED ' + toPath(dir, filename));
+    //             log('DELETED ' + toPath(dir, filename));
     //             deleted.push(toPath(dir, filename));
     //         }
     //     }
@@ -622,10 +622,10 @@ async function collectModifiedAndDeletedFiles() {
         }
 
         if (existingFiles[path] === undefined) {
-            console.log('DELETED because not in existing or modified files:', path);
-            console.log('Current editors paths:', editor.path, editor2.path);
+            log('DELETED because not in existing or modified files:', path);
+            log('Current editors paths:', editor.path, editor2.path);
             // Log files entry
-            console.log('Mem file:', getMemFile(path));
+            log('Mem file:', getMemFile(path));
             deleted.push(path);
         }
     });
@@ -650,7 +650,7 @@ async function collectNewMediaFiles() {
         }
     }
 
-    console.log('NEW FILENAMES', newMediaFiles);
+    log('NEW FILENAMES', newMediaFiles);
 
     return newMediaFiles;
 }
@@ -683,9 +683,9 @@ async function getFileStatus(path) {
     // TODO why path is stored at all?
     // const path = serverFiles?.files?.[dir]?.[filename]?.path;
     let serverFile = getServerFile(path);
-    // console.log('STATUS', path, serverFile);
+    // log('STATUS', path, serverFile);
     if (serverFile === null) {
-        console.log('NEW LOCAL FILE ' + path);
+        log('NEW LOCAL FILE ' + path);
         return {
             status: 'new',
             content: content,
@@ -697,7 +697,7 @@ async function getFileStatus(path) {
     const serverHash = serverFile.hash;
     const serverTime = serverFile.lastModified;
     if (serverHash !== hash(content)) {
-        console.log('NEW MODIFIED LOCAL FILE ' + path);
+        log('NEW MODIFIED LOCAL FILE ' + path);
         return {
             status: 'modified',
             content: content,
@@ -747,7 +747,7 @@ async function getFileHandle(path, create = false) {
 
 // TODO split into two, sometimes we need just compare
 async function isContentEqual(path, content) {
-    console.log('checking content for', path);
+    log('checking content for', path);
     let fileHandle = await getFileHandle(path);
     if (fileHandle === null) {
         // TODO fix once Chromium fixes the bug
@@ -773,7 +773,7 @@ async function isContentEqual(path, content) {
             }
         }
 
-        // console.log(diff);
+        // log(diff);
 
         return false;
     } else {
@@ -792,12 +792,12 @@ async function saveTextFile(path, content) {
     const fileExists = !await exists([path]);
     if (fileExists || !await isContentEqual(path, content)) {
         // TODO what if we're syncing first time and already have changes?
-        console.log('Hashes do not match, writing file...', path);
+        log('Hashes do not match, writing file...', path);
         const writable = await fileHandle.createWritable();
         await writable.write(content);
         await writable.close();
     } else {
-        console.log('Hashes match, no need to write file.');
+        log('Hashes match, no need to write file.');
     }
 
     const file = await fileHandle.getFile();
@@ -811,7 +811,9 @@ async function addToTextFile(path, content) {
         throw new Error('Invalid file name');
     }
 
+    // We don't use log to cause recursion
     console.log('Appending to file...', path);
+
     const writable = await fileHandle.createWritable({ keepExistingData: true });
     await writable.seek(await fileHandle.getFile().then(file => file.size));
     await writable.write(content);
@@ -861,11 +863,11 @@ async function removeFile(path) {
     let fileHandle = await getFileHandle(path);
     if (fileHandle === null) {
         // TODO fix once Chromium fixes the bug
-        console.log('Malformed name, skipping file...');
+        log('Malformed name, skipping file...');
         return;
     }
     await fileHandle.remove()
-    console.log(`File ${path} removed successfully.`);
+    log(`File ${path} removed successfully.`);
 
     removeMemFile(path);
 }
@@ -884,7 +886,7 @@ async function moveCurrentFile(toDir) {
         // TODO move to saveTextFile?
         removeMemFile(oldPath);
         // delete files[editor.currentDir][editor.currentFile];
-        console.log('MOVING to DIR:', toDir);
+        log('MOVING to DIR:', toDir);
 
         addMemFile(newPath, {
             isFile: true,
@@ -959,7 +961,7 @@ async function moveFile(oldPath, newPath) {
         let content = await file.text();
         await saveTextFile(newPath, content);
 
-        console.log('saving ' + newPath);
+        log('saving ' + newPath);
         addMemFile(newPath, {
             isFile: true,
             content: content,
@@ -975,7 +977,7 @@ async function moveFile(oldPath, newPath) {
         // delete files[oldDir][oldFilename];
         await renderSidebar();
 
-        console.log(`Moved ${oldPath} to ${newPath}`);
+        log(`Moved ${oldPath} to ${newPath}`);
     } catch (error) {
         console.error('Error moving file:', error);
     }
@@ -1046,7 +1048,7 @@ function setServerFileLastClientModified(path, lastClientModified) {
 }
 
 function removeServerFile(path) {
-    // console.log('removing info about server file', path);
+    // log('removing info about server file', path);
     // const parts = path.split('/');
     // const filename = parts.pop();
     // const dir = parts.join('/');
@@ -1094,7 +1096,7 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     // Sync previous file
     // TODO what if we open same file?
     if (currentEditor.path !== undefined) {
-        console.log('sync previous file');
+        log('sync previous file');
         await syncCurrentFile(false);
     }
 
@@ -1117,7 +1119,7 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     // Check if we're loading the same file and save cursor position
     let cursorPos = null;
     if (currentEditor.path === path) {
-        console.log('saving cursor');
+        log('saving cursor');
         cursorPos = editor.getCursor();
     }
 
@@ -1160,13 +1162,13 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     currentEditor.markClean();
 
     if (cursorPos !== null) {
-        console.log('cursor not null');
+        log('cursor not null');
         currentEditor.setCursor(cursorPos);
         currentEditor.scrollTo(null, 0);
         // const editorScrollHeight = currentEditor.getScrollInfo().clientHeight;
         // Only scroll if editor'sheight more than current screen height
         // const contentFitsTheScreen = editorScrollHeight <= window.innerHeight;
-        // console.log('FITS', contentFitsTheScreen);
+        // log('FITS', contentFitsTheScreen);
         // if (contentFitsTheScreen) {
         // let margin = 500;
         // currentEditor.scrollIntoView(cursorPos, margin);
@@ -1178,7 +1180,7 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     }
 
     const end = performance.now();
-    console.log(`File ${path} opened in: ${(end - start).toFixed(3)} milliseconds`);
+    log(`File ${path} opened in: ${(end - start).toFixed(3)} milliseconds`);
 
     // Once we spent enough time in file, set viewportMargin to infinity to prevent artefacts.
     // Artefacts can be observed during text selection (cmd+a).
@@ -1247,7 +1249,7 @@ async function syncCurrentFile(syncWithServer = true) {
 
             const hasFilenameChanged = newFilename.toLowerCase() !== filename.toLowerCase();
             if (hasFilenameChanged) {
-                console.log('Filename has changed from ', filename, 'to', newFilename);
+                log('Filename has changed from ', filename, 'to', newFilename);
                 // Change the file immediately, because on further await calls it can be synced by syncTexts.
                 currentEditor.path = joinPath(toDirPath(path), newFilename);
 
@@ -1257,7 +1259,7 @@ async function syncCurrentFile(syncWithServer = true) {
                 let content = getCurrentContent();
                 // TODO every await means we can can have RC due to editor content change
                 await removeFile(path);
-                console.log('Removed due to filename change', path);
+                log('Removed due to filename change', path);
 
                 // Get fresher content after await.
                 // if (isCurrentEditorSame()) {
@@ -1279,7 +1281,7 @@ async function syncCurrentFile(syncWithServer = true) {
                 await saveTextFile(newPath, getCurrentContent());
                 setServerFile(newPath, content, 0);
                 saveServerFiles();
-                console.log('Created', newPath);
+                log('Created', newPath);
 
                 await renderSidebar();
 
@@ -1315,7 +1317,7 @@ async function syncCurrentFile(syncWithServer = true) {
                 // TODO inmemory lastmodified should be reloaded
                 let chatFileExists = inMemoryLastModified !== undefined;
                 if (inMemoryLastModified !== localLastModified) {
-                    console.log(files);
+                    log(files);
                     await openFile(INBOX_PATH);
                     isSyncingCurrentFile = false;
                     return;
@@ -1363,7 +1365,7 @@ async function syncCurrentFile(syncWithServer = true) {
 
     // Handling editor changes.
     if (contentWasModifiedLocally && currentEditor.isClean()) {
-        console.log('WAS MODIFIED LOCALLY, and the editor is clean', path);
+        log('WAS MODIFIED LOCALLY, and the editor is clean', path);
 
         // Changes only from local system
         try {
@@ -1377,7 +1379,7 @@ async function syncCurrentFile(syncWithServer = true) {
         isSaving = true;
         try {
             // const file = files[dir][filename];
-            console.log('Getting', path);
+            log('Getting', path);
             const file = getMemFile(path);
             if (file && file.handle) {
                 const freshContent = getCurrentContent();
@@ -1504,7 +1506,7 @@ function walk(obj, callback, path = '/') {
         // through fileHandle's keys, which were cyclic.
         iterations++;
         if (iterations > maxAllowedIterations) {
-            console.log(currentPath);
+            log(currentPath);
             alert("An infinite loop during files walk");
             return;
         }
@@ -1722,13 +1724,13 @@ function findSiblingPath(path) {
 
         // TODO we may wanna break from walk
         if (foundDesiredPath && nextPath === null) {
-            console.log('NEXT path', filePath);
+            log('NEXT path', filePath);
             nextPath = filePath;
             return ;
         }
 
         if (filePath === path) {
-            console.log('FOUND desired', filePath);
+            log('FOUND desired', filePath);
             foundDesiredPath = true;
         }
     });
@@ -1749,10 +1751,10 @@ async function removeCurrentFile() {
 
     currentEditor.path = undefined;
     if (toDirPath(path) === '/archive') {
-        console.log('Removing file permanently', path);
+        log('Removing file permanently', path);
         await removeFile(oldPath);
     } else {
-        console.log('Moving file to archive', path);
+        log('Moving file to archive', path);
         await moveFile(oldPath, newPath);
     }
 

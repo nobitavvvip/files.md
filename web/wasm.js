@@ -177,7 +177,7 @@ async function exists(args) {
         if (error.name === 'TypeMismatchError') {
             return true;
         }
-        console.log("EXISTS:", error, "PATH: ", path);
+        log("EXISTS:", error, "PATH: ", path);
         throw error
     }
 }
@@ -243,7 +243,7 @@ async function mkdir(args) {
         let currentDirHandle = await getRootDirHandle();
         await currentDirHandle.getDirectoryHandle(path, {create: true});
     } catch (error) {
-        console.log(error);
+        log(error);
         throw error;
     }
 }

@@ -108,7 +108,7 @@ class SearchModal {
         //     dir += '/';
         //     if (!files[dir] || dir === 'media/') continue;
         //     for (const filename in files[dir]) {
-        //         console.log(filename);
+        //         log(filename);
         //         const potentialMatch = filename.replace(/\.md$/, '');
         //         let similarityScore = similarity(search, potentialMatch);
         //
@@ -623,7 +623,7 @@ class MoveModal {
             renderSidebar();
             this.close();
         } else {
-            console.log('CLICKED ON folder to move', toDir);
+            log('CLICKED ON folder to move', toDir);
             moveCurrentFile(toDir).then(() => {
                 this.close();
             });

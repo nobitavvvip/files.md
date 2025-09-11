@@ -18,7 +18,7 @@ async function sendMsg() {
     if (wasmReply !== undefined) {
         await wasmReply(text);
     } else {
-        console.log('Fallback to direct inbox writing');
+        log('Fallback to direct inbox writing');
         // Sometimes chat.wasm is not loaded during poor internet connection, so we fallback to direct writing.
         await saveToInbox(text);
     }
@@ -208,7 +208,7 @@ async function loadMessages() {
         // Parse the content and load messages
         messages = parseFileContent(content);
 
-        console.log(`Loaded ${messages.length} messages from ${INBOX_PATH}`);
+        log(`Loaded ${messages.length} messages from ${INBOX_PATH}`);
     } catch (error) {
         console.error('Error loading data:', error);
         // Initialize with empty data if file doesn't exist or can't be read
@@ -235,10 +235,10 @@ function initChat() {
 
 async function initWasm() {
     window.wasmReady = () => {
-        console.log('WASM is ready');
+        log('WASM is ready');
     };
 
-    console.log('Init wasm inbox');
+    log('Init wasm inbox');
     try {
         const go = new Go();
         const wasmResponse = await fetch(`chat.wasm${window.COMMIT_HASH}`);
@@ -248,14 +248,14 @@ async function initWasm() {
 
         const contentLength = wasmResponse.headers.get('content-length');
         if (contentLength) {
-            console.log(`WASM file size: ${parseInt(contentLength).toLocaleString()} bytes`);
+            log(`WASM file size: ${parseInt(contentLength).toLocaleString()} bytes`);
         }
 
         const arrayBuffer = await  wasmResponse.clone().arrayBuffer();
-        console.log(`WASM file actual size: ${arrayBuffer.byteLength.toLocaleString()} bytes`);
+        log(`WASM file actual size: ${arrayBuffer.byteLength.toLocaleString()} bytes`);
 
         const wasmModule = await WebAssembly.instantiateStreaming(wasmResponse, go.importObject);
-        console.log('WASM module loaded successfully');
+        log('WASM module loaded successfully');
         go.run(wasmModule.instance);
 
     } catch (error) {
@@ -274,7 +274,7 @@ async function initWasm() {
 }
 
 async function logWasm(val) {
-    console.log(val);
+    log(val);
 }
 
 async function saveToInbox(content) {
@@ -291,7 +291,7 @@ async function saveToInbox(content) {
 }
 
 async function receive(modifiedPaths) {
-    console.log('Wasm: receiving:', modifiedPaths);
+    log('Wasm: receiving:', modifiedPaths);
     // We only update sidebar if we're in either chat mode
     let noChatModal = !document.getElementById('chat-container').classList.contains('modal');
     let noFullScreenChat = currentEditor.path !== INBOX_PATH
@@ -734,7 +734,7 @@ function attachEventListeners() {
             }
 
             sendCmd('mv', ['archive', indices.join(',')]);
-            console.log(indices);
+            log(indices);
             messagesToRemove.forEach(message => {
                 message.classList.add('removing');
                 setTimeout(() => {
@@ -825,7 +825,7 @@ autoResize();
 
 
 function sendCmd(cmd, params) {
-    console.log('Sending CMD to wasm', cmd, params)
+    log('Sending CMD to wasm', cmd, params)
     let cmdObj = {
         n: cmd,
         t: "cmd",

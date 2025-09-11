@@ -27,7 +27,7 @@ async function getOPFSDirHandle() {
 
 async function migrateFromOPFSToLocal() {
     try {
-        console.log('Starting migration from OPFS to Local FS...');
+        log('Starting migration from OPFS to Local FS...');
         const opfsRoot = await navigator.storage.getDirectory();
         const localRoot = await getSavedRootDirHandle();
 
@@ -49,7 +49,7 @@ async function migrateFromOPFSToLocal() {
                         await writable.write(content);
                         await writable.close();
                         copiedCount++;
-                        console.log(`✓ Copied: ${path}`);
+                        log(`✓ Copied: ${path}`);
                     } catch (error) {
                         console.error(`✗ Failed to copy ${path}:`, error);
                     }

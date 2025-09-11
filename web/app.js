@@ -11,6 +11,7 @@ const content = document.getElementById('content')
 const TODAY_PATH = '/Today.txt';
 const LATER_PATH = '/Later.txt';
 const DONE_PATH = '/archive/Done.txt';
+const LOG_PATH = '/archive/Log.txt';
 
 async function init(el) {
     // Authorize if we have one-time token in URL.
@@ -60,7 +61,7 @@ async function init(el) {
     // Alert if there's no "Allow on every visit" check.
     if (isChrome() && hasSavedLocalDir) {
         const permission = await (await getRootDirHandle()).queryPermission({mode: 'readwrite'});
-        console.log('PERMISSION', permission);
+        log('PERMISSION', permission);
         if (permission !== 'granted') {
             document.getElementById('open-folder').style.display = 'inline';
             // TODO maybe ask user to check "Allow on every visit" on left part of the sidebar
@@ -73,25 +74,25 @@ async function init(el) {
 
     let perf = performance.now();
     files = await loadLocalFiles(rootDirHandle);
-    console.log(`Files loaded in ${performance.now() - perf}ms`);
+    log(`Files loaded in ${performance.now() - perf}ms`);
 
     initChat();
     initWasm();
 
     perf = performance.now();
     renderSidebar();
-    console.log(`Sidebar built in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
+    log(`Sidebar built in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
 
     // perf = performance.now();
     openChat();
     // showRandomFile();
-    // console.log(`Random file opened in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
+    // log(`Random file opened in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
 
     perf = performance.now();
     await syncTextsWithServer();
     await renderSidebar();
     await syncMedia();
-    console.log(`Files initialized in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
+    log(`Files initialized in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
 }
 
 function initEditor(el) {
@@ -144,7 +145,7 @@ function initEditor(el) {
         currentEditor = newEditor;
         currentEditor.refresh(); // Cursor & hide tokens conflict if we don't call it
         closeChatModal();
-        console.log('Focused to:', newEditor.path);
+        log('Focused to:', newEditor.path);
     });
 
     newEditor.hmdResolveURL = function (path) {
@@ -284,7 +285,7 @@ function initEditor(el) {
 
                         const markdownImageSyntax = `![](media/${fileName})\n`;
                         currentEditor.replaceSelection(markdownImageSyntax);
-                        console.log(`Image saved as: ${fileName}`);
+                        log(`Image saved as: ${fileName}`);
                     } else {
                         console.error('Failed to save the image.');
                         alert('Failed to save the image. Please try again.');
@@ -553,7 +554,7 @@ async function showRandomFile() {
 }
 
 async function newFile() {
-    console.log('New file clicked');
+    log('New file clicked');
     let dirPath = toDirPath(currentEditor.path);
     let selectedDirs = tree.getSelectedNodes();
     if (selectedDirs.length > 0 &&
@@ -568,13 +569,13 @@ async function newFile() {
     // TODO check tests
     let num = 1;
     while (getMemFile(joinPath(dirPath, filename)) !== null) {
-        console.log('file exists', joinPath(dirPath, filename));
+        log('file exists', joinPath(dirPath, filename));
         filename = `New file (${num}).md`;
         num++;
     }
 
     const path = joinPath(dirPath, filename);
-    console.log('PATH', path);
+    log('PATH', path);
     let handle = await getFileHandle(path, true);
     addMemFile(path, {
         isFile: true,
@@ -585,9 +586,9 @@ async function newFile() {
         imageUrl: null
     });
 
-    console.log('Creating new file', path);
+    log('Creating new file', path);
     await openFile(path);
-    console.log('CURRENT path after new', currentEditor.path);
+    log('CURRENT path after new', currentEditor.path);
     editor.setCursor({line: 1, ch: 0});
     editor.focus();
 
@@ -617,7 +618,7 @@ async function newFolder() {
     await rootDirHandle.getDirectoryHandle(finalFolderName, {create: true});
     files[finalFolderName + '/'] = {};
 
-    console.log('CREATED folder', finalFolderName);
+    log('CREATED folder', finalFolderName);
 
     await renderSidebar(finalFolderName);
 }
@@ -686,7 +687,7 @@ window.addEventListener('keydown', async (event) => {
     }
 
     if (isMetaKey(event) && event.key === 'd') {
-        console.log('cmd+d');
+        log('cmd+d');
         event.preventDefault();
         event.stopPropagation();
         removeCurrentFile();
@@ -975,7 +976,7 @@ window.addEventListener('focus', async () => {
         return false;
     }
 
-    console.log('FOCUS');
+    log('FOCUS');
 
     if (currentEditor.path === undefined) {
         return;
@@ -995,15 +996,15 @@ window.addEventListener('focus', async () => {
     const start = performance.now();
     files = await loadLocalFiles(savedDirectoryHandle);
     const end = performance.now();
-    console.log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
+    log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()
     await renderSidebar();
-    console.log('Sync completed');
+    log('Sync completed');
 });
 
 // Sync files on chat focus lose.
 window.addEventListener('blur', async function () {
-    console.log('Window lost focus');
+    log('Window lost focus');
     editor.refresh();
     if (!isInbox) {
         return;
@@ -1019,10 +1020,10 @@ window.addEventListener('blur', async function () {
     const start = performance.now();
     files = await loadLocalFiles(savedDirectoryHandle);
     const end = performance.now();
-    console.log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
+    log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()
     await renderSidebar();
-    console.log('Sync completed');
+    log('Sync completed');
 });
 
 
@@ -1041,7 +1042,7 @@ function initResize(e) {
 function doResize(e) {
     if (!isResizing) return;
 
-    console.log(e);
+    log(e);
     const width = e.clientX;
     const minWidth = 200;
     const maxWidth = 600;
@@ -1176,4 +1177,28 @@ function goBack() {
 
 function goForward() {
     history.forward();
+}
+
+async function log(...args) {
+    console.log(...args);
+
+    // Get current date
+    const date = new Date();
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+
+    const now = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+
+    const msg = args.map(arg =>
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    const logMsg = ``${now}` ${msg}\n`;
+    try {
+        await addToTextFile(LOG_PATH, logMsg);
+    } catch (error) {
+    }
 }
