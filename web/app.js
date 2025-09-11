@@ -1179,7 +1179,7 @@ function goForward() {
     history.forward();
 }
 
-async function log(...args) {
+function log(...args) {
     console.log(...args);
 
     // Log to a log file
@@ -1198,7 +1198,7 @@ async function log(...args) {
     ).join(' ');
     const logMsg = `\`${now}\` ${msg}\n`;
     try {
-        await addToTextFile(LOG_PATH, logMsg);
+        addToTextFile(LOG_PATH, logMsg);
     } catch (error) {
     }
 }
