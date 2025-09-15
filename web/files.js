@@ -526,31 +526,6 @@ async function collectModifiedAndDeletedFiles() {
     const modifiedFiles = [];
     const existingFiles = {};
     const promises = [];
-    // for (const dir in files) {
-    //     if (dir === 'media') continue; // Skip image directory
-    //
-    //     for (const filename in files[dir]) {
-    //         // TODO write tests for that?
-    //         if ((dir === editor.currentDir && filename === editor.currentFile)
-    //             || (dir === editor2.currentDir && filename === editor2.currentFile)) {
-    //             log('Skip sending current file: ' + dir + '/' + filename);
-    //             continue;
-    //         }
-    //
-    //         const promise = getFileStatus(path)
-    //             .then(result => {
-    //                 if (result.status === 'modified' || result.status === 'new') {
-    //                     modifiedFiles.push(result);
-    //                 }
-    //
-    //                 if (result.status !== 'error') {
-    //                     existingFiles[result.path] = true;
-    //                 }
-    //             });
-    //         promises.push(promise);
-    //     }
-    // }
-    //
 
     // Freeze paths to prevent RC. Current file can change during collecting.
     const editorPath = editor.path;
@@ -590,22 +565,6 @@ async function collectModifiedAndDeletedFiles() {
 
     // Find deleted files that are in server files but not in existing files.
     let deleted = [];
-    // for (const dir in serverFiles.files) {
-    //     for (const filename in serverFiles.files[dir]) {
-    //         if (/[<>:'|?*\\/\x00-\x1F\x7F]/.test(filename)) {
-    //             continue;
-    //         }
-    //         // Skip current files.
-    //         if ((dir === editor.currentDir && filename === editor.currentFile)
-    //             || (dir === editor2.currentDir && filename === editor2.currentFile)) {
-    //             continue;
-    //         }
-    //         if (!existingFiles[toPath(dir, filename)]) {
-    //             log('DELETED ' + toPath(dir, filename));
-    //             deleted.push(toPath(dir, filename));
-    //         }
-    //     }
-    // }
     walk(server.files, (path, isFile) => {
         if (!isFile) {
             return;
@@ -835,14 +794,6 @@ async function moveFile(oldPath, newPath) {
         return;
     }
 
-    // const oldParts = oldPath.split('/');
-    // const oldFilename = oldParts.pop();
-    // const oldDir = oldParts.join('/');
-    //
-    // const newParts = newPath.split('/');
-    // const newFilename = newParts.pop();
-    // const newDir = newParts.join('/');
-
     try {
         let file = await (await getFileHandle(oldPath)).getFile();
         let content = await file.text();
@@ -935,14 +886,6 @@ function setServerFileLastClientModified(path, lastClientModified) {
 }
 
 function removeServerFile(path) {
-    // log('removing info about server file', path);
-    // const parts = path.split('/');
-    // const filename = parts.pop();
-    // const dir = parts.join('/');
-    //
-    // if (serverFiles.files?.[dir]?.[filename]) {
-    //     delete serverFiles.files[dir][filename];
-    // }
     let dirs = path.split('/');
     dirs = dirs.filter(d => d !== '');
     const filename = dirs.pop();

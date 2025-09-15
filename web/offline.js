@@ -32,6 +32,7 @@ const urlsToCache = [
     '/lib/codemirror-shell.js',
     '/lib/similarity.js',
     '/lib/emoji.js',
+    '/lib/fs.js',
     '/welcome.js',
     '/files.js',
     '/app.js',
