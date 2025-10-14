@@ -877,31 +877,7 @@ async function addToJournal(record) {
         md = '';
     }
 
-    const header = todayJournalHeader();
-    if (!md.includes(header)) {
-        md += header + '\n';
-    }
-
-    const now = new Date();
-    const timestamp = `\`${now.toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-    })}\``;
-
-    if (hasImage(record)) {
-        // If there's an image - place timestamp under the image
-        const imgMatch = record.match(IMG_PATTERN);
-        if (imgMatch) {
-            const imgLink = imgMatch[0];
-            record = record.replace(imgLink, '').trim();
-            record = `${imgLink}\n${timestamp} ${record.trim()}\n`;
-        }
-    } else {
-        record = `${timestamp} ${record}\n`;
-    }
-
-    md += record;
+    md = appendHeader(md, todayHeader(), record);
 
     await write(journalPath, md);
 }
@@ -918,7 +894,7 @@ function todayJournalFilename() {
     return `${year}.${month} ${monthNames[monthIndex]}.md`;
 }
 
-function todayJournalHeader(timezone) {
+function todayHeader(timezone) {
     const now = new Date();
     const monthNames = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -934,4 +910,142 @@ function todayJournalHeader(timezone) {
     const dayIndex = new Date(now.toLocaleDateString('en-US', { timeZone: timezone })).getDay();
 
     return `#### ${day} ${monthNames[monthIndex]} ${year}, ${dayNames[dayIndex]}`;
+}
+
+function prependHeader(existingContent, header, newContent) {
+    const now = new Date();
+    const timestamp = `\`${now.toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+    })}\``;
+
+    let formattedContent;
+    if (hasImage(newContent)) {
+        const imgMatch = newContent.match(IMG_PATTERN);
+        if (imgMatch) {
+            const imgLink = imgMatch[0];
+            const textContent = newContent.replace(imgLink, '').trim();
+            formattedContent = `${imgLink}\n${timestamp} ${textContent}`;
+        }
+    } else {
+        formattedContent = `${timestamp} ${newContent}`;
+    }
+
+    if (!existingContent.includes(header)) {
+        if (existingContent === "") {
+            return `${header}\n${formattedContent}`;
+        } else {
+            return `${header}\n${formattedContent}\n\n${existingContent}`;
+        }
+    }
+
+    const lines = existingContent.split("\n");
+    let headerIndex = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i] === header) {
+            headerIndex = i;
+            break;
+        }
+    }
+
+    if (headerIndex === -1) {
+        return `${header}\n${formattedContent}\n\n${existingContent}`;
+    }
+
+    let insertIndex = headerIndex + 1;
+
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+        if (lines[i].startsWith("###")) {
+            insertIndex = i;
+            break;
+        }
+        if (lines[i].trim() === "") {
+            insertIndex = i;
+            break;
+        }
+        insertIndex = i + 1;
+    }
+
+    const newLines = [];
+    newLines.push(...lines.slice(0, insertIndex));
+    newLines.push(formattedContent);
+
+    if (insertIndex < lines.length && lines[insertIndex].trim() !== "") {
+        newLines.push("");
+    }
+
+    newLines.push(...lines.slice(insertIndex));
+
+    return newLines.join("\n");
+}
+
+function appendHeader(existingContent, header, newContent) {
+    const now = new Date();
+    const timestamp = `\`${now.toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+    })}\``;
+
+    let formattedContent;
+    if (hasImage(newContent)) {
+        const imgMatch = newContent.match(IMG_PATTERN);
+        if (imgMatch) {
+            const imgLink = imgMatch[0];
+            const textContent = newContent.replace(imgLink, '').trim();
+            formattedContent = `${imgLink}\n${timestamp} ${textContent}`;
+        }
+    } else {
+        formattedContent = `${timestamp} ${newContent}`;
+    }
+
+    if (!existingContent.includes(header)) {
+        if (existingContent === "") {
+            return `${header}\n${formattedContent}`;
+        } else {
+            return `${existingContent}\n\n${header}\n${formattedContent}`;
+        }
+    }
+
+    const lines = existingContent.split("\n");
+    let headerIndex = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i] === header) {
+            headerIndex = i;
+            break;
+        }
+    }
+
+    if (headerIndex === -1) {
+        return `${existingContent}\n\n${header}\n${formattedContent}`;
+    }
+
+    let insertIndex = headerIndex + 1;
+
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+        if (lines[i].startsWith("###")) {
+            insertIndex = i;
+            break;
+        }
+        if (lines[i].trim() === "") {
+            insertIndex = i;
+            break;
+        }
+        insertIndex = i + 1;
+    }
+
+    const newLines = [];
+    newLines.push(...lines.slice(0, insertIndex));
+    newLines.push(formattedContent);
+
+    if (insertIndex < lines.length && lines[insertIndex].trim() !== "") {
+        newLines.push("");
+    }
+
+    newLines.push(...lines.slice(insertIndex));
+
+    return newLines.join("\n");
 }
