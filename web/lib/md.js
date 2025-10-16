@@ -149,12 +149,13 @@ async function addHeaderAndText(path, header, text, atStart = false) {
         }
 
         if (headerIndex === -1) {
-            result = atStart
-                ? `${header}\n${formattedContent}\n\n${existingText}`
-                : `${existingText}\n\n${header}\n${formattedContent}`;
+            if (atStart) {
+                result = `${header}\n${formattedContent}\n\n${existingText}`;
+            } else {
+                result = `${existingText}\n\n${header}\n${formattedContent}`;
+            }
         } else {
             let insertIndex = headerIndex + 1;
-
             for (let i = headerIndex + 1; i < lines.length; i++) {
                 if (lines[i].startsWith("###")) {
                     insertIndex = i;

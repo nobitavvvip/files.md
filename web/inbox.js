@@ -718,11 +718,11 @@ function attachEventListeners() {
                 messagesToRemove = [btn.closest('.message')];
             }
 
+            const path = btn.dataset.filename;
+            let callback = async text => await addHeaderAndText(path, todayHeader(), text, true);
             (async () => {
                 for (const msg of msgs) {
-                    await moveFromInbox(msg, async msg => {
-                        await addChecklistItem(btn.dataset.filename, msg)
-                    });
+                    await moveFromInbox(msg, callback);
                 }
                 await renderMessages();
             })();
