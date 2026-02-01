@@ -586,7 +586,7 @@ window.addEventListener('focus', async () => {
     await syncCurrentEditor();
 
     const start = performance.now();
-    files = await loadLocalFiles(savedDirectoryHandle);
+    files = await loadLocalFiles(savedDirectoryHandle, true);
     const end = performance.now();
     log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()

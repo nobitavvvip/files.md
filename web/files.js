@@ -45,7 +45,7 @@ const SUPPORTED_EXTENSIONS = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',]
 const SYSTEM_DIRS = ['media', 'archive', '_read_', '_watch_', '_shop_', 'today', 'later', 'journal', 'habits', 'triggers', 'places', 'insights'];
 const CONFIG_PATH = '/config.json';
 
-async function loadLocalFiles(rootDirHandle) {
+async function loadLocalFiles(rootDirHandle, slowMode = false) {
     if (isLoadingLocalFiles) {
         return;
     }
@@ -65,7 +65,8 @@ async function loadLocalFiles(rootDirHandle) {
         entries.sort((a, b) => a.name.localeCompare(b.name));
 
         const dirPromises = [];
-        for (const entry of entries) {
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
             const filename = entry.name.normalize('NFC');
 
             let isSupportedExtension = SUPPORTED_EXTENSIONS.includes(filename.split('.').pop());
@@ -118,6 +119,9 @@ async function loadLocalFiles(rootDirHandle) {
                     });
                 }
             }
+            if (slowMode && i % 50 === 0) {
+                await new Promise(r => setTimeout(r, 0));
+            }
         }
 
         if (debug) {
@@ -128,9 +132,21 @@ async function loadLocalFiles(rootDirHandle) {
             return;
         }
 
-        await Promise.all(dirPromises.map(({ handle, path, depth }) =>
-            loadDir(handle, path, depth)
-        ));
+        if (!slowMode) {
+            await Promise.all(dirPromises.map(({ handle, path, depth }) =>
+                loadDir(handle, path, depth)
+            ));
+            return;
+        }
+
+        const batchSize = 6;
+        for (let i = 0; i < dirPromises.length; i += batchSize) {
+            const batch = dirPromises.slice(i, i + batchSize);
+            await Promise.all(batch.map(({ handle, path, depth }) =>
+                loadDir(handle, path, depth)
+            ));
+            await new Promise(r => setTimeout(r, 0));
+        }
     }
 
     try {
