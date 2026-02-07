@@ -67,7 +67,7 @@ async function init() {
 
     // Alert if there's no "Allow on every visit" check.
     if (isChrome() && hasSavedLocalDir) {
-        const permission = await (await getRootDirHandle()).queryPermission({mode: 'readwrite'});
+        const permission = await (await getRootDirHandle()).queryPermission({ mode: 'readwrite' });
         log('PERMISSION', permission);
         if (permission !== 'granted') {
             document.getElementById('open-folder').style.display = 'inline';
@@ -224,7 +224,7 @@ async function newFile() {
     log('Creating new file', path);
     await openFile(path);
     log('CURRENT path after new', currentEditor.path);
-    editor.setCursor({line: 1, ch: 0});
+    editor.setCursor({ line: 1, ch: 0 });
     editor.focus();
 
     await renderSidebar();
@@ -250,7 +250,7 @@ async function newFolder() {
     }
 
     const rootDirHandle = await getRootDirHandle();
-    await rootDirHandle.getDirectoryHandle(finalFolderName, {create: true});
+    await rootDirHandle.getDirectoryHandle(finalFolderName, { create: true });
     files[finalFolderName + '/'] = {};
 
     log('CREATED folder', finalFolderName);
@@ -283,7 +283,7 @@ function focusLastLine() {
         }
     }
     const targetChar = currentEditor.getLine(targetLine).length;
-    currentEditor.setCursor({line: targetLine, ch: targetChar});
+    currentEditor.setCursor({ line: targetLine, ch: targetChar });
     // Cursor at the end, but scroll the doc to top
     currentEditor.scrollTo(null, 0);
     // TODO only focus if there's no quick dialogue
@@ -372,7 +372,7 @@ document.addEventListener('keydown', (event) => {
 
 
 // Toggle focus mode
-document.addEventListener('keydown', function (event) {
+document.addEventListener('keydown', function(event) {
     // Cmd+shift+enter toglle inbox modal
     if (event.shiftKey && isMetaKey(event) && event.key === 'Enter') {
         event.preventDefault();
@@ -418,7 +418,7 @@ window.addEventListener('popstate', (event) => {
 async function openDir() {
     let dirHandle = null;
     try {
-        dirHandle = await window.showDirectoryPicker({'mode': 'readwrite'});
+        dirHandle = await window.showDirectoryPicker({ 'mode': 'readwrite' });
     } catch (error) {
         if (error instanceof TypeError) {
             alert('Only works in Chrome!');
@@ -429,6 +429,15 @@ async function openDir() {
     // TODO check that permissions are given?
 
     await saveDirectoryHandle(dirHandle);
+
+
+    // Request persistent storage for site
+    if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persist();
+        console.log(`Persisted storage granted: ${isPersisted}`);
+    }
+
+
     await migrateFromOPFSToLocal();
     files = await loadLocalFiles(dirHandle)
 
@@ -539,53 +548,53 @@ async function saveDirectoryHandle(directoryHandle) {
 //
 
 async function getSavedRootDirHandle() {
-  try {
-    const db = await initDB().catch((err) => {
-      console.error("[getSavedRootDirHandle] initDB failed:", err);
-      throw err;
-    });
+    try {
+        const db = await initDB().catch((err) => {
+            console.error("[getSavedRootDirHandle] initDB failed:", err);
+            throw err;
+        });
 
-    return await new Promise((resolve, reject) => {
-      let transaction;
+        return await new Promise((resolve, reject) => {
+            let transaction;
 
-      try {
-        transaction = db.transaction("handles", "readonly");
-      } catch (err) {
-        console.error("[getSavedRootDirHandle] db.transaction() threw:", err);
-        reject(err);
-        return;
-      }
+            try {
+                transaction = db.transaction("handles", "readonly");
+            } catch (err) {
+                console.error("[getSavedRootDirHandle] db.transaction() threw:", err);
+                reject(err);
+                return;
+            }
 
-      transaction.onabort = () => {
-        console.error("[getSavedRootDirHandle] transaction aborted:", transaction.error);
-        reject(transaction.error ?? new Error("IndexedDB transaction aborted"));
-      };
+            transaction.onabort = () => {
+                console.error("[getSavedRootDirHandle] transaction aborted:", transaction.error);
+                reject(transaction.error ?? new Error("IndexedDB transaction aborted"));
+            };
 
-      transaction.onerror = () => {
-        console.error("[getSavedRootDirHandle] transaction error:", transaction.error);
-        reject(transaction.error ?? new Error("IndexedDB transaction error"));
-      };
+            transaction.onerror = () => {
+                console.error("[getSavedRootDirHandle] transaction error:", transaction.error);
+                reject(transaction.error ?? new Error("IndexedDB transaction error"));
+            };
 
-      const store = transaction.objectStore("handles");
-      const request = store.get("savedDirectoryHandle");
+            const store = transaction.objectStore("handles");
+            const request = store.get("savedDirectoryHandle");
 
-      request.onsuccess = () => {
-        const result = request.result;
-        if (!result) {
-          console.log("[getSavedRootDirHandle] savedDirectoryHandle not found (null/undefined).");
-        }
-        resolve(result);
-      };
+            request.onsuccess = () => {
+                const result = request.result;
+                if (!result) {
+                    console.log("[getSavedRootDirHandle] savedDirectoryHandle not found (null/undefined).");
+                }
+                resolve(result);
+            };
 
-      request.onerror = () => {
-        console.error("[getSavedRootDirHandle] request error:", request.error);
-        reject(request.error ?? new Error("IndexedDB request error"));
-      };
-    });
-  } catch (err) {
-    console.error("[getSavedRootDirHandle] failed:", err);
-    throw err;
-  }
+            request.onerror = () => {
+                console.error("[getSavedRootDirHandle] request error:", request.error);
+                reject(request.error ?? new Error("IndexedDB request error"));
+            };
+        });
+    } catch (err) {
+        console.error("[getSavedRootDirHandle] failed:", err);
+        throw err;
+    }
 }
 
 async function removeSavedRootDirHandle() {
@@ -648,7 +657,7 @@ window.addEventListener('focus', async () => {
 });
 
 // Sync files on chat focus lose.
-window.addEventListener('blur', async function () {
+window.addEventListener('blur', async function() {
     log('Window lost focus');
     editor.refresh();
 
@@ -789,7 +798,7 @@ function hideEditor2() {
 let topLineNumber;
 function rememberEditorPos() {
     const scrollInfo = editor.getScrollInfo();
-    const topCoords = editor.coordsChar({left: 0, top: scrollInfo.top}, "local");
+    const topCoords = editor.coordsChar({ left: 0, top: scrollInfo.top }, "local");
     topLineNumber = topCoords.line;
 }
 
@@ -798,7 +807,7 @@ function restoreEditorPos() {
         return;
     }
     editor.refresh();
-    const newTopLineY = editor.charCoords({line: topLineNumber, ch: 0}, "local").top;
+    const newTopLineY = editor.charCoords({ line: topLineNumber, ch: 0 }, "local").top;
     editor.scrollTo(null, newTopLineY);
 }
 
@@ -820,7 +829,7 @@ function isChrome() {
 
     if (isIOSChrome) {
         return true;
-    } else if(isGoogleChrome) {
+    } else if (isGoogleChrome) {
         return true;
     } else {
         return false;
