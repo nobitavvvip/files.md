@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"zakirullin/stuffbot/config"
-	"zakirullin/stuffbot/internal/fs"
+	"zakirullin/stuffbot/bot/fs"
 )
 
 func init() {
