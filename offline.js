@@ -39,7 +39,7 @@ const urlsToCache = [
     '/editor.js',
     '/app.js',
     '/inbox.js',
-    '/modals.js',
+    '/dialogs.js',
 ];
 
 const urlParams = new URLSearchParams(self.location.search);
