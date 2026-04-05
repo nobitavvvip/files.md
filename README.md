@@ -11,20 +11,21 @@ You can store whole your life in `.md` files:
 - 💚 Journal, Habits
 
 ## What is this for?
-I used files.md to grow my knowledge base about Software Development and Brain.  
-I added new notes to the knowledge base. One idea per note.  
-I made connections between notes.    
-I spend time travelling through notes and thinking it through.  
+1) I used files.md to grow my knowledge base about Software Development and Brain.  
+2) I added new notes to the knowledge base. One idea per note.  
+made connections between notes.    
+3) I spend time travelling through notes and thinking it through.
+4) Software Development and brain related notes suddenly connected in mo.
+5) It clicked, I got the insight.  
+6) I wrote an article on [Cogitnive Load in Software Development](github.com/zakirullin/cognitive-load).
 
-After some time I've got the insight.  
-Software Development and brain related notes suddenly connected.  
-I wrote an article on [Cogitnive Load in Software Development](github.com/zakirullin/cognitive-load).  
 Many considered it a good write-up.  
-That's the final goal is to:
+
+So, the final goal is:
 - **think deeply**  
 - **connect knowledge across domains**  
-- **to write insightful texts**  
-- 
+- **to write insightful texts**
+
 To achieve all that, **you'll have to use your brain**. Not advanced workflows or AI automations.  
 
 ## Init Server
