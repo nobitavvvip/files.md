@@ -4,17 +4,16 @@ class MemFile {
     constructor(name, content = '') {
         this.kind = 'file';
         this.name = name;
-        this._content = content;
-        this._lastModified = Date.now();
+        this.content = content;
+        this.lastModified = Date.now();
+        this.parent = null;
     }
 
     async getFile() {
-        const content = this._content;
-        const lastModified = this._lastModified;
-        const name = this.name;
+        const content = this.content;
         return {
-            name,
-            lastModified,
+            name: this.name,
+            lastModified: this.lastModified,
             size: new Blob([content]).size,
             type: '',
             text: async () => content,
@@ -23,34 +22,25 @@ class MemFile {
     }
 
     async createWritable(opts = {}) {
-        let buffer = opts.keepExistingData ? this._content : '';
+        let buffer = opts.keepExistingData ? this.content : '';
         let pos = opts.keepExistingData ? buffer.length : 0;
         const self = this;
         return {
             async write(data) {
-                if (typeof data === 'string') {
-                    buffer = buffer.slice(0, pos) + data + buffer.slice(pos + data.length);
-                    pos += data.length;
-                } else {
-                    const text = typeof data === 'string' ? data : await new Blob([data]).text();
-                    buffer = buffer.slice(0, pos) + text + buffer.slice(pos + text.length);
-                    pos += text.length;
-                }
+                const text = typeof data === 'string' ? data : await new Blob([data]).text();
+                buffer = buffer.slice(0, pos) + text + buffer.slice(pos + text.length);
+                pos += text.length;
             },
-            async seek(offset) {
-                pos = offset;
-            },
+            async seek(offset) { pos = offset; },
             async close() {
-                self._content = buffer;
-                self._lastModified = Date.now();
+                self.content = buffer;
+                self.lastModified = Date.now();
             },
         };
     }
 
     async remove() {
-        if (this._parent) {
-            delete this._parent._entries[this.name];
-        }
+        if (this.parent) delete this.parent.entries[this.name];
     }
 }
 
@@ -58,75 +48,53 @@ class MemDir {
     constructor(name) {
         this.kind = 'directory';
         this.name = name;
-        this._entries = {};
+        this.entries = {};
     }
 
     async getDirectoryHandle(name, opts = {}) {
-        if (!this._entries[name]) {
-            if (opts.create) {
-                const dir = new MemDir(name);
-                this._entries[name] = dir;
-            } else {
-                const err = new DOMException(`Directory "${name}" not found.`, 'NotFoundError');
-                err.name = 'NotFoundError';
-                throw err;
-            }
+        if (!this.entries[name]) {
+            if (!opts.create) throw new DOMException(`"${name}" not found`, 'NotFoundError');
+            this.entries[name] = new MemDir(name);
         }
-        const entry = this._entries[name];
-        if (entry.kind !== 'directory') {
-            throw new DOMException(`"${name}" is not a directory.`, 'TypeMismatchError');
-        }
-        return entry;
+        return this.entries[name];
     }
 
     async getFileHandle(name, opts = {}) {
-        if (!this._entries[name]) {
-            if (opts.create) {
-                const file = new MemFile(name);
-                file._parent = this;
-                this._entries[name] = file;
-            } else {
-                const err = new DOMException(`File "${name}" not found.`, 'NotFoundError');
-                err.name = 'NotFoundError';
-                throw err;
-            }
+        if (!this.entries[name]) {
+            if (!opts.create) throw new DOMException(`"${name}" not found`, 'NotFoundError');
+            const file = new MemFile(name);
+            file.parent = this;
+            this.entries[name] = file;
         }
-        const entry = this._entries[name];
-        if (entry.kind !== 'file') {
-            throw new DOMException(`"${name}" is not a file.`, 'TypeMismatchError');
-        }
-        return entry;
+        return this.entries[name];
     }
 
     async *values() {
-        for (const entry of Object.values(this._entries)) {
-            yield entry;
-        }
+        for (const entry of Object.values(this.entries)) yield entry;
     }
 }
 
-function buildMemFS(obj, parent) {
-    for (const [name, data] of Object.entries(obj)) {
-        if (data.isFile) {
-            const file = new MemFile(name, data.content || '');
-            file._parent = parent;
-            parent._entries[name] = file;
-        } else {
-            const dirName = removeTrailingSlash(name);
-            const dir = new MemDir(dirName);
-            parent._entries[dirName] = dir;
-            buildMemFS(data, dir);
-        }
-    }
-}
-
-let _memFSRoot = null;
+let memFSRoot = null;
 function getMemFSRoot() {
-    if (!_memFSRoot) {
-        _memFSRoot = new MemDir('');
-        buildMemFS(DEFAULT_FILES, _memFSRoot);
+    if (memFSRoot) return memFSRoot;
+
+    memFSRoot = new MemDir('');
+    function populate(obj, parent) {
+        for (const [name, data] of Object.entries(obj)) {
+            if (data.isFile) {
+                const file = new MemFile(name, data.content || '');
+                file.parent = parent;
+                parent.entries[name] = file;
+            } else {
+                const dir = new MemDir(removeTrailingSlash(name));
+                parent.entries[dir.name] = dir;
+                populate(data, dir);
+            }
+        }
     }
-    return _memFSRoot;
+    populate(DEFAULT_FILES, memFSRoot);
+
+    return memFSRoot;
 }
 
 async function getOPFSDirHandle() {
