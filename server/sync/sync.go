@@ -156,6 +156,10 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 
 		// Write the clientContent to the server at path.
 		err = userFS.Write(fs.DirUserRoot, relativePath, clientContent)
+		if errors.Is(err, fs.ErrQuotaExceeded) {
+			http.Error(w, `{"error":"Storage quota exceeded"}`, http.StatusRequestEntityTooLarge)
+			return
+		}
 		if err != nil {
 			slog.Error("Sync error: syncTexts: error writing file '%s': %v", path, err)
 			logSync(fmt.Sprintf("Sync texts: error writing file '%s': %v", path, err), r)
@@ -339,6 +343,10 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 
 	if shouldUpdateOnServer {
 		err = userFS.Write(fs.DirUserRoot, relativePath, content)
+		if errors.Is(err, fs.ErrQuotaExceeded) {
+			http.Error(w, `{"error":"Storage quota exceeded"}`, http.StatusRequestEntityTooLarge)
+			return
+		}
 		if err != nil {
 			slog.Error("Sync error: syncText: error writing clientFile '%s': %v", path, err)
 			logSync(fmt.Sprintf("Error writing clientFile '%s': %v", path, err), r)

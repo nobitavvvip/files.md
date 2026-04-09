@@ -731,7 +731,7 @@ func FuzzWrite(f *testing.F) {
 			otherUserDir = false
 		}
 		if otherUserDir || strings.Contains(unsafePath, "../") {
-			if !errors.Is(err, errUnsafePath) {
+			if !errors.Is(err, ErrUnsafePath) {
 				t.Errorf("Expected unsafe path error for dir: '%s', filename: '%s', calculated path: '%s', got: '%v'", dir, filename, unsafePath, err)
 			}
 			return

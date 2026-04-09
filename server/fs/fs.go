@@ -31,8 +31,9 @@ var (
 	LogRename = func(time int64, oldPath, newPath string) {} // callback to track renames
 	LogDelete = func(time int64, path string) {}             // callback to track deletes
 
-	errUnsafePath   = errors.New("unsafe path, possible security issue")
-	errCannotUnhash = errors.New("cannot unhash, maybe the file is missing")
+	ErrQuotaExceeded = errors.New("storage quota exceeded")
+	ErrUnsafePath    = errors.New("unsafe path, possible security issue")
+	ErrCannotUnhash  = errors.New("cannot unhash, maybe the file is missing")
 )
 
 const (
@@ -70,6 +71,7 @@ const (
 type FS struct {
 	rootPath string
 	backend  afero.Fs
+	quotaKB  int64
 }
 
 // File represents a file or directory
@@ -88,10 +90,15 @@ func newUserFS(userID int64) (*FS, error) {
 	userAbsPath := path.Join(config.ServerCfg.StorageDir, txt.I64(userID))
 	backend := afero.NewOsFs()
 
-	return NewFS(userAbsPath, backend)
+	quotaKB := config.ServerCfg.StorageQuotaKB
+	if isUnlimitedQuota(userID, config.ServerCfg.UnlimitedQuotaIDs) {
+		quotaKB = 0
+	}
+
+	return NewFS(userAbsPath, backend, quotaKB)
 }
 
-func NewFS(absRootPath string, backend afero.Fs) (*FS, error) {
+func NewFS(absRootPath string, backend afero.Fs, quotaKB ...int64) (*FS, error) {
 	exists, err := afero.Exists(backend, absRootPath)
 	if err != nil {
 		return nil, fmt.Errorf("new fs: %w", err)
@@ -103,7 +110,12 @@ func NewFS(absRootPath string, backend afero.Fs) (*FS, error) {
 		}
 	}
 
-	return &FS{absRootPath, backend}, nil
+	var q int64
+	if len(quotaKB) > 0 {
+		q = quotaKB[0]
+	}
+
+	return &FS{absRootPath, backend, q}, nil
 }
 
 func NewFile(name, hash, displayName string, ctime int64, isMultiline, isDir bool, parentDir string) File {
@@ -160,7 +172,7 @@ func (fs FS) CreateDirsIfNotExist(dirs ...string) error {
 func (fs FS) Exists(dir, filename string) (bool, error) {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return false, fmt.Errorf("exists: unsafe path '%s': %w", filepath.Join(dir, filename), errUnsafePath)
+		return false, fmt.Errorf("exists: unsafe path '%s': %w", filepath.Join(dir, filename), ErrUnsafePath)
 	}
 
 	exists, err := afero.Exists(fs.backend, filePath)
@@ -174,7 +186,7 @@ func (fs FS) Exists(dir, filename string) (bool, error) {
 func (fs FS) Read(dir, filename string) (string, error) {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return "", fmt.Errorf("fs read: unsafe filePath dir: '%s', filename: '%s': %w", dir, filename, errUnsafePath)
+		return "", fmt.Errorf("fs read: unsafe filePath dir: '%s', filename: '%s': %w", dir, filename, ErrUnsafePath)
 	}
 
 	content, err := afero.ReadFile(fs.backend, filePath)
@@ -188,7 +200,7 @@ func (fs FS) Read(dir, filename string) (string, error) {
 func (fs FS) Write(dir, filename, content string) error {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return fmt.Errorf("fs write: unsafe filePath '%s': %w", filepath.Join(dir, filename), errUnsafePath)
+		return fmt.Errorf("fs write: unsafe filePath '%s': %w", filepath.Join(dir, filename), ErrUnsafePath)
 	}
 
 	dirs := strings.Split(filePath, "/")
@@ -198,10 +210,23 @@ func (fs FS) Write(dir, filename, content string) error {
 		return fmt.Errorf("fs write: can't create dirs '%s': %w", pathToDir, err)
 	}
 
+	// Track old size for quota accounting.
+	var oldSize int64
+	if info, err := fs.backend.Stat(filePath); err == nil {
+		oldSize = info.Size()
+	}
+
+	newSize := int64(len(content))
+	if err := checkQuota(fs.rootPath, fs.backend, fs.quotaKB, newSize-oldSize); err != nil {
+		return err
+	}
+
 	// Append mode for forwards?
 	if err := afero.WriteFile(fs.backend, filePath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("fs write to '%s/%s': %w", dir, filename, err)
 	}
+
+	addStorage(fs.rootPath, newSize-oldSize)
 
 	return nil
 }
@@ -209,7 +234,7 @@ func (fs FS) Write(dir, filename, content string) error {
 func (fs FS) MakeDir(dir string) error {
 	filePath, err := fs.SafePath(dir, "")
 	if err != nil {
-		return fmt.Errorf("fs make dir: unsafe filePath '%s': %w", filePath, errUnsafePath)
+		return fmt.Errorf("fs make dir: unsafe filePath '%s': %w", filePath, ErrUnsafePath)
 	}
 
 	err = fs.backend.Mkdir(filePath, 0o755)
@@ -223,13 +248,20 @@ func (fs FS) MakeDir(dir string) error {
 func (fs FS) Del(dir, filename string) error {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return fmt.Errorf("fs del file: unsafe filePath '%s': %w", filePath, errUnsafePath)
+		return fmt.Errorf("fs del file: unsafe filePath '%s': %w", filePath, ErrUnsafePath)
+	}
+
+	var fileSize int64
+	if info, err := fs.backend.Stat(filePath); err == nil {
+		fileSize = info.Size()
 	}
 
 	err = fs.backend.Remove(filePath)
 	if err != nil {
 		return fmt.Errorf("fs file: can't remove '%s': %w", filePath, err)
 	}
+
+	addStorage(fs.rootPath, -fileSize)
 
 	// Log deletion.
 	ctime, err := fs.Ctime(filePath, "")
@@ -245,12 +277,12 @@ func (fs FS) Del(dir, filename string) error {
 func (fs FS) Rename(oldDir, oldFilename, newDir, newFilename string) error {
 	oldPath, err := fs.SafePath(oldDir, oldFilename)
 	if err != nil {
-		return fmt.Errorf("fs can't rename from '%s': %w", oldPath, errUnsafePath)
+		return fmt.Errorf("fs can't rename from '%s': %w", oldPath, ErrUnsafePath)
 	}
 
 	newPath, err := fs.SafePath(newDir, newFilename)
 	if err != nil {
-		return fmt.Errorf("fs can't rename to '%s': %w", newPath, errUnsafePath)
+		return fmt.Errorf("fs can't rename to '%s': %w", newPath, ErrUnsafePath)
 	}
 
 	err = fs.CreateDirsIfNotExist(oldDir, newDir)
@@ -297,13 +329,13 @@ func (fs FS) Unhash(dir, filenameHash string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("can't unhash '%s' in '%s': %w", filenameHash, dir, errCannotUnhash)
+	return "", fmt.Errorf("can't unhash '%s' in '%s': %w", filenameHash, dir, ErrCannotUnhash)
 }
 
 func (fs FS) FilesAndDirs(dir string) ([]File, error) {
 	userPath, err := fs.SafePath(dir, "")
 	if err != nil {
-		return nil, fmt.Errorf("can't get files for '%s': %w", path.Join(fs.rootPath, dir), errUnsafePath)
+		return nil, fmt.Errorf("can't get files for '%s': %w", path.Join(fs.rootPath, dir), ErrUnsafePath)
 	}
 
 	entries, err := afero.ReadDir(fs.backend, userPath)
@@ -348,7 +380,7 @@ func (fs FS) Dirs() ([]File, error) {
 	for _, file := range files {
 		filePath, err := fs.SafePath(DirUserRoot, file.Name)
 		if err != nil {
-			return nil, fmt.Errorf("can't get dirs: unsafe path '%s': %w", filePath, errUnsafePath)
+			return nil, fmt.Errorf("can't get dirs: unsafe path '%s': %w", filePath, ErrUnsafePath)
 		}
 
 		isDir, err := afero.IsDir(fs.backend, filePath)
@@ -400,7 +432,7 @@ func (fs FS) SearchFiles(query string) ([]File, error) {
 	query = strings.ToLower(strings.TrimSpace(query))
 	// Check for directory traversal attack
 	if strings.Contains(query, "/") {
-		return nil, fmt.Errorf("search notes: unsafe query '%s': %w", query, errUnsafePath)
+		return nil, fmt.Errorf("search notes: unsafe query '%s': %w", query, ErrUnsafePath)
 	}
 
 	var supposedDir, search string
@@ -470,7 +502,7 @@ func (fs FS) SearchFiles(query string) ([]File, error) {
 func (fs FS) Touch(dir, filename string) error {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return fmt.Errorf("touch: unsafe path '%s': %w", filePath, errUnsafePath)
+		return fmt.Errorf("touch: unsafe path '%s': %w", filePath, ErrUnsafePath)
 	}
 
 	exists, err := fs.Exists(dir, filename)
@@ -497,7 +529,7 @@ func (fs FS) Touch(dir, filename string) error {
 func (fs FS) Ctime(dir, filename string) (int64, error) {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return 0, fmt.Errorf("fs file: unsafe filePath '%s': %w", filePath, errUnsafePath)
+		return 0, fmt.Errorf("fs file: unsafe filePath '%s': %w", filePath, ErrUnsafePath)
 	}
 
 	info, err := fs.backend.Stat(filePath)
@@ -513,7 +545,7 @@ func (fs FS) Ctime(dir, filename string) (int64, error) {
 func (fs FS) Mtime(dir, filename string) (int64, error) {
 	filePath, err := fs.SafePath(dir, filename)
 	if err != nil {
-		return 0, fmt.Errorf("fs mtime: unsafe filePath '%s': %w", filePath, errUnsafePath)
+		return 0, fmt.Errorf("fs mtime: unsafe filePath '%s': %w", filePath, ErrUnsafePath)
 	}
 
 	info, err := fs.backend.Stat(filePath)
@@ -531,7 +563,7 @@ func (fs FS) Mtime(dir, filename string) (int64, error) {
 func (fs FS) Mtimes(root string, extensions ...string) (map[string]int64, error) {
 	rootPath, err := fs.SafePath(root, "")
 	if err != nil {
-		return nil, fmt.Errorf("fs mtimes: unsafe rootPath '%s': %w", rootPath, errUnsafePath)
+		return nil, fmt.Errorf("fs mtimes: unsafe rootPath '%s': %w", rootPath, ErrUnsafePath)
 	}
 
 	mtimes := make(map[string]int64)
@@ -608,7 +640,7 @@ func (fs FS) SafePath(dir, filename string) (string, error) {
 	}
 
 	if !filepath.IsLocal(relativePath) {
-		return "", errUnsafePath
+		return "", ErrUnsafePath
 	}
 
 	return filepath.Join(fs.rootPath, relativePath), nil

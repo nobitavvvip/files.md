@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path"
-	"path/filepath"
 	"runtime/debug"
 	"time"
 
@@ -20,7 +18,6 @@ import (
 	"github.com/zakirullin/files.md/server/fs"
 	"github.com/zakirullin/files.md/server/i18n"
 	"github.com/zakirullin/files.md/server/pkg/tg"
-	"github.com/zakirullin/files.md/server/pkg/txt"
 	"github.com/zakirullin/files.md/server/sched/worker"
 	"github.com/zakirullin/files.md/server/sync"
 	"github.com/zakirullin/files.md/server/userconfig"
@@ -169,10 +166,7 @@ func processUserUpdates(userID int64, updates <-chan tgbotapi.Update, telegram *
 }
 
 func newBot(telegram *tg.TG, userID int64) (*internal.Bot, error) {
-	storagePath := config.ServerCfg.StorageDir
-	storagePath, err := filepath.Abs(storagePath)
-	userPath := path.Join(storagePath, txt.I64(userID))
-	userFS, err := fs.NewFS(userPath, afero.NewOsFs())
+	userFS, err := fs.NewUserFS(userID)
 	if err != nil {
 		return nil, fmt.Errorf("can't create fs: %w", err)
 	}

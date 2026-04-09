@@ -3,6 +3,7 @@ package sync
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -130,6 +131,10 @@ func SyncMedia(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = userFS.Write(fs.DirMedia, clientMedia.Filename, string(content))
+		if errors.Is(err, fs.ErrQuotaExceeded) {
+			http.Error(w, `{"error":"Storage quota exceeded"}`, http.StatusRequestEntityTooLarge)
+			return
+		}
 		if err != nil {
 			http.Error(w, "Invalid base64 data", http.StatusBadRequest)
 			return
