@@ -5,6 +5,7 @@
 
 .tj_container ul{
 	padding-left: 0em;
+	margin: 0;
 	list-style-type: none;
 	cursor: pointer;
 }
@@ -51,6 +52,7 @@
 
 .tj_mod_icon svg {
 	stroke: var(--col-tx-alt);
+	height: 1.1em;
 }
 
 .tj_container li span.tj_icon {
