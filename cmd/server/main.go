@@ -39,15 +39,29 @@ func main() {
 		panic(fmt.Sprintf("Error loading i18n: %s\n", err))
 	}
 
-	api, err := tgbotapi.NewBotAPI(config.ServerCfg.BotAPIToken)
-	if err != nil {
-		panic(fmt.Sprintf("Can't create api: %s\n", err))
-	}
-	telegram := tg.NewTG(api)
-
 	// Save all renames and deletes to an append-only log.
 	fs.LogRename = sync.LogRename
 	fs.LogDelete = sync.LogDelete
+
+	// TODO apphost?
+	// Launch habits server if needed
+	if config.ServerCfg.APIHost != "" {
+		go sync.Serve(
+			config.ServerCfg.APIHost,
+			config.ServerCfg.AppHost,
+			config.ServerCfg.ServerCertDir,
+			config.ServerCfg.ServerLogFile,
+		)
+	}
+
+	// Telegram bot is optional — server can run as web-only.
+	api, err := tgbotapi.NewBotAPI(config.ServerCfg.BotAPIToken)
+	if err != nil {
+		fmt.Printf("No Telegram bot token found, running web server only: %s\n", err)
+		select {} // block forever
+	}
+	telegram := tg.NewTG(api)
+
 	// If today or inbox was changed in web app, we need to send the updated items to the bot.
 	sync.OnTodayUpdate = func(userID int64) { updateToday(telegram, userID) }
 
@@ -77,17 +91,6 @@ func main() {
 			}
 		}
 	}(telegram)
-
-	// TODO apphost?
-	// Launch habits server if needed
-	if config.ServerCfg.APIHost != "" {
-		go sync.Serve(
-			config.ServerCfg.APIHost,
-			config.ServerCfg.AppHost,
-			config.ServerCfg.ServerCertDir,
-			config.ServerCfg.ServerLogFile,
-		)
-	}
 
 	infolog := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
