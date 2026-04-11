@@ -157,18 +157,41 @@ $ make deploy_systemd host=<YOUR_SSH_HOST>
 
 Bot's artifacts can be seen in `/app/storage/<USER_ID>` folder
 
-## How we contribute
-- No long-lived branches except `main`
-- Feature branches are [short-lived](https://trunkbaseddevelopment.com/short-lived-feature-branches/)
-- **We commit often, so pull `main` every once in a while**
-- Once your feature is ready, open a PR to `main`
+## Repository structure
+- `web` - web app (PWA), `index.html` is an entrypoint
+- `web/lib` - frontend libs
+- `cmd/server` - entrypoint for server
+- `cmd/*/` - useful scripts for `.md` files
+- `server/bot.go` - bot
+- `server/sync/` - sync API server code
+- `vendor` - backend libs
+- `tests` - E2E tests, test both the web app and the server
 
-How to start a feature branch:
-```bash
-$ git checkout main
-$ git pull
-$ git checkout -b feature_name
-```
+## How to contribute
+- **Junior developers should be able to understand the code**
+- **Ideally, every PR should remove or simplify code, not add it**
+- All dependencies are our code and responsibility. So, avoid dependencies if possible
+- **The less code we have, the more flexible we are**
+- Code should be self-sufficient, so `vendor` and `web/lib` folders are included in the repository
+- **Do we really need this feature? Will it help us to do the real job, or does it just give dopamine?**
+
+Refer to [this guide](https://github.com/zakirullin/cognitive-load) for more comprehensive rules.
+
+## Backend guidelines
+- We write **tests**
+- We don't use get* prefix for methods
+- No panics, errors are part of business logic
+- If we are ignoring an error - we leave a WHY comment
+- We wrap errors all the time, we should add method's context
+- No iterators for client code
+- We prefer real implementations or at least fakes over mocks and stubs
+- Imports should only be renamed to avoid a name collision with other imports
+- **With portability in mind, everything is stored in plain `.md` files**
+
+## Frontend guidelines
+- Use `PATCHED` keyword if you modify libs in-place
+- **It would be fantastic if, one day, we replaced `CodeMirror` with our own tiny implementation**
+- No build systems, **in 10 years we will open `/web/index.html` and it should just work**
 
 ## Glossary
 - `filename` - a filename with extension, like "note.md" (USE THIS AS ID)
@@ -249,39 +272,3 @@ We don't need to transfer fslog (renames), if we're certain that all clients rea
 4) Execute `localStorage.setItem('ApiHost', 'YOUR_NEW_API_HOST');` in your PWA applications
 5) Make sure that all files are available
 6) Shutdown an old server
-
-## Repository structure
-- `web` - web app (PWA), `index.html` is an entrypoint
-- `web/lib` - frontend libs
-- `cmd/server` - entrypoint for server 
-- `cmd/*/` - useful scripts for `.md` files 
-- `server/bot.go` - bot
-- `server/sync/` - sync API server code
-- `vendor` - backend libs
-- `tests` - E2E tests, test both the web app and the server
-
-## How to contribute
-- **Junior developers should be able to understand the code**
-- **Ideally, every PR should remove or simplify code, not add it**
-- All dependencies are our code and responsibility. So, avoid dependencies if possible 
-- **The less code we have, the more flexible we are**
-- Code should be self-sufficient, so `vendor` and `web/lib` folders are included in the repository
-- **Do we really need this feature? Will it help us to do the real job, or does it just give dopamine?**
-
-Refer to [this guide](https://github.com/zakirullin/cognitive-load) for more comprehensive rules.
-
-## Backend guidelines
-- We write **tests**
-- We don't use get* prefix for methods
-- No panics, errors are part of business logic
-- If we are ignoring an error - we leave a WHY comment
-- We wrap errors all the time, we should add method's context
-- No iterators for client code
-- We prefer real implementations or at least fakes over mocks and stubs
-- Imports should only be renamed to avoid a name collision with other imports
-- **With portability in mind, everything is stored in plain `.md` files**
-
-## Frontend guidelines
-- Use `PATCHED` keyword if you modify libs in-place
-- **It would be fantastic if, one day, we replaced `CodeMirror` with our own tiny implementation** 
-- No build systems, **in 10 years we will open `/web/index.html` and it should just work**
