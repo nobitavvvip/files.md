@@ -251,17 +251,20 @@ We don't need to transfer fslog (renames), if we're certain that all clients rea
 6) Shutdown an old server
 
 ## Repository structure
-`/cmd/server` - entrypoint for telegram bot (stable release)  
-`/cmd/bot` - entrypoint for local standalone bot (beta version)  
-`/internal` - bot's code (reused for both telegram/local bots)  
-`/pkg` - various packages   
-`/web` - standalone web application for viewing/editing files (alpha version, Chrome only)
+- `/web` - web app (PWA), `index.html` is an entrypoint
+- `/web/lib` - frontend libs
+- `/cmd/server` - entrypoint for server 
+- `/cmd/*/` - useful scripts for `.md` files 
+- `/server/bot.go` - bot
+- `/server/sync/` - sync API server code
+- `/vendor` - backend libs
+- `/tests` - E2E tests, test both the web app and the server
 
 ## How to contribute
 - **Junior developers should be able to understand the code**
 - **Ideally, every PR should remove or simplify code, not add it**
 - **Do we really need this feature? Will it help us to do the real job, or does it just give dopamine?**
-- Code should be self-contained, so `vendor` and `web/lib` folders are included in repository
+- Code should be self-contained, so `/vendor` and `/web/lib` folders are included in the repository
 
 Refer to [this guide](https://github.com/zakirullin/cognitive-load) for more comprehensive rules.
 
