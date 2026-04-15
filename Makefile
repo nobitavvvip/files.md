@@ -83,7 +83,7 @@ init_server: # create directories and configuration files on the server
 	echo "$$SERVICE_FILE" | ssh $(host) 'sudo tee /etc/systemd/system/server.service > /dev/null'
 	@echo 'Directories created and permissions set successfully.'
 
-deploy_systemd: # deploy as systemd service, TODO make timestamps hussle in separate dir, add js/css minify before release
+deploy_systemd: # deploy as systemd service
 	@GREEN='\e[32m'; \
 	YELLOW='\e[33m'; \
 	RESET='\e[0m'; \

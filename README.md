@@ -100,6 +100,9 @@ That's all you need to know.
 
 Telegram bot: @FilesMDBot (other messengers will follow).
 
+## Putting knowledge into practice
+
+
 ## Journaling 💚
 
 ## Tasks ✅
@@ -291,11 +294,12 @@ Read 4K randomly from SSD = 150,000 ns
 - We can't ucfist filename in fs.Put - what if that was user-created file (outside the bot), i.e. it comes with lowercase
 
 ## Transfer files to another server
-0) Be sure that all client app fully synced with the server (bring the app in the focus)
-1) Stop bot on old server, so no new files would be created.
-2) Compress all the files on one server: `tar -czvf storage.tar.gz storage`
-3) `scp` the file to your host machine: `scp SSH_HOST:/app/storage.tar.gz .`
-4) `scp` the file to your target machine
+1) Backup your data (`/app/storage`)
+2) Be sure that all client app fully synced with the server (bring the app in the focus)
+3) Stop bot on old server, so no new files would be created.
+4) Compress all the files on one server: `tar -czvf storage.tar.gz storage`
+5) `scp` the file to your host machine: `scp SSH_HOST:/app/storage.tar.gz .`
+6) `scp` the file to your target machine
 
 Synchronization is relying on `mtime`, so after compressing/decompressing the flag wouldn't be lost.
 
@@ -310,4 +314,4 @@ We don't need to transfer fslog (renames), if we're certain that all clients rea
 3) Launch server
 4) Execute `localStorage.setItem('ApiHost', 'YOUR_NEW_API_HOST');` in your PWA applications
 5) Make sure that all files are available
-6) Shutdown an old server
+6) Cleanup the oldserver
