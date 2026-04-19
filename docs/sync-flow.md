@@ -73,29 +73,25 @@ sequenceDiagram
     participant Client
     participant Server
 
-    Note over Client: setInterval fires syncTextsWithServer
-    Client->>Client: collectModifiedAndDeletedFiles<br/>(SKIPS editor.path and editor2.path)
-    Client->>Server: POST /syncTexts { modified, deleted, timestamps }
-    Note right of Client: modified = files whose<br/>disk mtime > lastClientSynced<br/>deleted = in server.files but not on disk<br/>timestamps = per-dir last-seen pointers
+    Note over Client: syncTextsWithServer fires
+    Client->>Client: collect modified and deleted files (skip editor and editor2 paths)
+    Client->>Server: POST /syncTexts with modified, deleted, timestamps
+    Server-->>Client: files, timestamps, renames
+    Client->>Client: write non-current files to disk and update server.files snapshot
+    Client->>Client: advance per-dir timestamp pointers
 
-    Server-->>Client: { files: [path, content, lastModified, ...], timestamps, renames }
-    Client->>Client: For each file in response:<br/>if path matches editor or editor2: skip<br/>else writeIfContentIsDifferent, update server.files
-    Client->>Client: If nothing failed: move server.timestamps pointers forward
-
-    Note over Client: --- meanwhile, currently-open files use per-file sync ---
-
-    Note over Client: syncCurrentEditor ends<br/>(switchAwayEditor=false branch)
-    Client->>Client: syncLocalFileWithServer path
-    Client->>Server: POST /syncText { path, lastModified,<br/>clientLastModified, clientLastSynced, content }
-    alt Server says notModified
-        Server-->>Client: { status: notModified }
-        Client->>Client: advance lastClientModified pointer only
-    else Server says updatedOnServer
-        Server-->>Client: { status: updatedOnServer, lastModified }
-        Client->>Client: record server's lastModified; no disk write
-    else Server merged or returned new content
-        Server-->>Client: { status: merged or ok, content, lastModified }
-        Client->>Client: writeIfContentIsDifferent; if path == editor.path: openFile path
+    Note over Client: syncCurrentEditor finishes the switchAwayEditor=false branch
+    Client->>Client: syncLocalFileWithServer for the active editor
+    Client->>Server: POST /syncText with path, lastModified, clientLastModified, clientLastSynced, content
+    alt notModified
+        Server-->>Client: notModified
+        Client->>Client: advance lastClientModified only
+    else updatedOnServer
+        Server-->>Client: updatedOnServer with new lastModified
+        Client->>Client: record the server lastModified, no disk write
+    else merged or ok
+        Server-->>Client: content and lastModified
+        Client->>Client: writeIfContentIsDifferent, then openFile if path matches editor.path
     end
 ```
 

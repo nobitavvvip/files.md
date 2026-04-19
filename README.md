@@ -41,8 +41,8 @@ Enough to do the real work.
 Many considered it a great write-up.  
 
 All this activity helped me to:
-- **Think deeply** (which is very important in AI-age)
-- **Think in systems and see the bigger picture**
+- **Think deeply** (which is very important in the AI-age)
+- **Think in systems and see a bigger picture**
 - **Write insightful texts**
 
 To achieve all that, **you'll have to use your brain**, not advanced templates or AI workflows.  
@@ -57,18 +57,11 @@ I'll quote [I Deleted My Second Brain](https://www.joanwestenberg.com/i-deleted-
 > **Eventually, I realized I had created a new problem: deferral. The more my system grew, the more I deferred the work of thought to some future self who would sort, tag, distill, and extract the gold.**
 
 The "Second Brain" is exciting. It sounds fancy. It is thrilling.  
-You invest a lot in structure, guru templates, AI-workflows, plugins.  
+You invest a lot in structure, guru templates, AI-workflows, plugins, tweaking.    
 You are very motivated to scrape the wisdom of the whole internet into your second brain.  
 You get dopamine spikes every time **your second brain becomes smarter and bigger**.  
 There's some beauty in your system and neatly organized notes. You feel good.    
 However, **your first brain never actually gets smarter**. The actual job is postponed.  
-
-Moreover, you rob yourself of the chance to live it through.
-
-> **We don’t let new experiences emerge because we already have knowledge.**
-> We think we understand, but in reality we just know.
-> Reading and rereading can easily fool us into believing that we understand a text. The moment we become familiar with something, we start believing we also understand it.  
-> **At some point our knowing is so good, that we start thinking that we actually do it (or at least tried)**.
 
 There's another path.  
 
@@ -77,7 +70,7 @@ Leonardo da Vinci, Charles Darwin, Mark Twain, Jules Verne and many others took 
 
 You don't need to learn new advanced techniques or tools to start taking notes.  
 
-It's even better if you reuse an old pattern.    
+It's even better if you reuse an old, familiar pattern.  
 
 For me that was chatting. It is so natural for us to share an insight with our friends through a message.  
 
@@ -85,22 +78,38 @@ Only this time you'll write a message to the bot:
 
 <img>
 
-And it will save our message to an `.md` file nicely.   
+And it will save our message to an `.md` file nicely.  
 
 Later you can open [app.files.md](https://app.files.md) and make some connections between new and old notes.
 
-Me and my friends have been using this approach for 4+ years.    
+My friends and I have been using this approach for 5+ years.  
 
 - You can start with no structure at all, 0 folders
 - One idea per note
 - A note should be understood without context
 - Related notes should be linked between each other
 
-That's all you need to know.  
+That's all you need to know to take notes.  
 
-Telegram bot: @FilesMDBot (other messengers will follow).
+Telegram bot: [@FilesMDBot](https://t.me/FilesMDBot) (other messengers will follow).
 
-## Putting knowledge into practice
+## Knowledge vs experience
+If your purpose is:
+- To do research
+- To write an article or a book
+- To build a deeper, more structured understanding of something
+
+Then, taking notes is fine.    
+
+However, if it is more about self-help, then collecting a lot of notes can prevent us from actual experience.  
+
+- **We don’t let new experiences emerge because we already have knowledge**
+- We think we understand, but in reality **we just know**
+- Reading and rereading can easily fool us into believing that we understand a text. The moment we become familiar with something, we start believing we also understand it
+- **At some point our knowing is so good, that we start thinking that we actually do it (or at least tried)**
+
+## No productivity, no planning no stress
+The only thing that matters is your calmness.
 
 ## Journaling 💚
 
