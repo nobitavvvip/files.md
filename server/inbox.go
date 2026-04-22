@@ -52,6 +52,32 @@ func findInboxBlockByHash(content, msgHash string) (int, string, bool) {
 	return -1, "", false
 }
 
+// renameInboxBlock replaces the body of the block identified by msgHash with
+// newBody, preserving the `- [ ] `/`- [x] ` marker and the `` `HH:MM` ``
+// timestamp. Returns the rewritten file content.
+func renameInboxBlock(content, msgHash, newBody string) (string, error) {
+	blocks := readBlocks(content)
+	idx := -1
+	for i, block := range blocks {
+		if inboxHeaderRegex.MatchString(block) {
+			continue
+		}
+		if inboxBlockHash(block) == msgHash {
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		return "", fmt.Errorf("inbox block not found for hash %q", msgHash)
+	}
+
+	prefix := inboxEntryPrefix.FindString(blocks[idx])
+	newBody = strings.TrimSpace(strings.ReplaceAll(newBody, "\n", " "))
+	blocks[idx] = prefix + newBody
+
+	return strings.Join(blocks, "\n"), nil
+}
+
 // appendToInbox writes a new entry to Inbox.md and returns its stable hash.
 func (b *Bot) appendToInbox(content string, timezone *time.Location) (string, error) {
 	exists, err := b.fs.Exists(fs.DirUserRoot, fs.InboxFilename)

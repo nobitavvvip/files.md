@@ -1756,6 +1756,83 @@ func TestPostponeInboxEntry(t *testing.T) {
 	r.Contains(laterMD, "- [ ] Inbox body")
 }
 
+func TestShowRename_WithInbox(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 9, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] Today task"))
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	r.NoError(bot.showRename(nil))
+
+	inboxHash := inboxMsgHash(t, userFS, 0)
+	r.Equal(tg.NewKeyboard([]tg.Row{
+		tg.NewBtn("👀 Today task", tg.NewCmd("rename_file", []string{fs.TodayFilename, fs.Hash("Today task")})),
+		tg.NewBtn("💬 Inbox body", tg.NewCmd("rename_file", []string{fs.InboxFilename, inboxHash})),
+		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+	}), tgram.LastSentKeyboard)
+}
+
+func TestRenameInboxEntry(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 9, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [ ] `09:05` Second entry",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	h := inboxMsgHash(t, userFS, 0)
+	r.NoError(bot.rename([]string{fs.InboxFilename, h, "Renamed body"}))
+
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	// Timestamp and marker preserved, body replaced.
+	r.Contains(inboxMD, "- [ ] `09:00` Renamed body")
+	r.NotContains(inboxMD, "Inbox body")
+	// Untouched entry stays intact.
+	r.Contains(inboxMD, "- [ ] `09:05` Second entry")
+}
+
+func TestRenameInboxEntry_PreservesCompletedMarker(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [x] `09:00` Done body",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	h := inboxMsgHash(t, userFS, 0)
+	r.NoError(bot.rename([]string{fs.InboxFilename, h, "Renamed done"}))
+
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	r.Contains(inboxMD, "- [x] `09:00` Renamed done")
+}
+
 func TestShowScheduleEmpty(t *testing.T) {
 	r := require.New(t)
 

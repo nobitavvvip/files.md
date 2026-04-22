@@ -1481,7 +1481,6 @@ func (b *Bot) postpone(params []string) error {
 	return b.showPostpone(nil)
 }
 
-// TODO add tests
 func (b *Bot) showRename(_ []string) error {
 	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -1491,12 +1490,28 @@ func (b *Bot) showRename(_ []string) error {
 	tasks, _ := txt.ChecklistItems(todayMD)
 	var kb tg.Keyboard
 	for _, task := range tasks {
-		var btn tg.Btn
 		cmd := tg.NewCmd(CmdShowRenameFile, []string{fs.TodayFilename, fs.Hash(task)})
-		btn = tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), task), cmd)
-
-		kb.AddRow(btn)
+		kb.AddRow(tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), task), cmd))
 	}
+
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	if err == nil {
+		for _, block := range readBlocks(inboxMD) {
+			if inboxHeaderRegex.MatchString(block) {
+				continue
+			}
+			if strings.HasPrefix(block, "- [x] ") || strings.HasPrefix(block, "- [X] ") {
+				continue
+			}
+			preview := strings.SplitN(stripInboxEntryPrefix(block), "\n", 2)[0]
+			if len([]rune(preview)) > maxHeaderLengthForMobile {
+				preview = string([]rune(preview)[:maxHeaderLengthForMobile]) + "…"
+			}
+			cmd := tg.NewCmd(CmdShowRenameFile, []string{fs.InboxFilename, inboxBlockHash(block)})
+			kb.AddRow(tg.NewBtn("💬 "+preview, cmd))
+		}
+	}
+
 	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
 
 	err = b.showHTML(b.todayLabel(), &kb)
@@ -1535,8 +1550,16 @@ func (b *Bot) rename(params []string) error {
 	if err != nil {
 		return fmt.Errorf("rename: can't read checklist %s: %w", checklist, err)
 	}
-	md, _ = txt.RemoveChecklistItem(md, itemHash)
-	md = txt.AddChecklistItem(md, newItemNameFromUserInput, false)
+
+	if checklist == fs.InboxFilename {
+		md, err = renameInboxBlock(md, itemHash, newItemNameFromUserInput)
+		if err != nil {
+			return fmt.Errorf("rename: %w", err)
+		}
+	} else {
+		md, _ = txt.RemoveChecklistItem(md, itemHash)
+		md = txt.AddChecklistItem(md, newItemNameFromUserInput, false)
+	}
 
 	err = b.fs.Write(fs.DirUserRoot, checklist, md)
 	if err != nil {
