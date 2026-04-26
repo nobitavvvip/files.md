@@ -814,12 +814,12 @@ test('create file in selected folder', async ({ page }) => {
 // Click on Awareness fires openFile('/hap/Awareness.md', true,
 // 'editor2-textarea') (call this P for parent):
 //
-//   1. P:977 — currentEditor = editor2. Good.
-//   2. P:982 — editor2.path ≠ Awareness, so await syncCurrentEditor(false).
+//   1. P:977 - currentEditor = editor2. Good.
+//   2. P:982 - editor2.path ≠ Awareness, so await syncCurrentEditor(false).
 //      Control leaves P here.
 //   3. Inside that syncCurrentEditor: path = /life/Pilaf.md. Disk differs
 //      from editor2 cache. editor2 is clean. Enters the reload branch and
-//      calls await openFile('/life/Pilaf.md', false) — no el argument,
+//      calls await openFile('/life/Pilaf.md', false) - no el argument,
 //      defaults to 'editor-textarea'. Call this N for nested.
 //   4. Inside N: el === 'editor-textarea' → N:976 sets currentEditor =
 //      editor. Then loads disk Pilaf into editor. N:1038 reassigns
@@ -829,22 +829,22 @@ test('create file in selected folder', async ({ page }) => {
 //      ("Finished syncing previous file").
 //
 // At this exact moment:
-//   - currentEditor is editor (main) — reassigned by N. P never noticed.
+//   - currentEditor is editor (main) - reassigned by N. P never noticed.
 //   - editor.path = /life/Pilaf.md, editor content = Pilaf UPDATED
 //   - P's local variables still say path = /hap/Awareness.md, el =
 //     'editor2-textarea'
 //
-//   6. P:1028 — currentEditor.path = path — writes editor.path =
+//   6. P:1028 - currentEditor.path = path - writes editor.path =
 //      /hap/Awareness.md. This is where the drift is sealed. editor's
 //      content is still Pilaf; its .path is now Awareness.
-//   7. P:1037–1044 — branches on el === 'editor2-textarea', so it
+//   7. P:1037–1044 - branches on el === 'editor2-textarea', so it
 //      reinitializes editor2 only, not editor. Loads Awareness into
 //      editor2.
 //   8. P returns.
 //
 // State after P returns:
-//   - editor — path = /hap/Awareness.md, content = Pilaf. Poisoned.
-//   - editor2 — path = /hap/Awareness.md, content = Awareness. Clean.
+//   - editor - path = /hap/Awareness.md, content = Pilaf. Poisoned.
+//   - editor2 - path = /hap/Awareness.md, content = Awareness. Clean.
 //
 // --- Why the copy happened later ---
 //
@@ -883,7 +883,7 @@ test('create file in selected folder', async ({ page }) => {
 // running, so the rotation doesn't happen, so P:1028 ends up writing onto
 // the correct editor. It blocks this specific door. It does not disarm
 // the executioner (rename-from-header), nor does it fix the "P doesn't
-// re-verify currentEditor" problem — any future code path that rotates
+// re-verify currentEditor" problem - any future code path that rotates
 // currentEditor during P's await would poison again.
 test('pilaf should not be copied to happiness when opening link in editor2 after stale editor2 drift', async ({page}) => {
     await page.evaluate(async () => {

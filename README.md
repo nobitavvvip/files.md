@@ -1,4 +1,4 @@
-<img src="https://github.com/zakirullin/files.md/raw/main/web/icon.png" alt="Files.md logo" title="Files.md" align="right" height="76" />
+<img src="https://github.com/zakirullin/files.md/raw/main/web/icon.png" alt="Files.md icon" title="Files.md" align="right" height="76" />
 
 # Files.md  
 A simple application for your `.md` files.

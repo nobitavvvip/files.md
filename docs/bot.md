@@ -45,13 +45,13 @@ flowchart TB
 
 The server runs one binary with three long-running components:
 
-- **Telegram update loop** (`cmd/server/server.go`) — long-polls Telegram, routes each update to a per-user goroutine. Per-user channels serialize one user's messages so concurrent edits to the same files can't race.
-- **HTTP sync server** (`server/sync`) — serves the PWA's sync requests (`/syncTexts`, `/syncText`, `/syncMedia`). When the web app changes `Today.md` or the inbox, it calls `OnTodayUpdate` which triggers the bot to send the user a fresh "Today" keyboard so the two stay in lockstep.
-- **Worker ticker** — every 5 seconds moves scheduled tasks out of `later` into `today`, and prunes completed checklist items.
+- **Telegram update loop** (`cmd/server/server.go`) - long-polls Telegram, routes each update to a per-user goroutine. Per-user channels serialize one user's messages so concurrent edits to the same files can't race.
+- **HTTP sync server** (`server/sync`) - serves the PWA's sync requests (`/syncTexts`, `/syncText`, `/syncMedia`). When the web app changes `Today.md` or the inbox, it calls `OnTodayUpdate` which triggers the bot to send the user a fresh "Today" keyboard so the two stay in lockstep.
+- **Worker ticker** - every 5 seconds moves scheduled tasks out of `later` into `today`, and prunes completed checklist items.
 
-Everything reads and writes the same per-user filesystem tree (`UserFS`), which is the single source of truth — `.md` files on disk. The PWA fetches those same files through the sync API.
+Everything reads and writes the same per-user filesystem tree (`UserFS`), which is the single source of truth - `.md` files on disk. The PWA fetches those same files through the sync API.
 
-## `Bot.Reply` — reply flow
+## `Bot.Reply` - reply flow
 
 ```mermaid
 flowchart TD
@@ -100,7 +100,7 @@ flowchart TD
     style SaveTxt fill:#fde,stroke:#a36,color:#000
 ```
 
-The decision is strictly top-to-bottom — the first matching case wins. Green terminals are read-only or side-channel responses; yellow is the large callback/command dispatch table; red is the save path for fresh user content.
+The decision is strictly top-to-bottom - the first matching case wins. Green terminals are read-only or side-channel responses; yellow is the large callback/command dispatch table; red is the save path for fresh user content.
 
 ### Main steps inside the save paths
 
@@ -148,4 +148,4 @@ Shortcut suffixes like ` jj` / ` жж` (append to journal) or `++` (append to mo
 
 ## Concurrency guarantees in one line
 
-One user's updates are processed strictly sequentially inside their own goroutine, but different users run in parallel — so the bot never races its own file writes for a single user, and the web app's sync API can safely modify the same files as the bot because the per-user worker holds the only write path for bot-initiated changes.
+One user's updates are processed strictly sequentially inside their own goroutine, but different users run in parallel - so the bot never races its own file writes for a single user, and the web app's sync API can safely modify the same files as the bot because the per-user worker holds the only write path for bot-initiated changes.
