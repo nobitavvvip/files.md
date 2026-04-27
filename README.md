@@ -3,7 +3,7 @@
 # Files.md  
 A simple application for your `.md` files.
 
-<img src="https://github.com/zakirullin/files.md/raw/main/web/app.png" alt="Files.md screenshot" title="Files.md"/>
+<img src="https://github.com/zakirullin/files.md/raw/main/web/img/app.png" alt="Files.md screenshot" title="Files.md"/>
 
 You can store whole your life:
 - 📌 Notes
@@ -96,12 +96,12 @@ My friends and I have been using this setup for five years and it works well.
 Telegram bot: [@FilesMDBot](https://t.me/FilesMDBot) (other messengers will follow).  
 
 ## Taking notes in the web app
-Open `today`, type in a message:  
+Open `today`, type in a note:  
 <div align="center">
     <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note1.png" alt="Taking notes" title="Taking notes" width="350"/>
 </div>
-
-Then hover a message (it can be done later):  
+Press `Enter`.  
+Then hover over the note (can be done later):  
 <div align="center">
     <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note2.png" alt="Taking notes" title="Taking notes" width="350"/>
 </div>
