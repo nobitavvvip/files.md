@@ -127,7 +127,7 @@ func TestMoveDueTasksFromArchive(t *testing.T) {
 	err = MoveDueTasks("/", "config.json", fsBackend, tgram)
 	r.NoError(err)
 
-	inboxMD, err := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, err := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	r.NoError(err)
 	r.Contains(inboxMD, "due task")
 
@@ -168,7 +168,7 @@ func TestMoveDueTasksFromLater(t *testing.T) {
 	err = MoveDueTasks("/", "config.json", fsBackend, tgram)
 	r.NoError(err)
 
-	inboxMD, err := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, err := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	r.NoError(err)
 	r.Contains(inboxMD, "due task")
 

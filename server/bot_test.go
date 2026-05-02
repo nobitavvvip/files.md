@@ -32,7 +32,7 @@ func init() {
 // carries in its callback params (previously a positional int index).
 func inboxMsgHash(t *testing.T, userFS *fs.FS, nth int) string {
 	t.Helper()
-	content, err := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	content, err := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil {
 		return "nohash"
 	}
@@ -1590,7 +1590,7 @@ func TestShowMoveFromTodayAndInbox(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
 	))
 
@@ -1621,7 +1621,7 @@ func TestMoveFromTodayAndInbox_ToLater(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"- [ ] Today task\n#### 29 June, Sunday\n- [ ] `09:00` Inbox body",
 	))
 
@@ -1633,7 +1633,7 @@ func TestMoveFromTodayAndInbox_ToLater(t *testing.T) {
 	inboxHash := inboxMsgHash(t, userFS, 1)
 	r.NoError(bot.moveToLater([]string{inboxHash}))
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	r.NotContains(inboxMD, "Inbox body")
 
 	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
@@ -1652,7 +1652,7 @@ func TestShowPostpone_WithInbox(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
 	))
 
@@ -1703,7 +1703,7 @@ func TestPostponeInboxEntry(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body",
 	))
 
@@ -1713,7 +1713,7 @@ func TestPostponeInboxEntry(t *testing.T) {
 	err = bot.postpone([]string{h})
 	r.NoError(err)
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	r.NotContains(inboxMD, "Inbox body")
 
 	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
@@ -1732,7 +1732,7 @@ func TestShowRename_WithInbox(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
 	))
 
@@ -1742,7 +1742,7 @@ func TestShowRename_WithInbox(t *testing.T) {
 
 	inboxHash := inboxMsgHash(t, userFS, 0)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("💬 Inbox body", tg.NewCmd("rename_file", []string{fs.InboxFilename, inboxHash})),
+		tg.NewBtn("💬 Inbox body", tg.NewCmd("rename_file", []string{fs.TodayFilename, inboxHash})),
 		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
 	}), tgram.LastSentKeyboard)
 }
@@ -1759,16 +1759,16 @@ func TestRenameInboxEntry(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [ ] `09:05` Second entry",
 	))
 
 	tgram := tg.NewFakeTG()
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	h := inboxMsgHash(t, userFS, 0)
-	r.NoError(bot.rename([]string{fs.InboxFilename, h, "Renamed body"}))
+	r.NoError(bot.rename([]string{fs.TodayFilename, h, "Renamed body"}))
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	// Timestamp and marker preserved, body replaced.
 	r.Contains(inboxMD, "- [ ] `09:00` Renamed body")
 	r.NotContains(inboxMD, "Inbox body")
@@ -1782,16 +1782,16 @@ func TestRenameInboxEntry_PreservesCompletedMarker(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.InboxFilename,
+		fs.DirUserRoot, fs.TodayFilename,
 		"#### 29 June, Sunday\n- [x] `09:00` Done body",
 	))
 
 	tgram := tg.NewFakeTG()
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	h := inboxMsgHash(t, userFS, 0)
-	r.NoError(bot.rename([]string{fs.InboxFilename, h, "Renamed done"}))
+	r.NoError(bot.rename([]string{fs.TodayFilename, h, "Renamed done"}))
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	r.Contains(inboxMD, "- [x] `09:00` Renamed done")
 }
 
@@ -4489,7 +4489,7 @@ func TestShowToday_InboxMixedFormat(t *testing.T) {
 		"- [ ] Plain msg\n" +
 		"- [ ] `09:05` New msg\n" +
 		"- [x] `09:10` Done msg\n"
-	err = userFS.Write(fs.DirUserRoot, fs.InboxFilename, inbox)
+	err = userFS.Write(fs.DirUserRoot, fs.TodayFilename, inbox)
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()

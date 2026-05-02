@@ -166,7 +166,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if relativePath == fs.TodayFilename || relativePath == fs.InboxFilename {
+		if relativePath == fs.TodayFilename {
 			OnTodayUpdate(userID(r))
 		}
 	}
@@ -344,7 +344,7 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if relativePath == fs.TodayFilename || relativePath == fs.InboxFilename {
+		if relativePath == fs.TodayFilename {
 			OnTodayUpdate(userID(r))
 		}
 	}

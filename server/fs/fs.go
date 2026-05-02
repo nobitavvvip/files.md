@@ -48,7 +48,6 @@ const (
 	TodayFilename = "Today.md"
 	LaterFilename = "Later.md"
 	DoneFilename  = "Done.md"
-	InboxFilename = "Today.md"
 
 	ShopFilename  = "Shop.md"
 	WatchFilename = "Watch.md"

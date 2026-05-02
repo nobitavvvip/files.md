@@ -142,7 +142,7 @@ func OnlyUserMDFiles(entries []File) []File {
 		TodayFilename,
 		LaterFilename,
 		DoneFilename,
-		InboxFilename,
+		TodayFilename,
 		ShopFilename,
 		WatchFilename,
 		ReadFilename,

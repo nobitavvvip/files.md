@@ -487,7 +487,7 @@ func (b *Bot) saveFromTextMsg(u Update) error {
 		if shouldCollapse {
 			// We just write at the end of our append-only chat file,
 			// that would concat the current message with the previous one.
-			err := b.createOrAdd(fs.DirUserRoot, fs.InboxFilename, msg)
+			err := b.createOrAdd(fs.DirUserRoot, fs.TodayFilename, msg)
 			if err != nil {
 				return fmt.Errorf("save collapsed: %w", err)
 			}
@@ -535,7 +535,7 @@ func (b *Bot) saveFromImage(u Update) error {
 	if updateHasTime {
 		_, shouldCollapse := collapseToMsg(b.userID, msgTime)
 		if shouldCollapse {
-			err := b.createOrAdd(fs.DirUserRoot, fs.InboxFilename, content)
+			err := b.createOrAdd(fs.DirUserRoot, fs.TodayFilename, content)
 			if err != nil {
 				return fmt.Errorf("save collapsed: %w", err)
 			}
@@ -1010,7 +1010,7 @@ func (b *Bot) ShowToday(_ []string) error {
 	var kb tg.Keyboard
 
 	// Adding records from inbox
-	content, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	content, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("show today: can't read chat file: %w", err)
 	}
@@ -1287,7 +1287,7 @@ func (b *Bot) showPostpone(_ []string) error {
 	var kb tg.Keyboard
 
 	// Inbox items also show in /postpone so the user can send them to Later.md.
-	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err == nil {
 		for _, block := range readBlocks(inboxMD) {
 			if inboxHeaderRegex.MatchString(block) {
@@ -1322,7 +1322,7 @@ func (b *Bot) showMoveFromToday(_ []string) error {
 	var kb tg.Keyboard
 
 	// Show today inbox items
-	inboxContent, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxContent, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err == nil {
 		blocks := readBlocks(inboxContent)
 		for _, block := range blocks {
@@ -1375,7 +1375,7 @@ func (b *Bot) postpone(params []string) error {
 func (b *Bot) showRename(_ []string) error {
 	var kb tg.Keyboard
 
-	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err == nil {
 		for _, block := range readBlocks(inboxMD) {
 			if inboxHeaderRegex.MatchString(block) {
@@ -1388,7 +1388,7 @@ func (b *Bot) showRename(_ []string) error {
 			if len([]rune(preview)) > maxHeaderLengthForMobile {
 				preview = string([]rune(preview)[:maxHeaderLengthForMobile]) + "…"
 			}
-			cmd := tg.NewCmd(CmdShowRenameFile, []string{fs.InboxFilename, inboxBlockHash(block)})
+			cmd := tg.NewCmd(CmdShowRenameFile, []string{fs.TodayFilename, inboxBlockHash(block)})
 			kb.AddRow(tg.NewBtn("💬 "+preview, cmd))
 		}
 	}
@@ -1432,7 +1432,7 @@ func (b *Bot) rename(params []string) error {
 		return fmt.Errorf("rename: can't read checklist %s: %w", checklist, err)
 	}
 
-	if checklist == fs.InboxFilename {
+	if checklist == fs.TodayFilename {
 		md, err = renameInboxBlock(md, itemHash, newItemNameFromUserInput)
 		if err != nil {
 			return fmt.Errorf("rename: %w", err)
@@ -1537,7 +1537,7 @@ func (b *Bot) showLongItem(params []string) error {
 func (b *Bot) showLongItemFromInbox(params []string) error {
 	msgHash := params[0]
 
-	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil {
 		return fmt.Errorf("show long item: can't read inbox file: %w", err)
 	}
@@ -2239,7 +2239,7 @@ func (b *Bot) complete(params []string) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	content, err := b.fs.Read(fs.DirUserRoot, fs.InboxFilename)
+	content, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil {
 		return fmt.Errorf("complete: can't read inbox: %w", err)
 	}
@@ -2261,7 +2261,7 @@ func (b *Bot) complete(params []string) error {
 	}
 
 	newContent := strings.TrimSpace(strings.Join(blocks, "\n"))
-	if err := b.fs.Write(fs.DirUserRoot, fs.InboxFilename, newContent); err != nil {
+	if err := b.fs.Write(fs.DirUserRoot, fs.TodayFilename, newContent); err != nil {
 		return fmt.Errorf("complete: can't write inbox: %w", err)
 	}
 

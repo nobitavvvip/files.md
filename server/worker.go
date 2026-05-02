@@ -230,7 +230,7 @@ func RemoveCompletedChecklistItems(
 		targets := []target{
 			{fs.TodayFilename, txt.RemoveCompletedChecklistItems},
 			{fs.LaterFilename, txt.RemoveCompletedChecklistItems},
-			{fs.InboxFilename, removeCompletedInboxEntries},
+			{fs.TodayFilename, removeCompletedInboxEntries},
 		}
 
 		for _, t := range targets {
