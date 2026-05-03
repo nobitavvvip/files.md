@@ -82,9 +82,6 @@ My friends and I have been using this setup for five years and it works well.
 Telegram bot: [@FilesMDBot](https://t.me/FilesMDBot) (other messengers will follow).
 
 ## A real-world example
-Are there enough features and plugins?  
-Enough to do the real work.
-
 1) I used [files.md](https://files.md) to grow my knowledge about brain and software development
 2) I added new notes to either `brain` or `dev` folders. One idea per note
 3) I made connections between the notes. Everything is connected, just as in our brain
@@ -100,6 +97,8 @@ All this activity helped me to:
 - **Think systematically and see the bigger picture**
 - **Write insightful texts**
 
+Are there enough features and plugins?  
+Enough to do the real work.  
 To achieve all that, **you'll have to use your brain**, not advanced templates or AI workflows.
 
 ## Taking notes in the web app
