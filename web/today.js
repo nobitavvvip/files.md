@@ -659,7 +659,9 @@ function attachEventListeners() {
                 renderMessages();
             }, 500);
             chatInput.focus();
-            renderSidebar('', [btn.dataset.checklist]);
+            // dataset.checklist is "Later.md"/"Read.md"/etc.; sidebar paths
+            // are absolute, so prepend / for the includes() match to fire.
+            renderSidebar('', [joinPath('/', btn.dataset.checklist)]);
         });
     });
 
