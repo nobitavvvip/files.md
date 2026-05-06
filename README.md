@@ -24,7 +24,7 @@ Open the chat, write a note and press `Enter`.
 </div>
 
 That's it. Nothing to learn or setup.  
-Later you can hover a note to move it to any folder.  
+Later you can hover the note to move it to any folder.  
 
 ## Another note-taking app?
 Maybe. But this time: 
@@ -47,9 +47,9 @@ Maybe. But this time:
 </div>  
 
 - Open a local folder to persist changes  
-- Occasionally hit force-refresh (`Cmd`+`Shift`+`R`) to get new updates.  
+- Occasionally hit force-refresh (`Cmd+Shift+R`) to get new updates.  
 
-## Telegram bot 🤖
+## Telegram bot
 1) Open [@FilesMDBot](https://t.me/FilesMDBot)
 2) Execute the `/app` command
 3) Open the link in your Chrome browser
@@ -102,7 +102,7 @@ All this activity helped me to:
 
 To achieve all that, **you'll have to use your brain**, not advanced templates or AI workflows.
 
-## Second Brain? 🧠
+## Second Brain?
 I'll quote [I Deleted My Second Brain](https://www.joanwestenberg.com/i-deleted-my-second-brain-692aa40d59d5f06dd5131e43/):
 
 > Obsidian is a brilliant piece of software. I love it, dearly. But like anything, without restraint, it can also be a trap. Markdown files in nested folders. Plugins that track your productivity. Graph views that suggest omniscience. There’s an illusion of mastery in watching your notes web into constellations. But constellations are projections. They tell stories. They do not guarantee understanding.

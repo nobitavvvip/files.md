@@ -71,7 +71,7 @@ async function init() {
         isMemFS = false;
         document.getElementById('open-folder').style.display = 'none';
     } else {
-        document.getElementById('open-folder').style.display = 'inline';
+        document.getElementById('open-folder').style.display = 'flex';
         isMemFS = true;
     }
 
@@ -80,7 +80,7 @@ async function init() {
         const permission = await (await getRootDirHandle()).queryPermission({ mode: 'readwrite' });
         log('PERMISSION', permission);
         if (permission !== 'granted') {
-            document.getElementById('open-folder').style.display = 'inline';
+            document.getElementById('open-folder').style.display = 'flex';
             // TODO maybe ask user to check "Allow on every visit" on left part of the sidebar
             await removeSavedRootDirHandle();
             alert('Can\'t access folder.\n\nPlease, reopen the folder again and check "Allow on every visit" checkbox');
