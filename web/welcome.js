@@ -213,8 +213,8 @@ const WELCOME_FILES = {
             "Use `#` for headers. More `#` symbols create smaller headers.\n" +
             "\n" +
             "#### Text Formatting\n" +
-            "- **Bold text** using `**bold**` or `__bold__` (Cmd/Ctrl + B)\n" +
-            "- *Italic text* using `*italic*` or `_italic_` (Cmd/Ctrl + I)\n" +
+            "- **Bold text** using `**bold**` or `__bold__` **(Cmd/Ctrl + B)**\n" +
+            "- *Italic text* using `*italic*` or `_italic_` **(Cmd/Ctrl + I)**\n" +
             "- ***Bold and italic*** using `***text***`\n" +
             "- ~~Strikethrough~~ using `~~text~~`\n" +
             "- `Inline code` using backticks\n" +
@@ -230,7 +230,6 @@ const WELCOME_FILES = {
             "#### Checklist\n" +
             "- [x] Completed task\n" +
             "- [ ] Incomplete task\n" +
-            "- [ ] Another incomplete task\n\n" +
             "Format:\n`- [ ] Item`\n" +
             "\n" +
             "#### Blockquotes\n" +
@@ -243,7 +242,7 @@ const WELCOME_FILES = {
             "```\n" +
             "\n" +
             "#### Images\n" +
-            "![Why taking notes](https://app.files.md/lib/notes.jpg)\n" +
+            "![Why taking notes](https://app.files.md/img/notes.jpg)\n" +
             "\n" +
             "*You can paste your own images via `Cmd/Ctrl + V`*\n\n" +
             "#### Links\n" +
@@ -293,6 +292,27 @@ const WELCOME_FILES = {
 }
 
 function getHelpContent() {
-    return WELCOME_FILES["Hotkeys.md"].content;
+    // Concatenate Hotkeys and Markdown Guide into one Help.md. Drop any
+    // line that is solely a `[text](file.md)` link - those references
+    // are dead-ends once the welcome files are merged into one
+    // document, and the user wants them gone (not just the syntax).
+    // Anchored to line start so a stray "[" inside an inline-code
+    // table cell (e.g. ``| `[` |`` in the Hotkeys table) can't be
+    // mistaken for a link. Then collapse the blank gaps the removal
+    // leaves behind so we don't end up with three+ newlines in a row.
+    const stripMdFileLinks = s => s
+        .replace(/^[ \t]*\[[^\]\n]+\]\([^)\n]*\.md\)[ \t]*\n?/gm, '')
+        .replace(/\n{3,}/g, '\n\n');
+    // Drop the "#### Images" chapter - it points at an external image
+    // and isn't useful in the merged Help.md. Match runs until the
+    // next #### header or end of string.
+    const stripImagesChapter = s => s.replace(/#### Images\n[\s\S]*?(?=#### |$)/g, '');
+    return stripImagesChapter(stripMdFileLinks(
+        "### Hotkeys\n\n" +
+        WELCOME_FILES["Hotkeys.md"].content +
+        "\n\n" +
+        "### Markdown Guide\n\n" +
+        WELCOME_FILES["Markdown Guide.md"].content
+    ));
 }
 
