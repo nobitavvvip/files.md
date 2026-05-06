@@ -261,9 +261,13 @@ async function openDir() {
     try {
         dirHandle = await window.showDirectoryPicker({ 'mode': 'readwrite' });
     } catch (error) {
+        // User pressed Esc (AbortError) or the browser doesn't support
+        // the picker (TypeError). Either way, leave the CTA visible so
+        // the user can try again.
         if (error instanceof TypeError) {
             alert('Only works in Chrome!');
         }
+        return;
     }
     document.getElementById('open-folder').style.display = 'none';
 

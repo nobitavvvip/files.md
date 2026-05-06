@@ -1124,12 +1124,6 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
 // If currentEditor is changed during the execution of this function, we'll have RC.
 // So, wherever we change currentEditor reference, we should lock via isMessingWithCurrentEditor.
 async function syncCurrentText(switchAwayEditor = false) {
-    // We should have at least one 200 response from service.
-    // The first 200 response we get from /token, meaning that
-    // our application is linked to the server for sync.
-    if (!hasLastServerOk()) {
-        return;
-    }
     if (files === undefined || debug || currentEditor.path === undefined) {
         return;
     }
@@ -1374,6 +1368,12 @@ async function syncCurrentText(switchAwayEditor = false) {
 
     isMessingWithCurrentEditor = false;
 
+    // We should have at least one 200 response from service.
+    // The first 200 response we get from /token, meaning that
+    // our application is linked to the server for sync.
+    if (!hasLastServerOk()) {
+        return;
+    }
     if (!switchAwayEditor) {
         try {
             await syncLocalFileWithServer(path);
