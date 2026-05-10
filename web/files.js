@@ -13,6 +13,7 @@ let needsResyncWithServer = {}; // path -> bool, flags that another sync was req
 let isLoadingLocalFiles = false;
 
 const LAST_SERVER_OK_KEY = 'lastServerOk';
+const MAX_NESTING_LEVEL = 10;
 
 function markServerOk() {
     localStorage.setItem(LAST_SERVER_OK_KEY, Date.now().toString());
@@ -72,7 +73,7 @@ async function loadLocalFiles(rootDirHandle, slowMode = false) {
     let newFiles = {};
 
     // Loads files recursively
-    async function loadDir(dirHandle, path = '/', depth = 10) {
+    async function loadDir(dirHandle, path = '/', depth = 0) {
         const entries = [];
         for await (const entry of dirHandle.values()) {
             entries.push(entry);
@@ -99,7 +100,7 @@ async function loadLocalFiles(rootDirHandle, slowMode = false) {
             }
 
             if (entry.kind === 'directory') {
-                if (filename.startsWith('.') || depth >= 5) continue;
+                if (filename.startsWith('.') || depth >= MAX_NESTING_LEVEL) continue;
 
                 currentDir[filename + '/'] = {};
                 const dir = `${path}${filename}/`;
