@@ -129,11 +129,8 @@ func tokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		blockedUntil, isBlocked := blockedIPs[ip]
 		blockedIPsMutex.RUnlock()
 		if isBlocked && time.Now().Before(blockedUntil) {
-			logAuthFailure("middleware_ip_blocked_429", r, map[string]any{
-				"http_status":     429,
-				"block_until":     blockedUntil.Format(time.RFC3339Nano),
-				"block_remaining": time.Until(blockedUntil).String(),
-			})
+			// 429s are too noisy to log — a blocked IP can replay them every
+			// few seconds. The originating 401 has already been recorded.
 			w.WriteHeader(http.StatusTooManyRequests)
 			return
 		}
@@ -211,7 +208,7 @@ func issueNewPermanentToken(r *http.Request) (string, bool) {
 	data, exists := oneTimeTokens[req.OneTimeToken]
 	if !exists || time.Now().After(data.expiresAt) {
 		// Snapshot a few one-time tokens for cross-referencing — fingerprints
-		// only, never the raw token, so we don't leak still-live secrets.
+		// only, never any portion of the raw token (still-live secrets).
 		samplePrefixes := make([]string, 0, 5)
 		now := time.Now()
 		var liveCount, expiredCount int
@@ -222,12 +219,8 @@ func issueNewPermanentToken(r *http.Request) (string, bool) {
 				liveCount++
 			}
 			if len(samplePrefixes) < 5 {
-				prefix := tok
-				if len(prefix) > 8 {
-					prefix = prefix[:8]
-				}
 				samplePrefixes = append(samplePrefixes,
-					fmt.Sprintf("%s(uid=%d,exp=%s)", prefix, d.userID, d.expiresAt.Format(time.RFC3339)))
+					fmt.Sprintf("%s(uid=%d,exp=%s)", tokenFingerprint(tok), d.userID, d.expiresAt.Format(time.RFC3339)))
 			}
 		}
 		mu.Unlock()
