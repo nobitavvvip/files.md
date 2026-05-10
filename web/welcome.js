@@ -17,27 +17,37 @@ async function getTemporaryStorageDirHandle() {
     // OPFS requires a secure context (https or localhost), not available on file://
     try {
         const root = await navigator.storage.getDirectory();
-        const entries = [];
-        for await (const entry of root.values()) {
-            entries.push(entry);
+
+        // Skip the seed only when the LAST welcome file is already on disk.
+        // Using "any entries" as the seeded marker is racy: a reader
+        // arriving mid-seed sees the first dir already written and returns
+        // root with partial contents. Probing for a file that's written
+        // last means concurrent callers all re-run the seed (idempotent
+        // via {create:true}) and none of them returns until all welcome
+        // files exist.
+        const lastFile = Object.keys(WELCOME_FILES).pop();
+        let seeded = true;
+        try { await root.getFileHandle(lastFile); }
+        catch { seeded = false; }
+
+        if (seeded) {
+            return root;
         }
 
-        if (entries.length === 0) {
-            async function createFiles(obj, dirHandle) {
-                for (const [name, data] of Object.entries(obj)) {
-                    if (data.isFile) {
-                        const fileHandle = await dirHandle.getFileHandle(name, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(data.content);
-                        await writable.close();
-                    } else {
-                        const subDirHandle = await dirHandle.getDirectoryHandle(removeTrailingSlash(name), { create: true });
-                        await createFiles(data, subDirHandle);
-                    }
+        async function createFiles(obj, dirHandle) {
+            for (const [name, data] of Object.entries(obj)) {
+                if (data.isFile) {
+                    const fileHandle = await dirHandle.getFileHandle(name, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(data.content);
+                    await writable.close();
+                } else {
+                    const subDirHandle = await dirHandle.getDirectoryHandle(removeTrailingSlash(name), { create: true });
+                    await createFiles(data, subDirHandle);
                 }
             }
-            await createFiles(WELCOME_FILES, root);
         }
+        await createFiles(WELCOME_FILES, root);
 
         return root;
     } catch (e) {

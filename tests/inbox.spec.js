@@ -3,7 +3,6 @@ const {test, expect} = require('@playwright/test');
 test.beforeEach(async ({page}) => {
     await page.goto('/index.html');
 
-    // await page.waitForSelector('.CodeMirror', {timeout: 10000});
     await page.waitForSelector('#tree', {timeout: 5000});
 });
 
@@ -16,7 +15,6 @@ test('send message to chat', async ({ page }) => {
     // Or wait for timeout before typing message doesn't help hmm
     await page.keyboard.press('Enter');
 
-    await page.pause();
     await page.waitForSelector('.message');
     let content = await page.textContent('.message-content')
     expect(content).toBe('My message');

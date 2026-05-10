@@ -1,6 +1,20 @@
 const {test, expect} = require('@playwright/test');
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({page}, testInfo) => {
+    // Capture browser console output and pageerrors for the whole test,
+    // so when something flakes we can read what the app was actually
+    // doing. The afterEach below attaches the buffer to the Playwright
+    // report; failures end up with a `page-console.log` artifact next to
+    // the screenshot/video.
+    const logs = [];
+    page.on('console', (msg) => {
+        logs.push(`[${msg.type()}] ${msg.text()}`);
+    });
+    page.on('pageerror', (err) => {
+        logs.push(`[pageerror] ${err.message}`);
+    });
+    testInfo.__pageLogs = logs;
+
     // Playwright doesn't isolate OPFS per parallel tests, it seems.
     await page.goto('/robots.txt');
     await page.evaluate(async () => {
@@ -14,6 +28,21 @@ test.beforeEach(async ({page}) => {
     await page.waitForSelector('#tree', {timeout: 5000});
 });
 
+test.afterEach(async ({}, testInfo) => {
+    const logs = testInfo.__pageLogs;
+    if (!logs || logs.length === 0) return;
+    if (testInfo.status !== testInfo.expectedStatus) {
+        // Print to stdout so failures show the browser console inline -
+        // attachments end up hashed under playwright-report/data/ and are
+        // a pain to find in CI.
+        console.log(`\n--- browser console for "${testInfo.title}" ---\n${logs.join('\n')}\n--- end ---`);
+    }
+    await testInfo.attach('page-console.log', {
+        body: logs.join('\n'),
+        contentType: 'text/plain',
+    });
+});
+
 test('should load the Files.md editor', async ({page}) => {
     await expect(page).toHaveTitle('Files.md (Beta version)');
 
@@ -22,8 +51,6 @@ test('should load the Files.md editor', async ({page}) => {
 });
 
 test('should open markdown file via quick panel and see bold text formatting', async ({page}) => {
-    await page.waitForTimeout(500);
-
     const isMac = process.platform === 'darwin';
     const modifier = isMac ? 'Meta' : 'Control';
     await page.keyboard.press(`${modifier}+k`);
@@ -48,9 +75,6 @@ test('should open markdown file via quick panel and see bold text formatting', a
 });
 
 test('insert link', async ({page}) => {
-    const isMac = process.platform === 'darwin';
-    const modifier = isMac ? 'Meta' : 'Control';
-
     await page.click('#sidebar >> text=Welcome');
 
     await page.click('.CodeMirror');

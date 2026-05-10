@@ -298,6 +298,7 @@ Refer to [this guide](https://github.com/zakirullin/cognitive-load) for more com
 - **It would be fantastic if, one day, we replaced `CodeMirror` with our own tiny implementation**
 - No build systems, **in 10 years we will open `/web/index.html` and it should just work**
 - Don't forget that awaits between lock check and lock acquire can cause race condition
+- Most bugs are caused in web app due to race conditions, like when an async flow is interrupted mid through
 
 ## Glossary
 - `filename` - a filename with extension, like "note.md" (USE THIS AS ID)
