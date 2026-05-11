@@ -152,35 +152,29 @@ However, **the first brain never actually gets smarter.**
 And that's an issue - in the AI age, your first brain is as valuable as ever.  
 Use your brain to think through the notes. Apply and experience the knowledge.  
 
+## Notes can prevent experience
+- Reading and taking notes can easily fool us into believing that we understand a text
+- We think we understand, but in reality **we just know**  
+- **At some point our "knowing" is so good, that we start feeling that we actually do it (or at least tried)**
+
+The worst thing is that **we don’t let new experiences emerge because we already have knowledge**. It's a knowledge barrier. Life gives us opportunities to live through new experiences, but we refuse, because "we already know".
+
+## Self-help through reading and taking notes? 🧘‍
+**Harm caused at the emotional level must be healed at the emotional level.**
+
+Not through intellectual work and taking notes.  
+Reading without action is entertainment. A form of procrastination.  
+**No amount of self-help books can heal emotional wounds.**  
+What can help is psychotherapy, rescripting and chair work. Meditation.  
+**Healing happens by feeling.**
+
 ## When to take notes
 If your goal is to:
 - Develop a deeper, more structured understanding of something
 - Do research
 - Write an article or a book
 
-Then taking notes is perfectly fine.  
-
-However, when it comes to personal changes, it can do more harm than good. See below.  
-
-## Self-help through reading and taking notes? 🧘‍
-**Harm caused at the emotional level must be healed at the emotional level.**  
-
-Not through intellectual work and taking notes.  
-Reading without action is entertainment. A form of procrastination.  
-**No amount of self-help books can heal emotional wounds.**  
-What can help is psychotherapy, rescripting and chair work. Meditation.  
-**Healing happens by feeling.**  
-
-Notes and intellectual work can actually prevent healing.  
-
-## Notes can prevent experience
-When it comes to real personal changes, collecting too many notes **can prevent us from actual experience.**  
-
-- Reading and taking notes can easily fool us into believing that we understand a text
-- We think we understand, but in reality **we just know**  
-- **At some point our "knowing" is so good, that we start feeling that we actually do it (or at least tried)**
-
-The worst thing is that **we don’t let new experiences emerge because we already have knowledge**. It's a knowledge barrier. Life gives us opportunities to live through new experiences, but we refuse, because "we already know".
+Then taking notes is perfectly fine.
 
 ## Files structure
 You don't have to think about the structure, it is predefined.  
