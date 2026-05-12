@@ -2266,7 +2266,7 @@ func TestMoveToJournal(t *testing.T) {
 
 	content, err := userFS.Read("journal", files[0].Name)
 	r.NoError(err)
-	r.Equal("#### 1 January, Thursday\n`00:00` Multiline\ncontent\n", content)
+	r.Equal("## 1 January, Thursday\n`00:00` Multiline\ncontent\n", content)
 
 	content, err = userFS.Read("/", "Chat.md")
 	r.NoError(err)
@@ -2339,14 +2339,14 @@ func TestAddToJournalFromShortcutRuCases(t *testing.T) {
 
 	content, err := userFS.Read("journal", files[0].Name)
 	r.NoError(err)
-	r.Equal("#### 1 January, Thursday\n`00:00` Запись\n", content)
+	r.Equal("## 1 January, Thursday\n`00:00` Запись\n", content)
 
 	err = bot.Reply(tg.NewUpd(-1, "Запись2 ЖЖ"))
 	r.NoError(err)
 
 	content, err = userFS.Read("journal", files[0].Name)
 	r.NoError(err)
-	r.Equal("#### 1 January, Thursday\n`00:00` Запись\n`00:00` Запись2\n", content)
+	r.Equal("## 1 January, Thursday\n`00:00` Запись\n`00:00` Запись2\n", content)
 }
 
 func TestShowForADay(t *testing.T) {

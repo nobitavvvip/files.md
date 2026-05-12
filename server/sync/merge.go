@@ -10,7 +10,7 @@ import (
 const (
 	// Journal day headers used to be `#### 23 May, Friday`; new entries are
 	// `## 23 May, Friday`. Match both so cross-format journals still merge.
-	header = `^#+ \d+ \w+, \w+`
+	header = `^(####|##) \d+ \w+, \w+`
 )
 
 // Merge combines two strings (s1 and s2) by identifying longest sequences of common lines.
