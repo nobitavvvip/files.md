@@ -25,6 +25,7 @@ Try it out: [app.files.md](https://app.files.md)
 
 Connect ideas. Let them compound. Think through.
 
+Another note taking app? Maybe. But this time:  
 - Only necessary features, **restrictions foster creativity**
 - No need to install anything, all you need is a browser
 - Works offline
@@ -52,7 +53,6 @@ Open the chat and send a message:
 <div align="center">
     <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note1.png"  width="350"/>
 </div>
-
 
 Select where to save:
 <div align="center">
