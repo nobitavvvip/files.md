@@ -1852,8 +1852,10 @@ func (b *Bot) completeChecklistItem(params []string) error {
 		return fmt.Errorf("complete checklist item: can't complete item from chat: %w", err)
 	}
 
-	// We can tolerate failure of writing to journal, since that's not single source of truth
-	_ = journal.AddRecord(b.fs, fmt.Sprintf("✅ %s", fs.DisplayName(item)), b.cfg.Timezone())
+	// We can tolerate failure of writing to journal, since that's not single source of truth.
+	// AddRecord prepends a fresh `HH:MM`; strip any leading timestamp on
+	// the item body so we don't end up with two of them.
+	_ = journal.AddRecord(b.fs, fmt.Sprintf("✅ %s", fs.DisplayName(txt.StripChatTimestamp(item))), b.cfg.Timezone())
 
 	if checklist == fs.LaterFilename {
 		return b.showLaterTasks(nil)

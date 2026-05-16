@@ -269,7 +269,9 @@ func RemoveCompletedChecklistItems(
 
 			tasks, _ := txt.ChecklistItems(removedMD)
 			for _, task := range tasks {
-				_ = journal.AddRecord(userFS, fmt.Sprintf("✅ %s", task), userconf.Timezone())
+				// Strip any leading `HH:MM` so AddRecord's own prepended
+				// timestamp isn't duplicated after the checkmark.
+				_ = journal.AddRecord(userFS, fmt.Sprintf("✅ %s", txt.StripChatTimestamp(task)), userconf.Timezone())
 			}
 		}
 
