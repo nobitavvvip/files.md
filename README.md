@@ -52,17 +52,13 @@ Choose where to save (can do later):
 You can save notes, journal and checklists.
 
 ## Save things in the chatbot
-Open the chat and send a message:
+Open the chat, write something and press `Enter`:
+
 <div align="center">
-    <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note1.png" alt="Telegram Bot" title="Telegram Bot" width="350"/>
+    <img src="https://github.com/zakirullin/files.md/raw/main/web/img/bot.gif" alt="Saving things in bot" title="Saving things in bot" width="350"/>
 </div>
 
-Move it anywhere later:
-<div align="center">
-    <img src="https://github.com/zakirullin/files.md/raw/main/web/img/actions.png" alt="Telegram Bot" title="Telegram Bot" width="350"/>
-</div>
-
-With this flow you can save anything.
+That's it.
 
 [Telegram Bot](https://t.me/FilesMDBot)
 
