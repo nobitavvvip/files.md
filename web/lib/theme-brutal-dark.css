@@ -307,7 +307,7 @@
 
 .cm-hmd-comment,
 .cm-hmd-comment-marker {
-    color: var(--color-neo-orange) !important;
+    color: #42A92C !important;
 }
 .cm-s-hypermd-light pre.hmd-inactive-line .cm-hmd-comment-marker {
     display: none;
