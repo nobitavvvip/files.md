@@ -37,7 +37,7 @@ Maybe. But this time:
 
 | Setup                                  | Where your files live                 | Sync across devices | Server needed         | Best for                                                              |
 |----------------------------------------|---------------------------------------|-------------------|-----------------------|-----------------------------------------------------------------------|
-| **Local-first (default)**              | A folder on your device               | No                | None                  | Maximum privacy, one machine, no setup                                |
+| **Local-first (default)**              | A folder on your device               | No                | None                  | Maximum privacy, your data doesn't leave your device                  |
 | **Cloud-folder sync** (iCloud/Dropbox/Google Drive) | Your existing cloud folder | Yes               | None (cloud provider) | Sync across devices without running a server                          |
 | **[Self-hosted server](docs/your-own-server.md)** | Your own (or local) server | Yes               | One Go binary         | Full control, sync between devices, optional Telegram bot integration |
 | **Hosted ([app.files.md](https://app.files.md))** | Our managed server         | Yes               | api.files.md          | Try it instantly, no setup                                            |
