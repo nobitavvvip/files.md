@@ -1,5 +1,7 @@
 <img src="https://github.com/zakirullin/files.md/raw/main/web/img/icon.png" alt="Files.md icon" title="Files.md" align="right" height="76" />
 
+Me and my friends were building this project for 5 years - you can consider [💚 sponsoring it on GitHub](https://github.com/sponsors/zakirullin).
+
 # Files.md  
 A simple application for your `.md` files.
 
