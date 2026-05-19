@@ -195,9 +195,9 @@ For tasks that should be done later press "To Later".
 
 
 ## Checklists 🛒
-A friend recommends you a book.  
+A friend recommends a book to you.  
 You're out of butter and buns.  
-Small things like these drain mental energy.  
+Holding things like this in your head is taxing.   
 
 Drop all that to chat, then move to a matching checklist.  
 
