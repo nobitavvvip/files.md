@@ -24,7 +24,7 @@ function initEditor(el) {
         viewportMargin: 10,
         mode: {
             name: 'hypermd',
-            math: false, // disable $math syntax$
+            math: true,
         },
         lineNumbers: false,
         extraKeys: {
@@ -40,6 +40,9 @@ function initEditor(el) {
         },
         hmdFoldEmoji: {
             myEmoji: createAutocompleteDict
+        },
+        hmdFoldMath: {
+            renderer: KatexRenderer,
         },
         configureMouse: () => ({addNew: false}) // disable multicursor
     });
@@ -442,3 +445,32 @@ function restoreEditorPos() {
     editor.refresh();
     editor.scrollTo(null, savedScrollTop);
 }
+
+// KaTeX renderer for HyperMD's fold-math addon. fold-math instantiates
+// this class with (container, mode) and calls startRender/clear as the
+// user edits. mode === 'display' for $$...$$, anything else for $...$.
+function KatexRenderer(container, mode) {
+    this.container = container;
+    this.mode = mode;
+    this.span = document.createElement('span');
+    container.appendChild(this.span);
+}
+KatexRenderer.prototype.startRender = function (expr) {
+    try {
+        window.katex.render(expr, this.span, {
+            displayMode: this.mode === 'display',
+            throwOnError: false,
+        });
+    } catch (e) {
+        this.span.textContent = expr;
+    }
+    if (this.onChanged) this.onChanged(expr);
+};
+KatexRenderer.prototype.clear = function () {
+    if (this.span.parentNode === this.container) {
+        this.container.removeChild(this.span);
+    }
+};
+KatexRenderer.prototype.isReady = function () {
+    return true;
+};
