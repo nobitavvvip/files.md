@@ -68,6 +68,15 @@
 .CodeMirror .hmd-fold-math.hmd-fold-math.math-2 {
     width: 100%;
 }
+/* Tighter line-height for lines whose entire token stream is math (raw
+   block math: $$ delimiters, \begin{...}, matrix rows, etc.). CodeMirror
+   wraps tokens in a class-less <span role="presentation"> inside the <pre>,
+   so we filter by spans that carry a `class` attribute - those are tokens.
+   Inline $x$ in prose lines has prose tokens (cm-text etc.) that lack
+   .cm-math, so the selector excludes them. */
+.CodeMirror pre.CodeMirror-line:has(.cm-math):not(:has(span[class]:not(.cm-math))) {
+    line-height: 1.2 !important;
+}
 .CodeMirror img.hmd-emoji {
     height: 1.2em;
     vertical-align: middle;

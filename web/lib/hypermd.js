@@ -183,6 +183,16 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
             var wasInHTML = (state.f === rawClosure.htmlBlock);
             var wasInCodeFence = state.code === -1;
             var bol = stream.start === 0;
+            // PATCHED: inline backtick code (any count) must not span lines.
+            // markdown.js keeps state.code = <count> across newlines if it
+            // never saw a matching closer, which paints the rest of the doc
+            // as code. At SOL, clear any positive state.code so the next
+            // line tokenizes as normal markdown. state.code === -1 means
+            // we're inside a fenced ``` block and IS allowed to span - leave
+            // that alone.
+            if (bol && state.code > 0) {
+                state.code = 0;
+            }
             var wasLinkText = state.linkText;
             var wasLinkHref = state.linkHref;
             var inMarkdown = !(wasInCodeFence || wasInHTML);
@@ -206,14 +216,30 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
                             endTag_1 = tmp[0];
                             mathLevel = lvl;
                         }
-                    } else if (stream.match(/^\\\(/, false)) {
+                    } else if (stream.match(/^\\\(/, false) && stream.string.slice(stream.pos + 2).indexOf('\\)') >= 0) {
+                        // \( only counts as math if there's a matching \) on the same line.
+                        // Otherwise fall through so the lone \( is rendered as a normal escape.
                         openTag_1 = '\\(';
                         endTag_1 = '\\)';
                         mathLevel = 1;
                     } else if (stream.match(/^\\\[/, false)) {
-                        openTag_1 = '\\[';
-                        endTag_1 = '\\]';
-                        mathLevel = 2;
+                        // PATCHED: \[ is math when either:
+                        //   - the line contains a matching \] (single-line block), or
+                        //   - the rest of the line is empty AND a \] exists somewhere in
+                        //     the doc (multi-line block, the common case for AI-pasted math).
+                        // The lookahead uses window.editor (set at boot in index.html) since
+                        // CodeMirror modes don't have a `cm` reference. If no \] exists at
+                        // all, fall through and render the \[ as escaped [.
+                        var restAfterOpen = stream.string.slice(stream.pos + 2);
+                        var sameLineClose = restAfterOpen.indexOf('\\]') >= 0;
+                        var maybeMultiline = restAfterOpen.trim() === ''
+                            && typeof window !== 'undefined' && window.editor
+                            && window.editor.getValue().indexOf('\\]') >= 0;
+                        if (sameLineClose || maybeMultiline) {
+                            openTag_1 = '\\[';
+                            endTag_1 = '\\]';
+                            mathLevel = 2;
+                        }
                     }
                     if (openTag_1) {
                         var texMode = CodeMirror.getMode(cmCfg, {
