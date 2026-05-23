@@ -1548,7 +1548,6 @@ function buildFileMenu(item, filePath) {
     });
 
     item('Delete', async () => {
-        if (!confirm(`Delete file "${fileName}"?`)) return;
         try {
             if (isCurrent && typeof removeCurrentFile === 'function') {
                 await removeCurrentFile();
