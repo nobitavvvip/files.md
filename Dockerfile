@@ -4,7 +4,6 @@
 FROM golang:1.24-alpine AS build
 WORKDIR /src
 
-# Cache deps first.
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -24,7 +23,6 @@ WORKDIR /app
 COPY --from=build /out/server /app/server
 COPY web /app/web
 
-# Storage is a named volume so files persist across container restarts.
 RUN mkdir -p /app/storage /app/tokens && chown -R app:app /app
 VOLUME ["/app/storage", "/app/tokens"]
 
