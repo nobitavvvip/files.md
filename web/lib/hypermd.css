@@ -189,6 +189,9 @@ pre.CodeMirror-line:has(.hmd-fold-code-stub.hmd-fold-code-mermaid) {
 .cm-s-hypermd-light pre.HyperMD-codeblock span.cm-operator {
     color: #bc5215;
 }
+.cm-s-hypermd-light pre.HyperMD-codeblock span.cm-keyword {
+    color: var(--color-neo-orange);
+}
 /* PATCHED end */
 .cm-s-hypermd-light span.cm-variable-2 {
     color: #0000C0;
