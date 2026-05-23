@@ -1165,6 +1165,7 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
             currentEditor.setOption('viewportMargin', Infinity);
         }, 100);
 
+        renderSidebar();
     } catch (err) {
         logError('openFile:', err);
         throw err;
