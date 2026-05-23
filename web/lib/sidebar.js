@@ -1535,18 +1535,16 @@ function buildFileMenu(item, filePath) {
         });
     }
 
-    if (!isSystemChecklist(filePath)) {
-        item('Move', async () => {
-            try {
-                if (!isCurrent) await openFile(filePath);
-                document.getElementById('move-input').value = '';
-                moveModal.open();
-            } catch (err) {
-                logError('move failed', err);
-                alert('Move failed: ' + (err && err.message ? err.message : err));
-            }
-        });
-    }
+    item('Move', async () => {
+        try {
+            if (!isCurrent) await openFile(filePath);
+            document.getElementById('move-input').value = '';
+            moveModal.open();
+        } catch (err) {
+            logError('move failed', err);
+            alert('Move failed: ' + (err && err.message ? err.message : err));
+        }
+    });
 
     item('Delete', async () => {
         if (!confirm(`Delete file "${fileName}"?`)) return;
