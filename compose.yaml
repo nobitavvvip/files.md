@@ -9,7 +9,7 @@ services:
       - storage:/app/storage
       - tokens:/app/tokens
     environment:
-      API_URL: http://localhost
+      API_URL: http://api.localhost
       APP_URL: http://localhost
       STORAGE_DIR: /app/storage
       TOKENS_DIR: /app/tokens
