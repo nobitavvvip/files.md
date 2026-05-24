@@ -261,7 +261,7 @@ const WELCOME_FILES = {
             "Syntax:\n`- [ ] Item`\n" +
             "\n" +
             "## Image\n" +
-            "![Why taking notes](https://app.files.md/img/tomas_sanchez.jpg)\n" +
+            "![Why taking notes](img/tomas_sanchez.jpg)\n" +
             "\n" +
             "*You can paste your own images via `Cmd/Ctrl + V`*\n\n" +
             "## Blockquote\n" +
