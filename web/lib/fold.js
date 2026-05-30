@@ -237,8 +237,16 @@ var __extends = (this && this.__extends) || (function () {
             var selections = cm.listSelections();
             for (var i = 0; i < selections.length; i++) {
                 var oselection = cm_utils_1.orderedRange(selections[i]);
+                // PATCHED, a collapsed cursor at exactly `to` (end-exclusive)
+                // is the "just to the right of the widget" position - treat
+                // as outside the fold so e.g. cursor after an image's `)` does
+                // not unfold it. Non-collapsed selections that extend to `to`
+                // still count as inside.
+                var cursorAtEnd = CodeMirror.cmpPos(oselection[0], oselection[1]) === 0
+                    && CodeMirror.cmpPos(oselection[0], to) === 0;
                 // note that "crange" can be bigger or smaller than marked-text range.
-                if (cm_utils_1.rangesIntersect(this._lastCRange, oselection) || cm_utils_1.rangesIntersect([from, to], oselection)) {
+                if (cm_utils_1.rangesIntersect(this._lastCRange, oselection)
+                    || (cm_utils_1.rangesIntersect([from, to], oselection) && !cursorAtEnd)) {
                     return RequestRangeResult.CURSOR_INSIDE;
                 }
             }
