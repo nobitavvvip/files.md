@@ -6,6 +6,7 @@ Private, quiet space for thinking. Simple app for `.md` files.
 <img src="https://github.com/zakirullin/files.md/raw/main/web/img/appdark.png" alt="Files.md screenshot" title="Files.md"/>
 
 <p align="center">
+    An app for Zettelkasten, Second Brain, Notes, Journaling, To Do lists, Checklists, and more. <br/>
     English · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
@@ -26,8 +27,6 @@ Try it out: [app.files.md](https://app.files.md) (Beta). Main site: [files.md](h
 > **Plain files and self-owned software can last through the ages**.  
 
 **I have been building this project for 5 years**. Consider **[supporting on GitHub 💚](https://github.com/sponsors/zakirullin)**.  
-
-You can use this app for Zettelkasten, Second Brain, Notes, Journaling, To Do lists, Checklists, and more.  
 
 [Dump your thoughts](#dump-your-thoughts) · [How to think deeply](#how-to-think-deeply) · [Second Brain?](#second-brain) · [Chatbot](#chatbot) · [Journal, tasks, checklists](#journal) · [Files structure](#files-structure)
 
