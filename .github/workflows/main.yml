@@ -1,0 +1,33 @@
+name: Build Single Binary
+
+on:
+  push:
+    branches: [ "main" ] # 当你向 main 分支推送代码时自动触发
+  workflow_dispatch:    # 允许你在 GitHub 页面上点击按钮手动触发编译
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24' # 适配项目最新的 Go 环境
+
+    # 指向正确的入口路径 ./cmd/server 进行编译
+    - name: Build Binary
+      run: |
+        env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod=vendor -ldflags="-s -w" -o files-md-server ./cmd/server
+
+    # 将编译好的后端程序以及运行所需的前端 web 目录一起打包
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: files-md-package
+        path: |
+          files-md-server
+          web/
