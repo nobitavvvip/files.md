@@ -1,10 +1,9 @@
 // Package webserver provides a server for habits tracking functionality through Telegram miniapps.
-// SSLs certificates are handled automatically via LetsEncrypt.
+
 package sync
 
 import (
 	"compress/gzip"
-	"crypto/tls"
 	_ "embed"
 	"fmt"
 	"io"
@@ -49,48 +48,18 @@ func gzipMiddleware(h http.HandlerFunc) http.HandlerFunc {
 
 // Serve TODO release graceful shutdown etc
 // All directories paths are absolute.
-func Serve(apiHost, appHost, certDir, logFilename string) {
-	// Logger is used for ssl/connection errors.
-	// For regular errors we still use slog.
+func Serve(apiHost, appHost, port, logFilename string) {
 	serverLogger := newLogger(logFilename)
 
-	serverLogger.Printf("Resolved hosts: api_host=%q app_host=%q cert_dir=%q", apiHost, appHost, certDir)
-
-	// For local environment.
-	// TODO make it more explicit
-	if certDir == "" {
-		srv := &http.Server{
-			Addr:    ":8080",
-			Handler: router(serverLogger),
-		}
-
-		serverLogger.Printf("Starting HTTP server on %s", srv.Addr)
-		err := srv.ListenAndServe()
-		if err != nil {
-			panic(err)
-		}
-		return
-	}
-
-	// This will also launch :80 http server that would pass ACME challenges or redirects to :443.
-	autocert := certServer(serverLogger, certDir, apiHost, appHost)
-	tlsConfig := &tls.Config{
-		GetCertificate:   autocert.GetCertificate,
-		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
-	}
+	serverLogger.Printf("Resolved hosts: api_host=%q app_host=%q port=%s", apiHost, appHost, port)
 
 	srv := &http.Server{
-		Addr:         ":443",
-		TLSConfig:    tlsConfig,
-		IdleTimeout:  2 * time.Minute,
-		ReadTimeout:  30 * time.Second, // Otherwise we get net::ERR_HTTP2_PROTOCOL_ERROR (RST_STREAM) errors on slow clients (I personally experienced it in South America on syncMedia upload)
-		WriteTimeout: 2 * time.Minute,  // For slow files like inbox.wasm.
-		ErrorLog:     serverLogger,
+		Addr:    ":" + port,
+		Handler: router(serverLogger),
 	}
-	srv.Handler = router(serverLogger)
 
-	serverLogger.Printf("Starting HTTPS server on %s (api_host=%q app_host=%q cert_dir=%q)", srv.Addr, apiHost, appHost, certDir)
-	err := srv.ListenAndServeTLS("", "") // Key and cert provided automatically by autocert
+	serverLogger.Printf("Starting HTTP server on %s", srv.Addr)
+	err := srv.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
@@ -248,7 +217,6 @@ func newLogger(logFilename string) *log.Logger {
 	filteredWriter := &FilteredWriter{
 		writer: logFile,
 		ignorePatterns: []string{
-			"TLS handshake error",
 		},
 	}
 

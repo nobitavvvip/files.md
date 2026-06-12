@@ -39,7 +39,7 @@ func main() {
 	go sync.Serve(
 		config.ServerCfg.APIHost(),
 		config.ServerCfg.AppHost(),
-		config.ServerCfg.ServerCertDir,
+		config.ServerCfg.ServerPort,
 		config.ServerCfg.ServerLogFile,
 	)
 

@@ -30,10 +30,6 @@ github.com/spf13/afero/mem
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# golang.org/x/crypto v0.23.0
-## explicit; go 1.18
-golang.org/x/crypto/acme
-golang.org/x/crypto/acme/autocert
 # golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 ## explicit; go 1.20
 golang.org/x/exp/constraints
@@ -41,15 +37,10 @@ golang.org/x/exp/slices
 golang.org/x/exp/slog
 golang.org/x/exp/slog/internal
 golang.org/x/exp/slog/internal/buffer
-# golang.org/x/net v0.25.0
-## explicit; go 1.18
-golang.org/x/net/idna
 # golang.org/x/text v0.16.0
 ## explicit; go 1.18
 golang.org/x/text/runes
-golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
-golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 ## explicit

@@ -13,7 +13,6 @@ docker_run: # run container, host 80 -> container 8080
 		-e APP_URL=http://localhost \
 		-e STORAGE_DIR=/app/storage \
 		-e TOKENS_DIR=/app/tokens \
-		-e CERT_DIR= \
 		files-md
 
 compose_up: # build + start via compose.yaml, logs attached
@@ -73,7 +72,6 @@ BOT_API_TOKEN=
 API_HOST=$(apihost)
 APP_HOST=app.files.md
 STORAGE_DIR=/app/storage
-CERT_DIR=/opt/files.md
 TOKENS_DIR=/opt/files.md/tokens
 LOG_FILE=/var/log/files.md/server.log
 endef

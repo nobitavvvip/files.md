@@ -7,10 +7,6 @@ Build and start:
 $ docker compose up
 ```
 
-### Enable HTTPS
-In `compose.yaml`: set `CERT_DIR` to a persistent path, uncomment the `"443:443"` port.
-
-
 ## Deploy on your own server (manual)
 
 Install [Go](https://go.dev/doc/install) on your host machine.  
@@ -24,7 +20,6 @@ Configure the `/app/.env` file:
 ```
 BOT_API_TOKEN=<TELEGRAM_API_TOKEN_IF_NEEDED>
 STORAGE_DIR=/app/storage
-CERT_DIR=/opt/files.md
 TOKENS_DIR=/opt/files.md/tokens
 LOG_FILE=server.log
 API_URL=https://api.yourdomain.com

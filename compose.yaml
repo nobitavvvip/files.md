@@ -3,8 +3,8 @@ services:
     build: .
     image: files-md
     ports:
-      - "80:8080"
-      # - "443:443"
+      - "80:18081"
+      # host:container, e.g. "80:18081"
     volumes:
       - storage:/app/storage
       - tokens:/app/tokens
@@ -13,7 +13,6 @@ services:
       # API_URL: http://api.localhost # Uncomment if you want synchronization API
       STORAGE_DIR: /app/storage
       TOKENS_DIR: /app/tokens
-      CERT_DIR: "" # Provide a dir if you want HTTPS enabled, e.g. /opt/certs
     restart: unless-stopped
 
 volumes:

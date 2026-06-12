@@ -8,7 +8,6 @@ Create a `.env` file in the project root:
 APP_URL=http://localhost:3000
 API_URL=http://localhost:8080
 TOKENS_DIR="<PATH_TO_YOUR_FILES.MD_REPO/storage/-1"
-CERT_DIR=""
 TOKENS_SALT=""
 ```
 
