@@ -64,6 +64,17 @@ async function init() {
         }
     }
 
+    // If no token in URL, no auth yet, and API is configured — prompt for one.
+    if (API_URL && !hasLastServerOk() && !oneTimeToken) {
+        const token = prompt('请输入一次性 Token（留空跳过）：');
+        if (token) {
+            const ok = await exchangeOneTimeToken(token.trim());
+            if (!ok) {
+                alert('Token 无效，请重试或留空使用离线模式。');
+            }
+        }
+    }
+
     const savedDirHandle = await getSavedRootDirHandle();
     const hasSavedLocalDir = savedDirHandle instanceof FileSystemDirectoryHandle;
     if (hasSavedLocalDir) {
@@ -107,7 +118,7 @@ async function init() {
     renderSidebar();
     log(`Sidebar built in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
 
-    const userHasCustomAPIUrl = localStorage.getItem('apiUrl') !== null;
+    const userHasCustomAPIUrl = API_URL !== '';
     if (isMemFS && !userHasCustomAPIUrl) {
         // By the time a user has setup custom API, he doesn't need welcome file :)
         await openFile('/🪴 Welcome.md');
@@ -846,7 +857,7 @@ window.addEventListener('focus', async () => {
     }
 
     // We don't want to do heavy stuff when chat is open.
-    const userHasCustomAPIUrl = localStorage.getItem('apiUrl') !== null;
+    const userHasCustomAPIUrl = API_URL !== '';
     if (isChat || (isMemFS && !userHasCustomAPIUrl)) {
         if (isChat) {
             document.getElementById('chat-input').focus();
