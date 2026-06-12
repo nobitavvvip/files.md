@@ -15,6 +15,30 @@ let isMemFS = false;
 let debug = false;
 // let debug = {dir: '', file: 'File.md', loaded: false};
 
+async function exchangeOneTimeToken(oneTimeToken) {
+    try {
+        const response = await fetch(`${API_URL}/issuePermanentToken`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oneTimeToken })
+        });
+        if (response.ok) {
+            markServerOk();
+            return true;
+        }
+    } catch (e) {
+        logError('Error exchanging token:', e);
+    }
+    return false;
+}
+
+async function showTokenInputDialog() {
+    const token = prompt('🔑 认证已失效，请输入一次性 Token：');
+    if (token) return await exchangeOneTimeToken(token.trim());
+    return false;
+}
+
 async function init() {
     // Ask the browser to mark our origin as persistent so the quota
     // manager can't evict the auth cookie + localStorage under disk
@@ -30,32 +54,13 @@ async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     const oneTimeToken = urlParams.get('token');
     if (oneTimeToken) {
-        try {
-            // Exchange one-time token for permanent token
-            const response = await fetch(`${API_URL}/issuePermanentToken`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    oneTimeToken: oneTimeToken
-                })
-            });
-
-            if (response.ok) {
-                // Server sets the auth cookie via Set-Cookie on this response.
-                markServerOk();
-                const url = new URL(window.location);
-                url.searchParams.delete('token');
-                window.history.replaceState({}, '', url);
-            } else {
-                alert('The token has expired or is invalid. Please try to request a new link.');
-                logError('Token exchange failed:', response.status);
-            }
-        } catch (error) {
+        const ok = await exchangeOneTimeToken(oneTimeToken);
+        if (ok) {
+            const url = new URL(window.location);
+            url.searchParams.delete('token');
+            window.history.replaceState({}, '', url);
+        } else {
             alert('The token has expired or is invalid. Please try to request a new link.');
-            logError('Error exchanging token:', error);
         }
     }
 
@@ -611,6 +616,10 @@ async function post(endpoint, data) {
     }
 
     if (!response.ok) {
+        if (response.status === 401 && !window.location.search.includes('token')) {
+            const fixed = await showTokenInputDialog();
+            if (fixed) return post(endpoint, data);
+        }
         let body = '';
         try { body = await response.text(); } catch (_) {}
         return { json: null, error: `${response.status} ${response.statusText}: ${body}`.trim() };

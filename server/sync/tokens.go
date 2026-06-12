@@ -190,8 +190,20 @@ func issueNewPermanentToken(r *http.Request) (string, bool) {
 	}
 
 	mu.Lock()
-	data, exists := oneTimeTokens[req.OneTimeToken]
-	if !exists || time.Now().After(data.expiresAt) {
+
+	var userID int64
+	var exists bool
+
+	if config.ServerCfg.FixedOneTimeToken != "" && req.OneTimeToken == config.ServerCfg.FixedOneTimeToken {
+		userID = config.ServerCfg.FixedUserID
+		exists = true
+	} else if data, ok := oneTimeTokens[req.OneTimeToken]; ok && !time.Now().After(data.expiresAt) {
+		userID = data.userID
+		exists = true
+		delete(oneTimeTokens, req.OneTimeToken)
+	}
+
+	if !exists {
 		// Snapshot a few one-time tokens for cross-referencing — fingerprints
 		// only, never any portion of the raw token (still-live secrets).
 		samplePrefixes := make([]string, 0, 5)
@@ -210,29 +222,17 @@ func issueNewPermanentToken(r *http.Request) (string, bool) {
 		}
 		mu.Unlock()
 
-		reason := "onetime_token_not_in_map_401"
-		if exists {
-			reason = "onetime_token_expired_401"
-		}
-		extras := map[string]any{
+		logAuthFailure("onetime_token_invalid_401", r, map[string]any{
 			"http_status":           401,
 			"submitted_token":       tokenFingerprint(req.OneTimeToken),
 			"submitted_token_blank": req.OneTimeToken == "",
 			"map_live_count":        liveCount,
 			"map_expired_count":     expiredCount,
 			"map_sample":            strings.Join(samplePrefixes, ","),
-			"new_block_for":         "1m",
-		}
-		if exists {
-			extras["matched_user_id"] = data.userID
-			extras["matched_expires_at"] = data.expiresAt.Format(time.RFC3339Nano)
-			extras["matched_age"] = time.Since(data.expiresAt.Add(-OneTimeTokenExpiration)).String()
-		}
-		logAuthFailure(reason, r, extras)
+		})
 
 		return "", false
 	}
-	delete(oneTimeTokens, req.OneTimeToken)
 	mu.Unlock()
 
 	token := genToken()
@@ -242,16 +242,16 @@ func issueNewPermanentToken(r *http.Request) (string, bool) {
 		logAuthFailure("onetime_swap_fs_init_error_401", r, map[string]any{
 			"http_status": 401,
 			"err":         err.Error(),
-			"user_id":     data.userID,
+			"user_id":     userID,
 		})
 		return "", false
 	}
-	err = tokens.Write(fs.DirUserRoot, hashToken(token), strconv.FormatInt(data.userID, 10))
+	err = tokens.Write(fs.DirUserRoot, hashToken(token), strconv.FormatInt(userID, 10))
 	if err != nil {
 		logAuthFailure("onetime_swap_write_error_401", r, map[string]any{
 			"http_status": 401,
 			"err":         err.Error(),
-			"user_id":     data.userID,
+			"user_id":     userID,
 		})
 		return "", false
 	}

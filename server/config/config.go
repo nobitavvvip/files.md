@@ -19,6 +19,8 @@ type Config struct {
 	APIURL            string `default:"" envconfig:"API_URL"`
 	AppURL            string `default:"" envconfig:"APP_URL"`
 	ServerPort        string `default:"18081" envconfig:"SERVER_PORT"`
+	FixedOneTimeToken string `envconfig:"FIXED_ONE_TIME_TOKEN"`
+	FixedUserID       int64  `envconfig:"FIXED_USER_ID"`
 	TokensDir         string `default:"/tmp" envconfig:"TOKENS_DIR"`
 	TokensSalt        string `envconfig:"TOKENS_SALT"`
 	ServerLogFile     string `default:"/tmp/server.log" envconfig:"LOG_FILE"`
